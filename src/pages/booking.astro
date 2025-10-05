@@ -1,116 +1,113 @@
----
-import Layout from "../layouts/Layout.astro";
----
-<Layout title="Booking | Dolphin House">
+<script>
+  async function fetchBookings() {
+    const res = await fetch('/api/bookings');
+    return await res.json();
+  }
 
-  <section class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
-    <h1 class="text-3xl font-bold mb-4">Check Availability & Book</h1>
+  async function fetchInventory() {
+    // This could come from DB too later, but for now it's static
+    return {
+      deluxe: { label: "Deluxe Room", rate: 3500, qty: 3 },
+      suite: { label: "Family Suite", rate: 5000, qty: 2 },
+      cottage: { label: "Beach Cottage", rate: 6000, qty: 1 },
+    };
+  }
 
-    <div class="space-y-4">
-      <label>Check-in
-        <input id="checkin" type="date" class="w-full border px-3 py-2 rounded"/>
-      </label>
-      <label>Check-out
-        <input id="checkout" type="date" class="w-full border px-3 py-2 rounded"/>
-      </label>
-      <button id="checkBtn" class="btn-primary w-full">Check Availability</button>
-    </div>
+  // Helpers
+  function rangesOverlap(aStart, aEnd, bStart, bEnd) {
+    return (aStart < bEnd) && (bStart < aEnd);
+  }
 
-    <div id="availability" class="mt-6 hidden">
-      <h2 class="text-xl font-semibold mb-3">Available Room Types</h2>
-      <div id="roomList" class="grid gap-4"></div>
-    </div>
-  </section>
+  function countBooked(bookings, roomType, checkin, checkout) {
+    const inD = new Date(checkin);
+    const outD = new Date(checkout);
+    let c = 0;
+    bookings.forEach(b => {
+      if (b.room !== roomType) return;
+      if (b.status === 'cancelled') return;
+      const bi = new Date(b.checkin);
+      const bo = new Date(b.checkout);
+      if (rangesOverlap(inD, outD, bi, bo)) c++;
+    });
+    return c;
+  }
 
-  <script>
-    // initialize demo inventory if missing
-    function ensureInventory() {
-      if (!localStorage.getItem('inventory')) {
-        const inv = {
-          "deluxe": { label: "Deluxe Room", rate: 3500, qty: 3 },
-          "suite": { label: "Family Suite", rate: 5000, qty: 2 },
-          "cottage": { label: "Beach Cottage", rate: 6000, qty: 1 }
-        };
-        localStorage.setItem('inventory', JSON.stringify(inv));
-      }
+  function availableRooms(inventory, bookings, roomType, checkin, checkout) {
+    const total = inventory[roomType]?.qty || 0;
+    const reserved = countBooked(bookings, roomType, checkin, checkout);
+    return Math.max(0, total - reserved);
+  }
+
+  const checkBtn = document.getElementById('checkBtn');
+  const availability = document.getElementById('availability');
+  const roomList = document.getElementById('roomList');
+
+  checkBtn.addEventListener('click', async () => {
+    const checkin = document.getElementById('checkin').value;
+    const checkout = document.getElementById('checkout').value;
+
+    if (!checkin || !checkout || new Date(checkin) >= new Date(checkout)) {
+      alert('Please choose valid checkin and checkout dates.');
+      return;
     }
 
-    // availability helpers (same as earlier)
-    function rangesOverlap(aStart,aEnd,bStart,bEnd){return (aStart<bEnd)&&(bStart<aEnd);}
-    function countBooked(bookings, roomType, checkin, checkout){
-      const inD=new Date(checkin), outD=new Date(checkout); let c=0;
-      bookings.forEach(b=>{
-        if(b.room!==roomType) return;
-        if(b.status==='cancelled') return;
-        const bi=new Date(b.checkin), bo=new Date(b.checkout);
-        if(rangesOverlap(inD,outD,bi,bo)) c++;
-      }); return c;
-    }
-    function availableRooms(inventory, bookings, roomType, checkin, checkout) {
-      const total = inventory[roomType]?.qty||0;
-      const reserved = countBooked(bookings, roomType, checkin, checkout);
-      return Math.max(0, total - reserved);
-    }
+    const inventory = await fetchInventory();
+    const bookings = await fetchBookings();
 
-    ensureInventory();
+    // Build UI
+    roomList.innerHTML = '';
+    Object.keys(inventory).forEach(rt => {
+      const avail = availableRooms(inventory, bookings, rt, checkin, checkout);
+      const div = document.createElement('div');
+      div.className = "card p-4 flex justify-between items-center";
+      div.innerHTML = `
+        <div>
+          <div class="text-lg font-semibold">${inventory[rt].label}</div>
+          <div class="text-sm text-gray-600">₹${inventory[rt].rate} / night</div>
+          <div class="text-sm text-gray-500">Available: ${avail}</div>
+        </div>
+        <div>
+          <button ${avail === 0 ? 'disabled' : ''} data-rt="${rt}" class="btn-primary selectRoom">
+            ${avail > 0 ? 'Select' : 'Sold out'}
+          </button>
+        </div>
+      `;
+      roomList.appendChild(div);
+    });
 
-    const checkBtn = document.getElementById('checkBtn');
-    const availability = document.getElementById('availability');
-    const roomList = document.getElementById('roomList');
+    availability.classList.remove('hidden');
 
-    checkBtn.addEventListener('click', () => {
-      const checkin = document.getElementById('checkin').value;
-      const checkout = document.getElementById('checkout').value;
-      if(!checkin || !checkout || new Date(checkin)>=new Date(checkout)){
-        alert('Please choose valid checkin and checkout dates.');
-        return;
-      }
+    // Hook select buttons
+    document.querySelectorAll('.selectRoom').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const roomType = btn.dataset.rt;
+        const nights = (new Date(checkout) - new Date(checkin)) / (1000 * 60 * 60 * 24);
+        const total = nights * (inventory[roomType].rate);
 
-      const inv = JSON.parse(localStorage.getItem('inventory') || '{}');
-      const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-
-      // build UI
-      roomList.innerHTML = '';
-      Object.keys(inv).forEach(rt => {
-        const avail = availableRooms(inv, bookings, rt, checkin, checkout);
-        const div = document.createElement('div');
-        div.className = "card p-4 flex justify-between items-center";
-        div.innerHTML = `
-          <div>
-            <div class="text-lg font-semibold">${inv[rt].label}</div>
-            <div class="text-sm text-gray-600">₹${inv[rt].rate} / night</div>
-            <div class="text-sm text-gray-500">Available: ${avail}</div>
-          </div>
-          <div>
-            <button ${avail===0?'disabled':''} data-rt="${rt}" class="btn-primary selectRoom">
-              ${avail>0?'Select':'Sold out'}
-            </button>
-          </div>
-        `;
-        roomList.appendChild(div);
-      });
-
-      availability.classList.remove('hidden');
-
-      // hook select buttons
-      document.querySelectorAll('.selectRoom').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const roomType = btn.dataset.rt;
-          // create provisional booking object and redirect to /pay
-          const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-          const id = 'bk_' + Date.now();
-          const nights = (new Date(checkout) - new Date(checkin)) / (1000*60*60*24);
-          const total = nights * (inv[roomType].rate);
-          const provisional = {
-            id, name:'', email:'', room:roomType, checkin, checkout,
-            guests:2, nights, total, status:'payment_pending', createdAt: new Date().toISOString()
-          };
-          bookings.push(provisional);
-          localStorage.setItem('bookings', JSON.stringify(bookings));
-          // redirect to payment page with booking id
-          location.href = `/pay?bookingId=${id}`;
+        // Create booking in D1 via API
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: '',
+            email: '',
+            room: roomType,
+            checkin,
+            checkout,
+            guests: 2,
+            nights,
+            total,
+            status: 'payment_pending',
+          }),
         });
+
+        const data = await res.json();
+        if (data.id) {
+          window.location.href = `/pay?bookingId=${data.id}`;
+        } else {
+          alert('Error creating booking. Please try again.');
+        }
       });
     });
-  </script>
-</Layout>
+  });
+</script>

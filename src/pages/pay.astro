@@ -25,46 +25,82 @@ import Layout from "../layouts/Layout.astro";
   </section>
 
   <script>
-    const params = new URLSearchParams(location.search);
-    const bookingId = params.get('bookingId');
-    if(!bookingId){ document.getElementById('info').textContent = 'Missing booking id.'; throw 0; }
+  const params = new URLSearchParams(location.search);
+  const bookingId = params.get('bookingId');
+  const infoDiv = document.getElementById('info');
+  const msg = document.getElementById('msg');
+  const preview = document.getElementById('preview');
+  const fileInput = document.getElementById('screenshot');
+  const confirmBtn = document.getElementById('confirmBtn');
+  let screenshotData = null;
+  let booking = null;
 
-    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-    const idx = bookings.findIndex(b => b.id === bookingId);
-    if(idx===-1){ document.getElementById('info').textContent = 'Booking not found.'; throw 0; }
-    const booking = bookings[idx];
+  // Fetch the booking from Cloudflare D1 API
+  async function loadBooking() {
+    try {
+      const res = await fetch('/api/bookings');
+      const data = await res.json();
+      booking = data.find(b => b.id === bookingId);
+      if (!booking) {
+        infoDiv.textContent = 'Booking not found or already processed.';
+        confirmBtn.disabled = true;
+        return;
+      }
+      infoDiv.innerHTML = `
+        <div><strong>Booking:</strong> ${booking.room} — ${booking.checkin} → ${booking.checkout}</div>
+        <div><strong>Amount:</strong> ₹${booking.total}</div>
+      `;
+    } catch (err) {
+      infoDiv.textContent = 'Error loading booking details.';
+      console.error(err);
+    }
+  }
 
-    document.getElementById('info').innerHTML = `
-      <div><strong>Booking:</strong> ${booking.room} — ${booking.checkin} → ${booking.checkout}</div>
-      <div><strong>Amount:</strong> ₹${booking.total}</div>
-    `;
+  // Handle image upload preview
+  fileInput.addEventListener('change', async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    preview.innerHTML = `<img src="${url}" class="w-48 h-48 object-contain rounded-lg shadow"/>`;
+    const reader = new FileReader();
+    reader.onload = () => screenshotData = reader.result;
+    reader.readAsDataURL(f);
+  });
 
-    const fileInput = document.getElementById('screenshot');
-    const preview = document.getElementById('preview');
-    let screenshotData = null;
+  // Confirm payment and update booking in D1
+  confirmBtn.addEventListener('click', async () => {
+    if (!screenshotData) {
+      alert('Please upload payment screenshot first.');
+      return;
+    }
+    if (!booking) {
+      alert('Booking not found.');
+      return;
+    }
 
-    fileInput.addEventListener('change', async (e) => {
-      const f = e.target.files[0];
-      if(!f) return;
-      // preview
-      const url = URL.createObjectURL(f);
-      preview.innerHTML = `<img src="${url}" class="w-48 h-48 object-contain rounded-lg shadow"/>`;
-      // convert to base64 for localStorage (demo)
-      const reader = new FileReader();
-      reader.onload = ()=> screenshotData = reader.result;
-      reader.readAsDataURL(f);
-    });
+    try {
+      const updated = { ...booking, screenshot: screenshotData, status: 'payment_submitted' };
+      const res = await fetch('/api/bookings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      if (res.ok) {
+        msg.textContent = 'Payment uploaded. Booking will be reviewed by admin.';
+        msg.classList.remove('hidden');
+        confirmBtn.disabled = true;
+        setTimeout(() => (window.location.href = '/thank-you'), 2000);
+      } else {
+        alert('Failed to update booking. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error updating booking.');
+    }
+  });
 
-    document.getElementById('confirmBtn').addEventListener('click', ()=>{
-      if(!screenshotData){ alert('Please upload payment screenshot'); return; }
-      bookings[idx].screenshot = screenshotData;
-      bookings[idx].status = 'payment_submitted';
-      bookings[idx].submittedAt = new Date().toISOString();
-      localStorage.setItem('bookings', JSON.stringify(bookings));
-      document.getElementById('msg').classList.remove('hidden');
-      // optionally redirect to thank you or admin waiting page
-      setTimeout(()=> location.href = '/thank-you', 1500);
-    });
-  </script>
+  loadBooking();
+</script>
+
 
 </Layout>
