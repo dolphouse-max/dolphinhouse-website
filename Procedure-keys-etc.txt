@@ -20,3 +20,27 @@ Github
 
  0ABF-0C04
 
+curl https://dolphinhouse-website.pages.dev/api/bookings
+
+
+🪜 Option 1 — The Best Way (via Git/GitHub push)
+
+If your repo is already linked to Cloudflare Pages (it sounds like it is ✅), then:
+
+1️⃣ Open PowerShell inside your project folder:
+
+cd C:\dolphinhouse-website
+
+
+2️⃣ Stage and commit all your latest changes:
+
+git add .
+git commit -m "Added pay and thank-you pages"
+
+
+3️⃣ Push your changes to GitHub:
+
+git push
+
+
+☁️ As soon as you push, Cloudflare Pages will automatically detect the commit, rebuild, and deploy your site.
