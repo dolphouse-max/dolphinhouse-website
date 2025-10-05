@@ -79,7 +79,8 @@ import Layout from "../layouts/Layout.astro";
 
     if (!checkBtn) {
       console.error("❌ Cannot find #checkBtn element in DOM.");
-      return;
+    } else {
+      // move all of your event-listener logic inside this else { } block
     }
 
     checkBtn.addEventListener('click', async () => {
