@@ -1,98 +1,142 @@
-<script client:load>
-  // Everything runs only after DOM is loaded
-  async function fetchBookings() {
-    const res = await fetch('/api/bookings');
-    return await res.json();
-  }
+---
+import Layout from "../layouts/Layout.astro";
+---
 
-  async function fetchInventory() {
-    return {
-      deluxe: { label: "Deluxe Room", rate: 3500, qty: 3 },
-      suite: { label: "Family Suite", rate: 5000, qty: 2 },
-      cottage: { label: "Beach Cottage", rate: 6000, qty: 1 },
-    };
-  }
+<Layout title="Booking | Dolphin House">
 
-  function rangesOverlap(aStart, aEnd, bStart, bEnd) {
-    return (aStart < bEnd) && (bStart < aEnd);
-  }
-  function countBooked(bookings, roomType, checkin, checkout) {
-    const inD = new Date(checkin);
-    const outD = new Date(checkout);
-    let c = 0;
-    bookings.forEach(b => {
-      if (b.room !== roomType || b.status === 'cancelled') return;
-      const bi = new Date(b.checkin), bo = new Date(b.checkout);
-      if (rangesOverlap(inD, outD, bi, bo)) c++;
-    });
-    return c;
-  }
-  function availableRooms(inv, bookings, rt, ci, co) {
-    const total = inv[rt]?.qty || 0;
-    const reserved = countBooked(bookings, rt, ci, co);
-    return Math.max(0, total - reserved);
-  }
+  <section class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
+    <h1 class="text-3xl font-bold mb-4">Check Availability & Book</h1>
 
-  const checkBtn = document.getElementById('checkBtn');
-  const availability = document.getElementById('availability');
-  const roomList = document.getElementById('roomList');
+    <div class="space-y-4">
+      <label class="block">
+        Check-in
+        <input id="checkin" type="date" class="w-full border px-3 py-2 rounded"/>
+      </label>
+      <label class="block">
+        Check-out
+        <input id="checkout" type="date" class="w-full border px-3 py-2 rounded"/>
+      </label>
+      <button id="checkBtn" class="btn-primary w-full mt-3 bg-sky-600 text-white py-2 rounded-lg hover:bg-sky-700">
+        Check Availability
+      </button>
+    </div>
 
-  if (!checkBtn) {
-    console.error('checkBtn not found in DOM');
-    return;
-  }
+    <div id="availability" class="mt-8 hidden">
+      <h2 class="text-xl font-semibold mb-3">Available Room Types</h2>
+      <div id="roomList" class="grid gap-4"></div>
+    </div>
+  </section>
 
-  checkBtn.addEventListener('click', async () => {
-    const checkin = document.getElementById('checkin').value;
-    const checkout = document.getElementById('checkout').value;
-    if (!checkin || !checkout || new Date(checkin) >= new Date(checkout)) {
-      alert('Please choose valid dates.');
+  <!-- Important: Script must be after markup -->
+  <script client:load>
+    console.log("Booking page script running...");
+
+    async function fetchBookings() {
+      try {
+        const res = await fetch('/api/bookings');
+        if (!res.ok) throw new Error('Fetch failed');
+        return await res.json();
+      } catch (err) {
+        console.error('Error fetching bookings:', err);
+        return [];
+      }
+    }
+
+    async function fetchInventory() {
+      return {
+        deluxe: { label: "Deluxe Room", rate: 3500, qty: 3 },
+        suite: { label: "Family Suite", rate: 5000, qty: 2 },
+        cottage: { label: "Beach Cottage", rate: 6000, qty: 1 },
+      };
+    }
+
+    function rangesOverlap(aStart, aEnd, bStart, bEnd) {
+      return (aStart < bEnd) && (bStart < aEnd);
+    }
+
+    function countBooked(bookings, roomType, checkin, checkout) {
+      const inD = new Date(checkin);
+      const outD = new Date(checkout);
+      let c = 0;
+      bookings.forEach(b => {
+        if (b.room !== roomType || b.status === 'cancelled') return;
+        const bi = new Date(b.checkin);
+        const bo = new Date(b.checkout);
+        if (rangesOverlap(inD, outD, bi, bo)) c++;
+      });
+      return c;
+    }
+
+    function availableRooms(inv, bookings, rt, ci, co) {
+      const total = inv[rt]?.qty || 0;
+      const reserved = countBooked(bookings, rt, ci, co);
+      return Math.max(0, total - reserved);
+    }
+
+    const checkBtn = document.getElementById('checkBtn');
+    const availability = document.getElementById('availability');
+    const roomList = document.getElementById('roomList');
+
+    if (!checkBtn) {
+      console.error("❌ Cannot find #checkBtn element in DOM.");
       return;
     }
 
-    const inv = await fetchInventory();
-    const bookings = await fetchBookings();
-    roomList.innerHTML = '';
+    checkBtn.addEventListener('click', async () => {
+      const checkin = document.getElementById('checkin').value;
+      const checkout = document.getElementById('checkout').value;
 
-    Object.keys(inv).forEach(rt => {
-      const avail = availableRooms(inv, bookings, rt, checkin, checkout);
-      const div = document.createElement('div');
-      div.className = 'card p-4 flex justify-between items-center';
-      div.innerHTML = `
-        <div>
-          <div class="text-lg font-semibold">${inv[rt].label}</div>
-          <div class="text-sm text-gray-600">₹${inv[rt].rate} / night</div>
-          <div class="text-sm text-gray-500">Available: ${avail}</div>
-        </div>
-        <div>
-          <button ${avail===0?'disabled':''} data-rt="${rt}" class="btn-primary selectRoom">
-            ${avail>0?'Select':'Sold out'}
+      if (!checkin || !checkout || new Date(checkin) >= new Date(checkout)) {
+        alert('Please choose valid check-in and check-out dates.');
+        return;
+      }
+
+      const inv = await fetchInventory();
+      const bookings = await fetchBookings();
+
+      roomList.innerHTML = '';
+      Object.keys(inv).forEach(rt => {
+        const avail = availableRooms(inv, bookings, rt, checkin, checkout);
+        const div = document.createElement('div');
+        div.className = "p-4 rounded-xl border bg-white shadow flex justify-between items-center hover:shadow-md transition";
+        div.innerHTML = `
+          <div>
+            <div class="text-lg font-semibold">${inv[rt].label}</div>
+            <div class="text-sm text-gray-600">₹${inv[rt].rate} / night</div>
+            <div class="text-sm text-gray-500">Available: ${avail}</div>
+          </div>
+          <button ${avail === 0 ? 'disabled' : ''} data-rt="${rt}" 
+                  class="btn-primary bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition selectRoom">
+            ${avail > 0 ? 'Select' : 'Sold out'}
           </button>
-        </div>`;
-      roomList.appendChild(div);
-    });
+        `;
+        roomList.appendChild(div);
+      });
 
-    availability.classList.remove('hidden');
+      availability.classList.remove('hidden');
 
-    document.querySelectorAll('.selectRoom').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const rt = btn.dataset.rt;
-        const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
-        const total = nights * inv[rt].rate;
+      document.querySelectorAll('.selectRoom').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const rt = btn.dataset.rt;
+          const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
+          const total = nights * inv[rt].rate;
 
-        const res = await fetch('/api/bookings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            room: rt, checkin, checkout, guests: 2,
-            nights, total, status: 'payment_pending'
-          })
+          const res = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              room: rt, checkin, checkout, guests: 2,
+              nights, total, status: 'payment_pending'
+            })
+          });
+          const data = await res.json();
+          if (data.id) {
+            window.location.href = `/pay?bookingId=${data.id}`;
+          } else {
+            alert('Error creating booking.');
+          }
         });
-        const data = await res.json();
-        if (data.id) window.location.href = `/pay?bookingId=${data.id}`;
-        else alert('Error creating booking.');
       });
     });
-  });
-</script>
-
+  </script>
+</Layout>
