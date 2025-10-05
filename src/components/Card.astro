@@ -1,0 +1,38 @@
+---
+/* src/components/Card.astro
+   Props:
+     - image (string): path to fallback (png/jpg)
+     - title (string)
+     - description (string)
+     - href (optional)
+*/
+const { image = '/uploader/Room-1.png', title = '', description = '', href = null } = Astro.props;
+
+// build webp path from image by swapping extension
+const webp = image.replace(/\.\w+$/, '.webp');
+---
+<div class="card">
+  {href ? (
+    <a href={href} class="block">
+      <picture>
+        <source srcset={webp} type="image/webp" />
+        <img src={image} alt={title} class="card-img" />
+      </picture>
+      <div class="card-body">
+        <h3 class="card-title">{title}</h3>
+        <p class="card-desc">{description}</p>
+      </div>
+    </a>
+  ) : (
+    <>
+      <picture>
+        <source srcset={webp} type="image/webp" />
+        <img src={image} alt={title} class="card-img" />
+      </picture>
+      <div class="card-body">
+        <h3 class="card-title">{title}</h3>
+        <p class="card-desc">{description}</p>
+      </div>
+    </>
+  )}
+</div>

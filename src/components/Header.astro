@@ -1,0 +1,40 @@
+---
+---
+<header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-3">
+      <img src="/uploader/logo-512.webp" alt="Dolphin House" class="w-11 h-11 rounded-full shadow-sm object-cover"/>
+      <span class="font-semibold text-lg">Dolphin House</span>
+    </a>
+
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+      <a href="/" class="hover:text-sky-600">Home</a>
+      <a href="/rooms" class="hover:text-sky-600">Rooms</a>
+      <a href="/booking" class="hover:text-sky-600">Booking</a>
+      <a href="/contact" class="hover:text-sky-600">Contact</a>
+    </nav>
+
+    <div class="md:hidden">
+      <button id="menu-btn" class="p-2 rounded-lg hover:bg-gray-100">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" class="hidden md:hidden border-t bg-white">
+    <div class="px-4 py-4 flex flex-col gap-3">
+      <a href="/" class="hover:text-sky-600">Home</a>
+      <a href="/rooms" class="hover:text-sky-600">Rooms</a>
+      <a href="/booking" class="hover:text-sky-600">Booking</a>
+      <a href="/contact" class="hover:text-sky-600">Contact</a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('menu-btn');
+  const menu = document.getElementById('mobile-menu');
+  btn?.addEventListener('click', () => menu.classList.toggle('hidden'));
+</script>

@@ -1,0 +1,16 @@
+🧩 The 3 EmailJS Keys You’ll See
+
+Purpose	Example	Where to find it	Used in code
+
+1️⃣ Service ID	service_xxxxx	After you connect Gmail/Outlook/SMTP in EmailJS under Email Services	emailjs.send("service_xxxxx", ...)
+
+2️⃣ Template ID	booking_notification	When you create your email template under Email Templates	emailjs.send(..., "booking_notification", ...)
+
+3️⃣ Public Key (previously called User ID)	your_public_key_abc123	Account → API Keys section in EmailJS Dashboard	emailjs.init("your_public_key_abc123")
+
+
+Public Key :  vYmRU-6Ws4Ms2H9yj
+
+Service ID :  service_zw6trxu
+
+Template ID:  template_3giqgsg

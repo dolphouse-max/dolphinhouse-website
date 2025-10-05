@@ -1,0 +1,140 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout title="Admin | Bookings">
+
+  <section class="max-w-6xl mx-auto bg-white p-6 rounded-2xl shadow-lg mt-10 mb-20">
+    <h1 class="text-2xl font-bold mb-4">Admin — Bookings</h1>
+
+    <div class="mb-4 flex gap-2">
+      <button id="refresh" class="btn-primary">Refresh</button>
+      <button id="export" class="btn-secondary">Export CSV</button>
+      <button id="clearAll" class="bg-red-500 text-white px-4 py-2 rounded">Clear All</button>
+    </div>
+
+    <table id="tbl" class="w-full table-auto border-collapse">
+      <thead>
+        <tr class="bg-gray-100">
+          <th class="p-2">ID</th>
+          <th class="p-2">Guest</th>
+          <th class="p-2">Room</th>
+          <th class="p-2">Dates</th>
+          <th class="p-2">Total</th>
+          <th class="p-2">Status</th>
+          <th class="p-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="body"></tbody>
+    </table>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <script>
+    // init EmailJS (use your public key)
+    emailjs.init('vYmRU-6Wxxxxxxxx');
+
+    function load() {
+      const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+      const tbody = document.getElementById('body');
+      tbody.innerHTML = '';
+      if(bookings.length===0){
+        tbody.innerHTML = '<tr><td class="p-4" colspan="7">No bookings</td></tr>';
+        return;
+      }
+      bookings.forEach((b, i) => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b";
+        tr.innerHTML = `
+          <td class="p-2">${b.id}</td>
+          <td class="p-2">${b.name || '-' }<br><small>${b.email||''}</small></td>
+          <td class="p-2">${b.room}</td>
+          <td class="p-2">${b.checkin} → ${b.checkout}</td>
+          <td class="p-2">₹${b.total}</td>
+          <td class="p-2">${b.status || ''}</td>
+          <td class="p-2 space-x-2">
+            <button class="view btn-secondary" data-i="${i}">View</button>
+            <button class="confirm btn-primary" data-i="${i}">Confirm</button>
+            <button class="email btn-secondary" data-i="${i}">Send Conf Email</button>
+            <button class="del bg-red-500 text-white px-2 py-1 rounded" data-i="${i}">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // bind actions
+      document.querySelectorAll('.view').forEach(btn=>{
+        btn.addEventListener('click', async ()=> {
+          const i = btn.dataset.i;
+          const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
+          const b = bookings[i];
+          let html = `<div><strong>${b.name}</strong><br/>${b.email}</div>
+                      <div>Room: ${b.room}<br/>${b.checkin} → ${b.checkout}</div>
+                      <div>Total: ₹${b.total}</div>`;
+          if(b.screenshot){
+            html += `<div class="mt-2"><img src="${b.screenshot}" style="max-width:240px" /></div>`;
+          }
+          alert(html);
+        });
+      });
+
+      document.querySelectorAll('.confirm').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const i = btn.dataset.i; const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
+          bookings[i].status = 'confirmed';
+          localStorage.setItem('bookings', JSON.stringify(bookings));
+          load();
+        });
+      });
+
+      document.querySelectorAll('.email').forEach(btn=>{
+        btn.addEventListener('click', async () => {
+          const i = btn.dataset.i; const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
+          const b = bookings[i];
+          // send confirmation email via EmailJS
+          const templateParams = {
+            customer_name: b.name || 'Guest',
+            customer_email: b.email || '',
+            room: b.room,
+            checkin: b.checkin,
+            checkout: b.checkout,
+            total: b.total,
+            to_name: b.name || 'Guest'
+          };
+          try{
+            await emailjs.send('service_xxxxxx','booking_confirmation', templateParams);
+            alert('Confirmation email sent');
+          } catch(err){
+            console.error(err); alert('Email send failed: '+err.message);
+          }
+        });
+      });
+
+      document.querySelectorAll('.del').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          if(!confirm('Delete booking?')) return;
+          const i = btn.dataset.i; const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
+          bookings.splice(i,1);
+          localStorage.setItem('bookings', JSON.stringify(bookings));
+          load();
+        });
+      });
+    }
+
+    document.getElementById('refresh').addEventListener('click', load);
+    document.getElementById('clearAll').addEventListener('click', ()=>{
+      if(confirm('Clear all bookings?')){ localStorage.removeItem('bookings'); load(); }
+    });
+    document.getElementById('export').addEventListener('click', ()=>{
+      const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
+      if(bookings.length===0){ alert('No bookings'); return; }
+      const csv = bookings.map(b=>`${b.id},${b.name || ''},${b.email || ''},${b.room},${b.checkin},${b.checkout},${b.total},${b.status}`).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='bookings.csv'; a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    load();
+  </script>
+</Layout>

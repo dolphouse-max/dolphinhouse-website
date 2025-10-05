@@ -1,16 +1,164 @@
 ---
-
+import Layout from "../layouts/Layout.astro"; 
+const facilityIcons = {
+  'Air-conditioned rooms & cottages': '&#9734;', // Star
+  'Attached bathrooms with geysers': '&#128704;', // Shower
+  'Satellite TV': '&#128250;', // TV
+  'Generator backup': '&#9889;', // High Voltage
+  'Free Wi-Fi': '&#128246;', // WiFi
+  'Car parking': '&#127379;', // P symbol
+  'In-house restaurant': '&#127869;', // Restaurant
+  'Indoor swimming pool with waterfall': '&#127946;', // Swimmer
+};
+const facilities = [
+  'Air-conditioned rooms & cottages',
+  'Attached bathrooms with geysers',
+  'Satellite TV',
+  'Generator backup',
+  'Free Wi-Fi',
+  'Car parking',
+  'In-house restaurant',
+  'Indoor swimming pool with waterfall',
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Dolphin House Beach Resort">
+
+  <section class="relative mb-20">
+    <img src="/uploader/dolphinhouse-front-4.webp" alt="Dolphin House Beach Resort"
+         class="w-full h-72 md:h-[520px] object-cover rounded-3xl shadow-xl" />
+    <div class="absolute inset-0 bg-black/50 flex items-center justify-center rounded-3xl">
+      <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold text-white text-center drop-shadow-2xl tracking-tight">
+        Dolphin House Beach Resort
+      </h1>
+    </div>
+  </section>
+
+  <section class="mb-20">
+    <div class="max-w-5xl mx-auto text-center">
+      <h2 class="text-4xl font-extrabold text-gray-800 mb-4">
+        Experience Luxury at Nagaon Beach, Alibaug
+      </h2>
+      <p class="text-lg text-gray-600 mb-8 max-w-3xl mx-auto">
+        Discover the charm of Nagaon Beach, often called the "Little Goa of Maharashtra," and a favorite spot for Bollywood shoots.
+        Just 110 km from Mumbai and 8 km from Alibaug, Nagaon Beach is perfect for relaxation, jogging, and swimming.
+      </p>
+    </div>
+    <img src="/uploader/nagaonbeach-1.webp" alt="Nagaon Beach"
+         class="rounded-3xl shadow-xl w-full max-w-6xl mx-auto object-cover" />
+    <p class="mt-6 text-center text-gray-500 max-w-4xl mx-auto text-base">
+      Known for its soft sands and thrilling water sports like parasailing, it’s the top-rated beach in Alibaug.
+    </p>
+  </section>
+
+  <section class="text-center mb-20 p-8 rounded-3xl bg-blue-50/50 border border-blue-100">
+    <h2 class="text-4xl font-extrabold text-gray-800 mb-4">
+      Rooms at Dolphin House Beach Resort
+    </h2>
+    <p class="text-lg text-gray-600 mb-8">
+      Stay in our cozy cottages just 2 minutes from Nagaon Beach.
+    </p>
+
+    <a href="/rooms" class="inline-block bg-sky-600 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:bg-sky-700 transition transform hover:scale-105 mb-10">
+      View All Rooms & Tariffs
+    </a>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+      <div class="relative">
+        <img src="/uploader/hotel-front-1.webp" alt="Hotel Front"
+             class="rounded-2xl shadow-xl w-full h-96 object-cover transition duration-300 hover:shadow-2xl" />
+        <div class="absolute inset-0 bg-black/30 rounded-2xl flex items-end p-6">
+            <span class="text-white text-2xl font-bold">Resort View</span>
+        </div>
+      </div>
+      <div class="relative">
+        <img src="/uploader/swimming-pool1.webp" alt="Swimming Pool"
+             class="rounded-2xl shadow-xl w-full h-96 object-cover transition duration-300 hover:shadow-2xl" />
+        <div class="absolute inset-0 bg-black/30 rounded-2xl flex items-end p-6">
+            <span class="text-white text-2xl font-bold">Indoor Swimming Pool</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid md:grid-cols-2 gap-12 items-center mb-20 bg-white p-10 rounded-3xl shadow-lg">
+    <div class="md:order-2">
+      <img src="/uploader/dolphinhouse3_orig.webp" alt="Why Choose Dolphin House"
+           class="rounded-2xl shadow-xl w-full object-cover" />
+    </div>
+    <div class="md:order-1">
+      <h2 class="text-4xl font-extrabold text-gray-800 mb-6">
+        Your Perfect Getaway
+      </h2>
+      <p class="text-xl text-gray-600 leading-relaxed mb-6">
+        Discover luxury and relaxation at Dolphin House, a premium beach resort in Nagaon, Alibaug.
+        Enjoy breathtaking ocean views, lush surroundings, and top-notch amenities.
+      </p>
+      <a href="/booking" class="inline-block text-sky-600 font-semibold text-lg hover:text-sky-700 transition">
+        Book Your Stay Today &rarr;
+      </a>
+    </div>
+  </section>
+
+
+  <section class="bg-gray-800 rounded-3xl p-10 lg:p-16 mb-20 text-white">
+    <h2 class="text-4xl font-extrabold text-center mb-12 text-white">
+      Top-Notch Facilities
+    </h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {facilities.map((item) => (
+        <div class="bg-gray-700 p-6 rounded-xl shadow-lg flex items-center space-x-4 transition duration-300 hover:bg-gray-600 transform hover:scale-[1.02]">
+          <span class="text-2xl" set:html={facilityIcons[item]}></span>
+          <p class="text-lg font-medium">{item}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 gap-8">
+      <img src="/uploader/dining1.webp" alt="Dining Area"
+           class="rounded-xl shadow-md w-full object-cover h-64 lg:h-80" />
+      <img src="/uploader/kitchen-1.webp" alt="Kitchen"
+           class="rounded-xl shadow-md w-full object-cover h-64 lg:h-80" />
+    </div>
+  </section>
+
+  <section class="max-w-4xl mx-auto mb-20 p-8 bg-white rounded-3xl shadow-xl">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">How to Reach Dolphin House</h2>
+    <ul class="space-y-4 text-lg text-gray-700">
+      <li class="flex items-center space-x-3">
+        <span class="text-xl text-sky-600">&#9992;</span>
+        <p><strong>Nearest Airport:</strong> Mumbai (107 km), Pune (153 km)</p>
+      </li>
+      <li class="flex items-center space-x-3">
+        <span class="text-xl text-sky-600">&#128642;</span>
+        <p><strong>Nearest Railway Station:</strong> Pen (35 km)</p>
+      </li>
+      <li class="flex items-center space-x-3">
+        <span class="text-xl text-sky-600">&#128652;</span>
+        <p><strong>Bus Stand:</strong> Nagaon (1 km), Alibaug (8 km)</p>
+      </li>
+      <li class="flex items-center space-x-3">
+        <span class="text-xl text-sky-600">&#128766;</span>
+        <p><strong>By Ferry:</strong> Catamarans from Gateway of India to Mandwa Jetty</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="text-center bg-sky-600 text-white rounded-3xl p-12 shadow-2xl">
+    <h2 class="text-4xl font-extrabold mb-4">Ready to Book Your Stay?</h2>
+    <p class="text-xl mb-6">
+      Contact us directly for the best rates and availability at Dolphin House.
+    </p>
+    <p class="mb-2">Nagaon Beach Road, Nagaon - 402 204, Alibaug, Raigad, Maharashtra</p>
+    <p class="mb-2">📞 9730627615 / 9657893948</p>
+    <p class="mb-8">✉ dolphinhouse19@gmail.com</p>
+    <a href="https://wa.me/+918552960807"
+       class="bg-white text-sky-600 px-8 py-4 rounded-full text-xl font-bold shadow-2xl hover:bg-gray-100 transition transform hover:scale-105">
+      <span class="inline-block mr-2 text-2xl">
+        &#128172;
+      </span>
+      WhatsApp Us Now
+    </a>
+  </section>
+
+</Layout>

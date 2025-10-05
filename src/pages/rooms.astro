@@ -1,0 +1,39 @@
+---
+import Layout from "../layouts/Layout.astro"; 
+import Card from "../components/Card.astro";
+
+const rooms = [
+  { image: "/uploader/Room-1.webp", title: "Room No.1", description: "Max 2 · 140 sq.ft" },
+  { image: "/uploader/Room-2.webp", title: "Room No.2", description: "Max 3 · 160 sq.ft" },
+  { image: "/uploader/room-3.webp", title: "Room No.3", description: "Max 2 · 140 sq.ft" },
+  { image: "/uploader/Room-4.webp", title: "Room No.4", description: "Max 3 · 160 sq.ft" },
+  { image: "/uploader/room-5.webp", title: "Room No.5 (Cottage)", description: "Max 6 · 300 sq.ft" },
+  { image: "/uploader/Room-6.webp", title: "Room No.6", description: "Max 2 · 120 sq.ft" },
+  { image: "/uploader/Room-7.webp", title: "Room No.7", description: "Max 6 · 200 sq.ft" },
+  { image: "/uploader/room-8.webp", title: "Room No.8", description: "Max 6 · 200 sq.ft" },
+  { image: "/uploader/room-9.webp", title: "Room No.9", description: "Max 6 · 200 sq.ft" },
+];
+---
+
+<Layout title="Rooms | Dolphin House">
+  <header class="mb-8">
+    <h1 class="text-3xl font-bold">Our Rooms</h1>
+    <p class="text-gray-600 mt-2">Comfortable cottages & rooms near Nagaon Beach.</p>
+  </header>
+
+  <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+    {rooms.map(room => (
+      <Card image={room.image} title={room.title} description={room.description} href={`/rooms/${room.title.replace(/\s+/g, '-').toLowerCase()}`} />
+    ))}
+  </div>
+
+  <section class="mt-12">
+    <h2 class="text-2xl font-semibold mb-4">Indoor Swimming Pool</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <img src="/uploader/swimming-pool1.webp" alt="Pool 1" class="rounded-2xl shadow-md w-full h-44 object-cover" />
+      <img src="/uploader/swimming-pool1_1.webp" alt="Pool 2" class="rounded-2xl shadow-md w-full h-44 object-cover" />
+      <img src="/uploader/swimming-pool2.webp" alt="Pool 3" class="rounded-2xl shadow-md w-full h-44 object-cover" />
+      <img src="/uploader/swimming-pool3.webp" alt="Pool 4" class="rounded-2xl shadow-md w-full h-44 object-cover" />
+    </div>
+  </section>
+</Layout>

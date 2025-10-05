@@ -1,0 +1,70 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout title="Pay | Dolphin House">
+
+  <section class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
+    <h1 class="text-2xl font-bold mb-4">Payment</h1>
+    <div id="info" class="mb-4 text-gray-700"></div>
+
+    <div class="mb-6 text-center">
+      <img id="gpay" src="/uploader/gpay-qr.png" alt="GPay QR" class="mx-auto w-48 h-48 object-contain"/>
+      <p class="text-sm text-gray-500 mt-2">Scan QR, pay the amount shown and upload payment screenshot below.</p>
+    </div>
+
+    <label class="block mb-2">Upload payment screenshot</label>
+    <input id="screenshot" type="file" accept="image/*" class="mb-4" />
+    <div id="preview" class="mb-4"></div>
+
+    <div class="flex gap-4">
+      <button id="confirmBtn" class="btn-primary">Confirm Payment</button>
+      <a href="/booking" class="btn-secondary">Cancel</a>
+    </div>
+
+    <p id="msg" class="text-green-600 mt-4 hidden">Payment uploaded. Booking will be reviewed by admin.</p>
+  </section>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const bookingId = params.get('bookingId');
+    if(!bookingId){ document.getElementById('info').textContent = 'Missing booking id.'; throw 0; }
+
+    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    const idx = bookings.findIndex(b => b.id === bookingId);
+    if(idx===-1){ document.getElementById('info').textContent = 'Booking not found.'; throw 0; }
+    const booking = bookings[idx];
+
+    document.getElementById('info').innerHTML = `
+      <div><strong>Booking:</strong> ${booking.room} — ${booking.checkin} → ${booking.checkout}</div>
+      <div><strong>Amount:</strong> ₹${booking.total}</div>
+    `;
+
+    const fileInput = document.getElementById('screenshot');
+    const preview = document.getElementById('preview');
+    let screenshotData = null;
+
+    fileInput.addEventListener('change', async (e) => {
+      const f = e.target.files[0];
+      if(!f) return;
+      // preview
+      const url = URL.createObjectURL(f);
+      preview.innerHTML = `<img src="${url}" class="w-48 h-48 object-contain rounded-lg shadow"/>`;
+      // convert to base64 for localStorage (demo)
+      const reader = new FileReader();
+      reader.onload = ()=> screenshotData = reader.result;
+      reader.readAsDataURL(f);
+    });
+
+    document.getElementById('confirmBtn').addEventListener('click', ()=>{
+      if(!screenshotData){ alert('Please upload payment screenshot'); return; }
+      bookings[idx].screenshot = screenshotData;
+      bookings[idx].status = 'payment_submitted';
+      bookings[idx].submittedAt = new Date().toISOString();
+      localStorage.setItem('bookings', JSON.stringify(bookings));
+      document.getElementById('msg').classList.remove('hidden');
+      // optionally redirect to thank you or admin waiting page
+      setTimeout(()=> location.href = '/thank-you', 1500);
+    });
+  </script>
+
+</Layout>
