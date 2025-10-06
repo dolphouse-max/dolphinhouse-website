@@ -1,13 +1,32 @@
-// functions/api/bookings.js
+// functions/api/bookings.js (excerpt)
 export async function onRequest(context) {
   const { request, env } = context;
-  const db = env.DB; // make sure you bound your D1 database to the Pages project with the binding name "DB"
+  const db = env.DB;
 
-  // GET: list bookings
   if (request.method === "GET") {
-    const results = await db.prepare("SELECT * FROM bookings ORDER BY created_at DESC").all();
-    return new Response(JSON.stringify(results.results || []), {
-      headers: { "Content-Type": "application/json" },
+    const url = new URL(request.url);
+    const start = url.searchParams.get("start"); // inclusive YYYY-MM-DD
+    const end = url.searchParams.get("end");     // exclusive YYYY-MM-DD
+
+    if (start && end) {
+      // Select bookings that overlap [start, end)
+      // Condition: NOT (checkout <= start OR checkin >= end)
+      const stmt = await db.prepare(
+        `SELECT * FROM bookings
+         WHERE NOT (checkout <= ? OR checkin >= ?)
+         AND (status IS NULL OR status != 'cancelled')
+         ORDER BY checkin`
+      ).all(start, end);
+
+      return new Response(JSON.stringify(stmt.results || []), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // fallback: return everything (existing behavior)
+    const all = await db.prepare("SELECT * FROM bookings ORDER BY created_at DESC").all();
+    return new Response(JSON.stringify(all.results || []), {
+      headers: { "Content-Type": "application/json" }
     });
   }
 
