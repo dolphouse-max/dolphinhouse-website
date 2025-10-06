@@ -1,106 +1,151 @@
 ---
 import Layout from "../layouts/Layout.astro";
 ---
-<Layout title="Pay | Dolphin House">
+<Layout title="Payment | Dolphin House">
 
   <section class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
-    <h1 class="text-2xl font-bold mb-4">Payment</h1>
-    <div id="info" class="mb-4 text-gray-700"></div>
+    <h1 class="text-2xl font-bold mb-6 text-center">💳 Payment & Guest Details</h1>
 
-    <div class="mb-6 text-center">
-      <img id="gpay" src="/uploader/gpay-qr.png" alt="GPay QR" class="mx-auto w-48 h-48 object-contain"/>
-      <p class="text-sm text-gray-500 mt-2">Scan QR, pay the amount shown and upload payment screenshot below.</p>
+    <!-- Booking Summary -->
+    <div id="bookingSummary" class="mb-6 text-gray-700 text-sm bg-gray-50 p-4 rounded-lg border"></div>
+
+    <!-- Guest Details -->
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Guest Name</label>
+        <input id="guestName" type="text" class="w-full border px-3 py-2 rounded" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Email</label>
+        <input id="guestEmail" type="email" class="w-full border px-3 py-2 rounded" required />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Number of Persons</label>
+        <input id="numPersons" type="number" min="1" value="2" class="w-full border px-3 py-2 rounded" />
+      </div>
     </div>
 
-    <label class="block mb-2">Upload payment screenshot</label>
-    <input id="screenshot" type="file" accept="image/*" class="mb-4" />
-    <div id="preview" class="mb-4"></div>
-
-    <div class="flex gap-4">
-      <button id="confirmBtn" class="btn-primary">Confirm Payment</button>
-      <a href="/booking" class="btn-secondary">Cancel</a>
+    <!-- Charges Summary -->
+    <div class="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-100 text-gray-800 text-sm">
+      <div class="flex justify-between"><span>Room Charge:</span><span id="roomCharge">₹0</span></div>
+      <div class="flex justify-between"><span>Extra Persons:</span><span id="extraPersons">0</span></div>
+      <div class="flex justify-between"><span>Extra Person Charge:</span><span id="extraCharge">₹0</span></div>
+      <hr class="my-2 border-blue-200">
+      <div class="flex justify-between font-bold text-lg text-blue-800"><span>Total:</span><span id="totalCharge">₹0</span></div>
     </div>
 
-    <p id="msg" class="text-green-600 mt-4 hidden">Payment uploaded. Booking will be reviewed by admin.</p>
+    <!-- Payment QR -->
+    <div class="mt-8 text-center">
+      <img id="gpay" src="/uploader/gpay-qr.png" alt="GPay QR" class="mx-auto w-48 h-48 object-contain mb-3 rounded-lg border" />
+      <p class="text-sm text-gray-500">Scan the QR and pay the total amount. Then upload the payment screenshot below.</p>
+    </div>
+
+    <!-- Screenshot Upload -->
+    <div class="mt-6">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Upload Payment Screenshot</label>
+      <input id="screenshot" type="file" accept="image/*" class="w-full border px-3 py-2 rounded" />
+      <div id="preview" class="mt-3"></div>
+    </div>
+
+    <div class="mt-6 flex gap-4">
+      <button id="confirmBtn" class="btn-primary flex-1 bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-lg font-semibold">Confirm Booking</button>
+      <a href="/booking" class="btn-secondary border px-6 py-3 rounded-lg font-semibold">Cancel</a>
+    </div>
+
+    <p id="msg" class="text-green-600 mt-4 hidden text-center font-medium">✅ Booking submitted! We’ll confirm shortly.</p>
   </section>
 
-  <script>
-  const params = new URLSearchParams(location.search);
-  const bookingId = params.get('bookingId');
-  const infoDiv = document.getElementById('info');
-  const msg = document.getElementById('msg');
-  const preview = document.getElementById('preview');
-  const fileInput = document.getElementById('screenshot');
-  const confirmBtn = document.getElementById('confirmBtn');
-  let screenshotData = null;
-  let booking = null;
+  <script client:load>
+    const params = new URLSearchParams(location.search);
+    const bookingId = params.get('bookingId');
 
-  // Fetch the booking from Cloudflare D1 API
-  async function loadBooking() {
-    try {
-      const res = await fetch('/api/bookings');
-      const data = await res.json();
-      booking = data.find(b => b.id === bookingId);
-      if (!booking) {
-        infoDiv.textContent = 'Booking not found or already processed.';
-        confirmBtn.disabled = true;
-        return;
-      }
-      infoDiv.innerHTML = `
-        <div><strong>Booking:</strong> ${booking.room} — ${booking.checkin} → ${booking.checkout}</div>
-        <div><strong>Amount:</strong> ₹${booking.total}</div>
-      `;
-    } catch (err) {
-      infoDiv.textContent = 'Error loading booking details.';
-      console.error(err);
-    }
-  }
+    const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    const inventory = JSON.parse(localStorage.getItem('inventory') || '{}');
 
-  // Handle image upload preview
-  fileInput.addEventListener('change', async (e) => {
-    const f = e.target.files[0];
-    if (!f) return;
-    const url = URL.createObjectURL(f);
-    preview.innerHTML = `<img src="${url}" class="w-48 h-48 object-contain rounded-lg shadow"/>`;
-    const reader = new FileReader();
-    reader.onload = () => screenshotData = reader.result;
-    reader.readAsDataURL(f);
-  });
-
-  // Confirm payment and update booking in D1
-  confirmBtn.addEventListener('click', async () => {
-    if (!screenshotData) {
-      alert('Please upload payment screenshot first.');
-      return;
-    }
-    if (!booking) {
-      alert('Booking not found.');
-      return;
+    const idx = bookings.findIndex(b => b.id === bookingId);
+    if (idx === -1) {
+      document.body.innerHTML = "<p class='text-center mt-10 text-red-600 font-semibold'>❌ Booking not found.</p>";
+      throw new Error("Booking not found");
     }
 
-    try {
-      const updated = { ...booking, screenshot: screenshotData, status: 'payment_submitted' };
-      const res = await fetch('/api/bookings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated)
-      });
-      if (res.ok) {
-        msg.textContent = 'Payment uploaded. Booking will be reviewed by admin.';
-        msg.classList.remove('hidden');
-        confirmBtn.disabled = true;
-        setTimeout(() => (window.location.href = '/thank-you'), 2000);
-      } else {
-        alert('Failed to update booking. Please try again.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error updating booking.');
+    const booking = bookings[idx];
+    const room = inventory[booking.room] || {};
+    const roomRate = room.rateAC || room.rateNonAC || booking.total || 0;
+    const occ = room.occupancy || 2;
+    const extraRate = room.extraPerson || 700;
+
+    // Render booking summary
+    document.getElementById('bookingSummary').innerHTML = `
+      <div><strong>Room:</strong> ${room.label || booking.room}</div>
+      <div><strong>Check-in:</strong> ${booking.checkin}</div>
+      <div><strong>Check-out:</strong> ${booking.checkout}</div>
+      <div><strong>Nights:</strong> ${booking.nights}</div>
+    `;
+
+    // Elements
+    const numPersons = document.getElementById('numPersons');
+    const extraPersonsEl = document.getElementById('extraPersons');
+    const extraChargeEl = document.getElementById('extraCharge');
+    const totalEl = document.getElementById('totalCharge');
+    const roomChargeEl = document.getElementById('roomCharge');
+
+    function recalc() {
+      const n = parseInt(numPersons.value) || 1;
+      const extraPersons = Math.max(0, n - occ);
+      const extraCharge = extraPersons * extraRate;
+      const total = roomRate + extraCharge;
+
+      roomChargeEl.textContent = "₹" + roomRate.toLocaleString();
+      extraPersonsEl.textContent = extraPersons;
+      extraChargeEl.textContent = "₹" + extraCharge.toLocaleString();
+      totalEl.textContent = "₹" + total.toLocaleString();
+
+      // Store computed total for later
+      booking.extraPersons = extraPersons;
+      booking.extraCharge = extraCharge;
+      booking.total = total;
     }
-  });
 
-  loadBooking();
-</script>
+    numPersons.addEventListener('input', recalc);
+    recalc(); // initial
 
+    // Screenshot upload
+    let screenshotData = null;
+    const fileInput = document.getElementById('screenshot');
+    const preview = document.getElementById('preview');
+    fileInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        screenshotData = reader.result;
+        preview.innerHTML = `<img src="${screenshotData}" class="w-48 h-48 object-contain rounded shadow mx-auto"/>`;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Confirm booking
+    document.getElementById('confirmBtn').addEventListener('click', () => {
+      const name = document.getElementById('guestName').value.trim();
+      const email = document.getElementById('guestEmail').value.trim();
+
+      if (!name || !email) return alert("Please fill in guest name and email");
+      if (!screenshotData) return alert("Please upload payment screenshot");
+
+      booking.name = name;
+      booking.email = email;
+      booking.status = "payment_submitted";
+      booking.screenshot = screenshotData;
+      booking.updatedAt = new Date().toISOString();
+
+      bookings[idx] = booking;
+      localStorage.setItem('bookings', JSON.stringify(bookings));
+
+      document.getElementById('msg').classList.remove('hidden');
+      setTimeout(() => location.href = "/thank-you", 2000);
+    });
+  </script>
 
 </Layout>
