@@ -1,97 +1,53 @@
-// functions/api/bookings.js (excerpt)
-export async function onRequest(context) {
-  const { request, env } = context;
-  const db = env.DB;
+export async function onRequestGet(context) {
+  const db = context.env.DB;
+  const { searchParams } = new URL(context.request.url);
+  const id = searchParams.get('id');
 
-  if (request.method === "GET") {
-    const url = new URL(request.url);
-    const start = url.searchParams.get("start"); // inclusive YYYY-MM-DD
-    const end = url.searchParams.get("end");     // exclusive YYYY-MM-DD
-
-    if (start && end) {
-      // Select bookings that overlap [start, end)
-      // Condition: NOT (checkout <= start OR checkin >= end)
-      const stmt = await db.prepare(
-        `SELECT * FROM bookings
-         WHERE NOT (checkout <= ? OR checkin >= ?)
-         AND (status IS NULL OR status != 'cancelled')
-         ORDER BY checkin`
-      ).all(start, end);
-
-      return new Response(JSON.stringify(stmt.results || []), {
-        headers: { "Content-Type": "application/json" }
-      });
-    }
-
-    // fallback: return everything (existing behavior)
-    const all = await db.prepare("SELECT * FROM bookings ORDER BY created_at DESC").all();
-    return new Response(JSON.stringify(all.results || []), {
-      headers: { "Content-Type": "application/json" }
-    });
+  if (id) {
+    const booking = await db.prepare("SELECT * FROM bookings WHERE id = ?").bind(id).first();
+    return new Response(JSON.stringify(booking || {}), { status: 200 });
   }
 
-  // POST: create booking
-  if (request.method === "POST") {
-    const body = await request.json();
-    const id = body.id || crypto.randomUUID();
-    await db
-      .prepare(
-        `INSERT INTO bookings (id, name, email, room, checkin, checkout, guests, nights, total, status, screenshot, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .bind(
-        id,
-        body.name || "",
-        body.email || "",
-        body.room || "",
-        body.checkin || "",
-        body.checkout || "",
-        body.guests || 0,
-        body.nights || 0,
-        body.total || 0,
-        body.status || "pending",
-        body.screenshot || null,
-        new Date().toISOString()
-      )
-      .run();
+  const rows = await db.prepare("SELECT * FROM bookings ORDER BY createdAt DESC").all();
+  return new Response(JSON.stringify(rows.results), { status: 200 });
+}
 
-    return new Response(JSON.stringify({ id }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+export async function onRequestPost(context) {
+  const db = context.env.DB;
+  const body = await context.request.json();
 
-  // PUT: update booking (expects full booking object with id)
-  if (request.method === "PUT") {
-    const body = await request.json();
-    await db
-      .prepare(
-        `UPDATE bookings SET name=?, email=?, room=?, checkin=?, checkout=?, guests=?, nights=?, total=?, status=?, screenshot=? WHERE id=?`
-      )
-      .bind(
-        body.name,
-        body.email,
-        body.room,
-        body.checkin,
-        body.checkout,
-        body.guests,
-        body.nights,
-        body.total,
-        body.status,
-        body.screenshot || null,
-        body.id
-      )
-      .run();
+  // auto-generate UUID for D1
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
 
-    return new Response(JSON.stringify({ ok: true }), { status: 200 });
-  }
+  const {
+    name = "",
+    email = "",
+    room,
+    checkin,
+    checkout,
+    guests = 2,
+    nights,
+    total,
+    status = "payment_pending"
+  } = body;
 
-  // DELETE: delete booking (expects { id: "<id>" } in JSON body)
-  if (request.method === "DELETE") {
-    const body = await request.json();
-    await db.prepare("DELETE FROM bookings WHERE id = ?").bind(body.id).run();
-    return new Response(JSON.stringify({ ok: true }), { status: 200 });
-  }
+  await db
+    .prepare(
+      `INSERT INTO bookings (id, name, email, room, checkin, checkout, guests, nights, total, status, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .bind(id, name, email, room, checkin, checkout, guests, nights, total, status, now)
+    .run();
 
-  return new Response("Method Not Allowed", { status: 405 });
+  return new Response(JSON.stringify({ success: true, id }), { status: 200 });
+}
+
+export async function onRequestPut(context) {
+  const db = context.env.DB;
+  const body = await context.request.json();
+  const { id, status } = body;
+
+  await db.prepare("UPDATE bookings SET status = ? WHERE id = ?").bind(status, id).run();
+  return new Response(JSON.stringify({ success: true }), { status: 200 });
 }
