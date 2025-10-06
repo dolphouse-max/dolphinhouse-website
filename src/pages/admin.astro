@@ -1,140 +1,296 @@
 ---
 import Layout from "../layouts/Layout.astro";
 ---
-<Layout title="Admin | Bookings">
+<Layout title="Admin — Bookings">
 
-  <section class="max-w-6xl mx-auto bg-white p-6 rounded-2xl shadow-lg mt-10 mb-20">
-    <h1 class="text-2xl font-bold mb-4">Admin — Bookings</h1>
-
-    <div class="mb-4 flex gap-2">
-      <button id="refresh" class="btn-primary">Refresh</button>
-      <button id="export" class="btn-secondary">Export CSV</button>
-      <button id="clearAll" class="bg-red-500 text-white px-4 py-2 rounded">Clear All</button>
+  <section class="max-w-7xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Admin — Bookings</h1>
+      <div class="flex gap-2">
+        <input id="searchInput" placeholder="Search by name, email, id, room..." class="border px-3 py-2 rounded w-80" />
+        <button id="refreshBtn" class="px-4 py-2 rounded bg-sky-600 text-white">Refresh</button>
+        <button id="exportBtn" class="px-4 py-2 rounded border">Export CSV</button>
+      </div>
     </div>
 
-    <table id="tbl" class="w-full table-auto border-collapse">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="p-2">ID</th>
-          <th class="p-2">Guest</th>
-          <th class="p-2">Room</th>
-          <th class="p-2">Dates</th>
-          <th class="p-2">Total</th>
-          <th class="p-2">Status</th>
-          <th class="p-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="body"></tbody>
-    </table>
+    <div class="bg-white rounded-lg shadow overflow-x-auto">
+      <table class="w-full table-auto">
+        <thead class="bg-gray-100 text-sm text-gray-700">
+          <tr>
+            <th class="p-3 text-left">ID</th>
+            <th class="p-3 text-left">Guest</th>
+            <th class="p-3 text-left">Room</th>
+            <th class="p-3 text-left">Dates</th>
+            <th class="p-3 text-right">Total</th>
+            <th class="p-3 text-left">Status</th>
+            <th class="p-3 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody" class="text-sm">
+          <!-- rows populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between">
+      <div id="pageInfo" class="text-sm text-gray-600"></div>
+      <div class="flex gap-2">
+        <button id="prevPage" class="px-3 py-1 border rounded">Prev</button>
+        <button id="nextPage" class="px-3 py-1 border rounded">Next</button>
+      </div>
+    </div>
   </section>
 
+  <!-- EmailJS client - optional, used to send confirmation emails from admin UI -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-  <script>
-    // init EmailJS (use your public key)
-    emailjs.init('vYmRU-6Wxxxxxxxx');
+  <script client:load>
+    // CONFIG - change these to your EmailJS values if you want email sending
+    const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID";       // e.g. 'service_xxx'
+    const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";     // e.g. 'booking_confirmation'
+    const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY";       // e.g. 'vYmRU-6W...'
 
-    function load() {
-      const bookings = JSON.parse(localStorage.getItem('bookings') || '[]');
-      const tbody = document.getElementById('body');
-      tbody.innerHTML = '';
-      if(bookings.length===0){
-        tbody.innerHTML = '<tr><td class="p-4" colspan="7">No bookings</td></tr>';
-        return;
+    // Initialize EmailJS (if you plan to use it)
+    try {
+      if (window.emailjs && EMAILJS_PUBLIC_KEY && EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
+        emailjs.init(EMAILJS_PUBLIC_KEY);
       }
-      bookings.forEach((b, i) => {
-        const tr = document.createElement('tr');
-        tr.className = "border-b";
-        tr.innerHTML = `
-          <td class="p-2">${b.id}</td>
-          <td class="p-2">${b.name || '-' }<br><small>${b.email||''}</small></td>
-          <td class="p-2">${b.room}</td>
-          <td class="p-2">${b.checkin} → ${b.checkout}</td>
-          <td class="p-2">₹${b.total}</td>
-          <td class="p-2">${b.status || ''}</td>
-          <td class="p-2 space-x-2">
-            <button class="view btn-secondary" data-i="${i}">View</button>
-            <button class="confirm btn-primary" data-i="${i}">Confirm</button>
-            <button class="email btn-secondary" data-i="${i}">Send Conf Email</button>
-            <button class="del bg-red-500 text-white px-2 py-1 rounded" data-i="${i}">Delete</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+    } catch (e) {
+      console.warn("EmailJS not initialized:", e);
+    }
 
-      // bind actions
-      document.querySelectorAll('.view').forEach(btn=>{
-        btn.addEventListener('click', async ()=> {
-          const i = btn.dataset.i;
-          const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
-          const b = bookings[i];
-          let html = `<div><strong>${b.name}</strong><br/>${b.email}</div>
-                      <div>Room: ${b.room}<br/>${b.checkin} → ${b.checkout}</div>
-                      <div>Total: ₹${b.total}</div>`;
-          if(b.screenshot){
-            html += `<div class="mt-2"><img src="${b.screenshot}" style="max-width:240px" /></div>`;
+    // State
+    let bookings = [];
+    let filtered = [];
+    let page = 1;
+    const pageSize = 10;
+
+    // DOM
+    const tbody = document.getElementById("tbody");
+    const searchInput = document.getElementById("searchInput");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const prevPage = document.getElementById("prevPage");
+    const nextPage = document.getElementById("nextPage");
+    const pageInfo = document.getElementById("pageInfo");
+
+    // Helpers
+    function formatDate(d) {
+      if (!d) return "-";
+      return new Date(d).toLocaleString();
+    }
+
+    function renderTable() {
+      // pagination
+      const start = (page - 1) * pageSize;
+      const pageItems = filtered.slice(start, start + pageSize);
+
+      if (pageItems.length === 0) {
+        tbody.innerHTML = `<tr><td class="p-4" colspan="7">No bookings found.</td></tr>`;
+      } else {
+        tbody.innerHTML = pageItems.map((b, i) => {
+          return `
+            <tr class="border-t hover:bg-gray-50">
+              <td class="p-3 align-top"><div class="text-xs text-gray-500">${b.id}</div></td>
+              <td class="p-3 align-top">
+                <div class="font-semibold">${b.name || "-"}</div>
+                <div class="text-xs text-gray-500">${b.email || "-"}</div>
+              </td>
+              <td class="p-3 align-top">${b.room}</td>
+              <td class="p-3 align-top">${b.checkin} → ${b.checkout}</td>
+              <td class="p-3 align-top text-right">₹${b.total || 0}</td>
+              <td class="p-3 align-top"><span class="px-2 py-1 rounded text-xs ${statusBadgeClass(b.status)}">${b.status || "pending"}</span></td>
+              <td class="p-3 align-top">
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <button data-id="${b.id}" class="viewBtn px-3 py-1 border rounded">View</button>
+                  <button data-id="${b.id}" class="editBtn px-3 py-1 border rounded">Edit</button>
+                  <button data-id="${b.id}" class="confirmBtn px-3 py-1 bg-green-600 text-white rounded">Confirm</button>
+                  <button data-id="${b.id}" class="emailBtn px-3 py-1 border rounded">Send Email</button>
+                  <button data-id="${b.id}" class="delBtn px-3 py-1 bg-red-500 text-white rounded">Delete</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join("");
+      }
+
+      pageInfo.textContent = `Showing ${Math.min((page-1)*pageSize + 1, filtered.length)} – ${Math.min(page*pageSize, filtered.length)} of ${filtered.length} bookings. Page ${page}`;
+      bindRowButtons();
+    }
+
+    function statusBadgeClass(status) {
+      if (!status) return "bg-gray-200 text-gray-800";
+      if (status === "confirmed") return "bg-green-100 text-green-800";
+      if (status === "payment_submitted") return "bg-yellow-100 text-yellow-800";
+      if (status === "payment_pending") return "bg-orange-100 text-orange-800";
+      if (status === "cancelled") return "bg-red-100 text-red-800";
+      return "bg-gray-200 text-gray-800";
+    }
+
+    // Fetch bookings from API
+    async function loadBookings() {
+      try {
+        const res = await fetch('/api/bookings');
+        bookings = await res.json();
+        // ensure array
+        if (!Array.isArray(bookings)) bookings = [];
+        filtered = bookings.slice().reverse(); // show latest first
+        page = 1;
+        renderTable();
+      } catch (err) {
+        console.error("Failed to load bookings:", err);
+        tbody.innerHTML = `<tr><td class="p-4 text-red-600" colspan="7">Failed to load bookings. Check console.</td></tr>`;
+      }
+    }
+
+    // Bind row action buttons
+    function bindRowButtons() {
+      document.querySelectorAll('.viewBtn').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const b = bookings.find(x => x.id === id);
+          if (!b) return alert("Booking not found");
+          // show simple dialog with details + screenshot (if present)
+          let html = `ID: ${b.id}\nName: ${b.name || "-"}\nEmail: ${b.email || "-"}\nRoom: ${b.room}\nDates: ${b.checkin} → ${b.checkout}\nTotal: ₹${b.total}\nStatus: ${b.status || "-"}`;
+          if (b.screenshot) {
+            // open a new window with the screenshot
+            const w = window.open("");
+            w.document.body.style.fontFamily = "system-ui, Arial, sans-serif";
+            w.document.body.innerHTML = `<h3>Booking ${b.id}</h3><p>${html.replace(/\n/g,'<br/>')}</p><img src="${b.screenshot}" style="max-width:100%;height:auto;border-radius:8px;margin-top:12px;"/>`;
+          } else {
+            alert(html);
           }
-          alert(html);
-        });
+        };
       });
 
-      document.querySelectorAll('.confirm').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const i = btn.dataset.i; const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
-          bookings[i].status = 'confirmed';
-          localStorage.setItem('bookings', JSON.stringify(bookings));
-          load();
-        });
+      document.querySelectorAll('.confirmBtn').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          if (!confirm("Mark this booking as CONFIRMED?")) return;
+          const b = bookings.find(x => x.id === id);
+          b.status = "confirmed";
+          await updateBooking(b);
+        };
       });
 
-      document.querySelectorAll('.email').forEach(btn=>{
-        btn.addEventListener('click', async () => {
-          const i = btn.dataset.i; const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
-          const b = bookings[i];
-          // send confirmation email via EmailJS
+      document.querySelectorAll('.delBtn').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          if (!confirm("Delete this booking?")) return;
+          await deleteBooking(id);
+        };
+      });
+
+      document.querySelectorAll('.editBtn').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const b = bookings.find(x => x.id === id);
+          if (!b) return alert("Booking not found");
+          // simple prompt-based edit (name/email)
+          const name = prompt("Guest name:", b.name || "");
+          if (name === null) return;
+          const email = prompt("Guest email:", b.email || "");
+          if (email === null) return;
+          b.name = name;
+          b.email = email;
+          await updateBooking(b);
+        };
+      });
+
+      document.querySelectorAll('.emailBtn').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const b = bookings.find(x => x.id === id);
+          if (!b) return alert("Booking not found");
+          if (!EMAILJS_PUBLIC_KEY || EMAILJS_PUBLIC_KEY === "YOUR_PUBLIC_KEY") {
+            return alert("EmailJS not configured. Set EMAILJS_PUBLIC_KEY, SERVICE_ID and TEMPLATE_ID in the script.");
+          }
+          // Build template params - adapt to your template variables
           const templateParams = {
-            customer_name: b.name || 'Guest',
-            customer_email: b.email || '',
+            to_name: b.name || "Guest",
+            to_email: b.email || "",
+            booking_id: b.id,
             room: b.room,
             checkin: b.checkin,
             checkout: b.checkout,
-            total: b.total,
-            to_name: b.name || 'Guest'
+            total: b.total
           };
-          try{
-            await emailjs.send('service_xxxxxx','booking_confirmation', templateParams);
-            alert('Confirmation email sent');
-          } catch(err){
-            console.error(err); alert('Email send failed: '+err.message);
+          try {
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+            alert("Confirmation email sent (via EmailJS).");
+          } catch (err) {
+            console.error("EmailJS error:", err);
+            alert("Failed to send email. Check console.");
           }
-        });
-      });
-
-      document.querySelectorAll('.del').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          if(!confirm('Delete booking?')) return;
-          const i = btn.dataset.i; const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
-          bookings.splice(i,1);
-          localStorage.setItem('bookings', JSON.stringify(bookings));
-          load();
-        });
+        };
       });
     }
 
-    document.getElementById('refresh').addEventListener('click', load);
-    document.getElementById('clearAll').addEventListener('click', ()=>{
-      if(confirm('Clear all bookings?')){ localStorage.removeItem('bookings'); load(); }
-    });
-    document.getElementById('export').addEventListener('click', ()=>{
-      const bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
-      if(bookings.length===0){ alert('No bookings'); return; }
-      const csv = bookings.map(b=>`${b.id},${b.name || ''},${b.email || ''},${b.room},${b.checkin},${b.checkout},${b.total},${b.status}`).join('\n');
-      const blob = new Blob([csv],{type:'text/csv'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='bookings.csv'; a.click();
-      URL.revokeObjectURL(url);
+    // API helpers: update & delete
+    async function updateBooking(b) {
+      try {
+        const res = await fetch('/api/bookings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(b)
+        });
+        if (!res.ok) throw new Error("Update failed");
+        await loadBookings();
+      } catch (err) {
+        console.error("Update failed:", err);
+        alert("Failed to update booking: " + err.message);
+      }
+    }
+
+    async function deleteBooking(id) {
+      try {
+        const res = await fetch('/api/bookings', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        if (!res.ok) throw new Error("Delete failed");
+        await loadBookings();
+      } catch (err) {
+        console.error("Delete failed:", err);
+        alert("Failed to delete booking: " + err.message);
+      }
+    }
+
+    // Search
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q) {
+        filtered = bookings.slice().reverse();
+      } else {
+        filtered = bookings.filter(b => {
+          return (b.name||"").toLowerCase().includes(q)
+            || (b.email||"").toLowerCase().includes(q)
+            || (b.id||"").toLowerCase().includes(q)
+            || (b.room||"").toLowerCase().includes(q);
+        }).reverse();
+      }
+      page = 1;
+      renderTable();
     });
 
-    load();
+    refreshBtn.addEventListener('click', loadBookings);
+
+    prevPage.onclick = () => { if (page>1) { page--; renderTable(); } };
+    nextPage.onclick = () => { if (page * pageSize < filtered.length) { page++; renderTable(); } };
+
+    exportBtn.onclick = () => {
+      // CSV export
+      const rows = bookings.map(b => [b.id, b.name||"", b.email||"", b.room||"", b.checkin||"", b.checkout||"", b.total||"", b.status||""].map(x => `"${String(x).replace(/"/g,'""')}"`).join(','));
+      const csv = 'id,name,email,room,checkin,checkout,total,status\n' + rows.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'bookings.csv'; a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    // Initial load
+    loadBookings();
   </script>
 </Layout>
