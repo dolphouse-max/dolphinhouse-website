@@ -1,4 +1,4 @@
----
+--- 
 import Layout from "../layouts/Layout.astro";
 ---
 <Layout title="Inventory | Dolphin House">
@@ -6,17 +6,28 @@ import Layout from "../layouts/Layout.astro";
   <section class="max-w-7xl mx-auto p-6">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold">Room Inventory & Rates</h1>
-      <button id="saveBtn" class="px-4 py-2 bg-sky-600 text-white rounded">Save Changes</button>
+      <div class="flex gap-3">
+        <button id="saveBtn" class="px-4 py-2 bg-sky-600 text-white rounded">Save Changes</button>
+        <button id="refreshInventory" class="px-4 py-2 border rounded">Refresh</button>
+      </div>
     </div>
 
     <!-- Filters -->
-    <div class="flex flex-wrap gap-4 mb-6">
+    <div class="flex flex-wrap gap-4 mb-6 items-end">
       <div>
         <label class="text-sm font-medium text-gray-700">Select Date</label><br/>
         <input id="dateSelect" type="date" class="border px-3 py-2 rounded">
       </div>
-      <div class="flex items-end">
+      <div>
         <button id="loadChartBtn" class="px-4 py-2 border rounded">Show Occupancy</button>
+      </div>
+      <div>
+        <label class="text-sm text-gray-600">Chart Range</label><br/>
+        <select id="chartRange" class="border px-2 py-1 rounded">
+          <option value="1">1 day</option>
+          <option value="3">3 days</option>
+          <option value="7" selected>7 days</option>
+        </select>
       </div>
     </div>
 
@@ -24,31 +35,127 @@ import Layout from "../layouts/Layout.astro";
     <div id="inventoryGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10"></div>
 
     <!-- Chart Section -->
-    <section class="bg-white p-6 rounded-lg shadow">
+    <section class="bg-white p-6 rounded-lg shadow mb-8">
       <h2 class="text-xl font-semibold mb-4">Occupancy Chart</h2>
       <canvas id="occupancyChart" height="120"></canvas>
     </section>
+
+    <!-- Availability Calendar -->
+    <section class="bg-white p-6 rounded-lg shadow">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-semibold">Availability Calendar</h3>
+        <div class="flex items-center gap-2">
+          <button id="prevRange" class="px-3 py-1 border rounded">◀</button>
+          <button id="nextRange" class="px-3 py-1 border rounded">▶</button>
+          <select id="rangeDays" class="border px-2 py-1 rounded">
+            <option value="7">7 days</option>
+            <option value="14" selected>14 days</option>
+            <option value="30">30 days</option>
+          </select>
+          <button id="reloadCalendar" class="px-3 py-1 border rounded">Reload</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto snap-x snap-mandatory" id="calendarWrap" style="scroll-behavior:smooth;">
+        <div id="calendarGrid" class="inline-grid gap-1 p-2" style="grid-auto-flow:column;"></div>
+      </div>
+
+      <div id="legend" class="mt-3 text-sm text-gray-600">
+        <span class="inline-flex items-center mr-4"><span class="w-4 h-4 bg-green-500 inline-block mr-2 rounded-sm"></span> Available</span>
+        <span class="inline-flex items-center mr-4"><span class="w-4 h-4 bg-yellow-400 inline-block mr-2 rounded-sm"></span> Few Left</span>
+        <span class="inline-flex items-center"><span class="w-4 h-4 bg-red-500 inline-block mr-2 rounded-sm"></span> Full</span>
+      </div>
+    </section>
   </section>
 
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Main client script (runs in browser only) -->
   <script client:load>
-    // Default inventory structure
-    let inventory = {
+  (async () => {
+    // -----------------------
+    // Config & defaults
+    // -----------------------
+    const DEFAULT_INVENTORY = {
       "standard": { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2300 },
       "deluxe": { label: "Deluxe Room", qty: 2, rateNonAC: 2300, rateAC: 2600 },
       "family": { label: "Family Room", qty: 1, rateNonAC: 3000, rateAC: 3500 },
       "deluxeFamily": { label: "Deluxe Family Room", qty: 1, rateNonAC: 3300, rateAC: 3800 }
     };
+    let inventory = DEFAULT_INVENTORY;
 
+    // DOM
     const grid = document.getElementById('inventoryGrid');
     const saveBtn = document.getElementById('saveBtn');
+    const refreshBtn = document.getElementById('refreshInventory');
     const dateSelect = document.getElementById('dateSelect');
     const loadChartBtn = document.getElementById('loadChartBtn');
     const chartCanvas = document.getElementById('occupancyChart');
+    const chartRange = document.getElementById('chartRange');
+
+    // Calendar DOM
+    const calendarGrid = document.getElementById('calendarGrid');
+    const calendarWrap = document.getElementById('calendarWrap');
+    const rangeSelect = document.getElementById('rangeDays');
+    const prevBtn = document.getElementById('prevRange');
+    const nextBtn = document.getElementById('nextRange');
+    const reloadCalendarBtn = document.getElementById('reloadCalendar');
+
     let chartInstance = null;
 
-    // Render inventory as editable cards
+    // ---------- UTIL helpers ----------
+    function isoDate(d) {
+      // return YYYY-MM-DD for Date or date-string
+      const dt = (d instanceof Date) ? d : new Date(d);
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth() + 1).padStart(2,'0');
+      const day = String(dt.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function parseYMD(y) {
+      // create local date from YYYY-MM-DD
+      const [yy, mm, dd] = y.split('-').map(Number);
+      return new Date(yy, mm - 1, dd);
+    }
+
+    function addDays(date, n) {
+      return new Date(date.getTime() + n * 24 * 60 * 60 * 1000);
+    }
+
+    function generateDates(startDate, days) {
+      const arr = [];
+      for (let i = 0; i < days; i++) arr.push(isoDate(addDays(startDate, i)));
+      return arr;
+    }
+
+    // ---------- API helpers ----------
+    async function fetchInventoryAPI() {
+      try {
+        const res = await fetch('/api/inventory');
+        if (!res.ok) throw new Error('inventory API not available');
+        const data = await res.json();
+        if (data && typeof data === 'object') return data;
+      } catch (err) {
+        console.warn('inventory API error, using defaults:', err.message);
+      }
+      return DEFAULT_INVENTORY;
+    }
+
+    async function fetchBookingsRange(startISO, endISO) {
+      // endISO is exclusive
+      try {
+        const res = await fetch(`/api/bookings?start=${startISO}&end=${endISO}`);
+        if (!res.ok) throw new Error('Bookings fetch failed');
+        return await res.json();
+      } catch (err) {
+        console.error('fetchBookingsRange error', err);
+        return [];
+      }
+    }
+
+    // ---------- Inventory UI ----------
     function renderInventory() {
       grid.innerHTML = '';
       Object.keys(inventory).forEach(key => {
@@ -58,40 +165,33 @@ import Layout from "../layouts/Layout.astro";
         div.innerHTML = `
           <h3 class="text-lg font-bold mb-2">${r.label}</h3>
           <div class="mb-2 text-sm text-gray-600">Quantity:
-            <input type="number" min="1" id="qty-${key}" value="${r.qty}" class="border px-2 py-1 w-20 ml-2 rounded">
+            <input type="number" min="0" id="qty-${key}" value="${r.qty}" class="border px-2 py-1 w-20 ml-2 rounded">
           </div>
           <div class="mb-2 text-sm text-gray-600">Rate (Non-AC):
-            <input type="number" id="rateNonAC-${key}" value="${r.rateNonAC}" class="border px-2 py-1 w-24 ml-2 rounded">
+            <input type="number" id="rateNonAC-${key}" value="${r.rateNonAC ?? r.rate}" class="border px-2 py-1 w-24 ml-2 rounded">
           </div>
           <div class="text-sm text-gray-600">Rate (AC):
-            <input type="number" id="rateAC-${key}" value="${r.rateAC}" class="border px-2 py-1 w-24 ml-2 rounded">
+            <input type="number" id="rateAC-${key}" value="${r.rateAC ?? r.rate}" class="border px-2 py-1 w-24 ml-2 rounded">
           </div>
         `;
         grid.appendChild(div);
       });
     }
 
-    // Fetch current inventory from API (if any)
     async function loadInventory() {
-      try {
-        const res = await fetch('/api/inventory');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && typeof data === 'object') inventory = data;
-        }
-      } catch (err) {
-        console.warn('Inventory API not found, using defaults.');
-      }
+      inventory = await fetchInventoryAPI();
       renderInventory();
     }
 
-    // Save updates back to API
     async function saveInventory() {
       // read form values
       Object.keys(inventory).forEach(k => {
-        inventory[k].qty = parseInt(document.getElementById(`qty-${k}`).value);
-        inventory[k].rateNonAC = parseFloat(document.getElementById(`rateNonAC-${k}`).value);
-        inventory[k].rateAC = parseFloat(document.getElementById(`rateAC-${k}`).value);
+        const q = document.getElementById(`qty-${k}`);
+        const r1 = document.getElementById(`rateNonAC-${k}`);
+        const r2 = document.getElementById(`rateAC-${k}`);
+        inventory[k].qty = q ? parseInt(q.value || 0) : inventory[k].qty;
+        inventory[k].rateNonAC = r1 ? parseFloat(r1.value || 0) : (inventory[k].rateNonAC || inventory[k].rate);
+        inventory[k].rateAC = r2 ? parseFloat(r2.value || 0) : (inventory[k].rateAC || inventory[k].rate);
       });
 
       try {
@@ -100,40 +200,38 @@ import Layout from "../layouts/Layout.astro";
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(inventory)
         });
-        if (res.ok) alert('✅ Inventory updated successfully!');
-        else throw new Error('Failed to update inventory');
+        if (!res.ok) throw new Error('Save failed');
+        alert('✅ Inventory updated successfully!');
       } catch (err) {
-        console.error(err);
-        alert('Error saving inventory.');
+        console.error('saveInventory error', err);
+        alert('Failed to save inventory. See console.');
       }
     }
 
-    // Load occupancy chart for selected date
+    // ---------- Chart (single-day occupancy %) ----------
     async function loadChart() {
       const date = dateSelect.value;
       if (!date) return alert('Please select a date first.');
 
       try {
-        const res = await fetch('/api/bookings');
-        const bookings = await res.json();
-        const counts = {};
+        // fetch bookings (we can ask the API for that single day range)
+        const startISO = date;
+        // end is exclusive next day
+        const endISO = isoDate(addDays(parseYMD(date), 1));
+        const bookings = await fetchBookingsRange(startISO, endISO);
 
-        // Count occupied rooms per type for that date
+        const counts = {};
         Object.keys(inventory).forEach(k => counts[k] = 0);
         bookings.forEach(b => {
-          const d = new Date(date);
-          const ci = new Date(b.checkin);
-          const co = new Date(b.checkout);
-          if (d >= ci && d < co && b.status !== 'cancelled') {
-            counts[b.room] = (counts[b.room] || 0) + 1;
-          }
+          if (b.status === 'cancelled') return;
+          if (!counts[b.room]) counts[b.room] = 0;
+          counts[b.room] += 1;
         });
 
-        // Build chart data
         const labels = Object.keys(inventory).map(k => inventory[k].label);
         const data = Object.keys(inventory).map(k => {
-          const total = inventory[k].qty;
-          return (counts[k] / total) * 100;
+          const total = inventory[k].qty || 1;
+          return Math.round((counts[k] || 0) / total * 100);
         });
 
         if (chartInstance) chartInstance.destroy();
@@ -150,9 +248,7 @@ import Layout from "../layouts/Layout.astro";
             }]
           },
           options: {
-            scales: {
-              y: { beginAtZero: true, max: 100, title: { display: true, text: 'Percent Occupied' } }
-            },
+            scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Percent Occupied' } } },
             plugins: { legend: { display: false } }
           }
         });
@@ -162,9 +258,151 @@ import Layout from "../layouts/Layout.astro";
       }
     }
 
+    // ---------- Calendar logic & rendering ----------
+    const msDay = 24 * 60 * 60 * 1000;
+    function computeCounts(bookings, dates, inventoryLocal) {
+      // initialize
+      const counts = {};
+      Object.keys(inventoryLocal).forEach(k => {
+        counts[k] = {};
+        dates.forEach(d => counts[k][d] = 0);
+      });
+
+      bookings.forEach(b => {
+        if (b.status === 'cancelled') return;
+        const ci = parseYMD(b.checkin);
+        const co = parseYMD(b.checkout);
+        dates.forEach(d => {
+          const dd = parseYMD(d);
+          if (dd >= ci && dd < co) {
+            if (counts[b.room] && typeof counts[b.room][d] === 'number') {
+              counts[b.room][d] += 1;
+            }
+          }
+        });
+      });
+      return counts;
+    }
+
+    function renderCalendar(dates, inventoryLocal, counts, bookingsCache) {
+      // Clear
+      calendarGrid.innerHTML = '';
+
+      // Build grid column template: first label col then one col per day
+      const colTemplate = [`180px`, ...dates.map(() => `100px`) ].join(' ');
+      calendarGrid.style.display = 'grid';
+      calendarGrid.style.gridTemplateColumns = colTemplate;
+
+      // Header row: empty + dates
+      const headerLabel = document.createElement('div');
+      headerLabel.className = 'p-2 font-semibold text-sm';
+      headerLabel.textContent = '';
+      calendarGrid.appendChild(headerLabel);
+
+      dates.forEach(d => {
+        const h = document.createElement('div');
+        h.className = 'p-2 text-center text-sm font-semibold border-b';
+        const dt = parseYMD(d);
+        const dayShort = dt.toLocaleDateString(undefined, { weekday: 'short' });
+        const md = dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        h.innerHTML = `<div class="text-xs text-gray-500">${dayShort}</div><div>${md}</div>`;
+        calendarGrid.appendChild(h);
+      });
+
+      // Rows
+      Object.keys(inventoryLocal).forEach(k => {
+        // label cell
+        const labelCell = document.createElement('div');
+        labelCell.className = 'p-2 border-r font-medium';
+        labelCell.innerHTML = `<div>${inventoryLocal[k].label}</div><div class="text-xs text-gray-500">Qty: ${inventoryLocal[k].qty}</div>`;
+        calendarGrid.appendChild(labelCell);
+
+        // day cells
+        dates.forEach(d => {
+          const used = counts[k][d] || 0;
+          const available = Math.max(0, (inventoryLocal[k].qty || 0) - used);
+          const cell = document.createElement('div');
+          cell.className = 'p-2 text-center text-sm align-middle border cursor-pointer select-none';
+          cell.setAttribute('data-room', k);
+          cell.setAttribute('data-date', d);
+          cell.setAttribute('data-used', used);
+          cell.setAttribute('data-available', available);
+
+          // color thresholds: 0 -> red, <=1 -> amber, else green
+          if (available === 0) {
+            cell.style.backgroundColor = '#ef4444';
+            cell.style.color = 'white';
+          } else if (available <= 1) {
+            cell.style.backgroundColor = '#f59e0b';
+            cell.style.color = 'white';
+          } else {
+            cell.style.backgroundColor = '#10b981';
+            cell.style.color = 'white';
+          }
+
+          cell.innerHTML = `<div class="text-sm font-semibold">${available}</div><div class="text-xs">${used}/${inventoryLocal[k].qty}</div>`;
+          cell.title = `${inventoryLocal[k].label} — ${d}\nUsed: ${used}\nAvailable: ${available}`;
+
+          // click shows booking details for that day+room in a simple dialog
+          cell.addEventListener('click', () => {
+            const list = bookingsCache.filter(b => {
+              return b.room === k && (parseYMD(d) >= parseYMD(b.checkin)) && (parseYMD(d) < parseYMD(b.checkout)) && b.status !== 'cancelled';
+            });
+            let msg = `${inventoryLocal[k].label} — ${d}\nUsed: ${used}\nAvailable: ${available}\n\nBookings:\n`;
+            if (list.length === 0) msg += 'No bookings';
+            else msg += list.map(x => `${x.id} | ${x.name || '-'} | ${x.checkin}→${x.checkout} | ₹${x.total || 0}`).join('\n');
+            // use window.open to show nicer view if there are images
+            const w = window.open('', '_blank', 'width=600,height=400');
+            if (w) {
+              w.document.title = `Bookings ${inventoryLocal[k].label} ${d}`;
+              w.document.body.style.fontFamily = 'system-ui, Arial, sans-serif';
+              w.document.body.innerHTML = `<pre style="white-space:pre-wrap">${msg}</pre>`;
+            } else {
+              alert(msg);
+            }
+          });
+
+          calendarGrid.appendChild(cell);
+        });
+      });
+    }
+
+    // ---------- Orchestration for calendar ----------
+    let startDate = new Date(); // local today
+    async function loadAndRenderCalendar() {
+      const days = parseInt(rangeSelect.value, 10) || 14;
+      const dates = generateDates(startDate, days);
+      const startISO = dates[0];
+      const lastPlus1 = isoDate(addDays(parseYMD(dates[dates.length - 1]), 1));
+      const endISO = lastPlus1;
+      // fetch bookings overlapping [startISO, endISO)
+      const bookings = await fetchBookingsRange(startISO, endISO);
+      const counts = computeCounts(bookings, dates, inventory);
+      renderCalendar(dates, inventory, counts, bookings);
+      // scroll to start
+      calendarWrap.scrollLeft = 0;
+    }
+
+    // Controls
+    rangeSelect.addEventListener('change', () => loadAndRenderCalendar());
+    prevBtn.addEventListener('click', () => { startDate = addDays(startDate, -parseInt(rangeSelect.value,10)); loadAndRenderCalendar(); });
+    nextBtn.addEventListener('click', () => { startDate = addDays(startDate, parseInt(rangeSelect.value,10)); loadAndRenderCalendar(); });
+    reloadCalendarBtn.addEventListener('click', () => loadAndRenderCalendar());
+
+    // ---------- Initial load and bindings ----------
     saveBtn.addEventListener('click', saveInventory);
+    refreshBtn.addEventListener('click', loadInventory);
     loadChartBtn.addEventListener('click', loadChart);
 
-    loadInventory();
+    // load inventory then calendar
+    await loadInventory();
+    // set dateSelect default to today
+    dateSelect.value = isoDate(new Date());
+    // initial chart (if date is selected)
+    // initial calendar
+    await loadAndRenderCalendar();
+
+  })();
   </script>
+
 </Layout>
