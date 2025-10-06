@@ -1,0 +1,170 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout title="Inventory | Dolphin House">
+
+  <section class="max-w-7xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">Room Inventory & Rates</h1>
+      <button id="saveBtn" class="px-4 py-2 bg-sky-600 text-white rounded">Save Changes</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap gap-4 mb-6">
+      <div>
+        <label class="text-sm font-medium text-gray-700">Select Date</label><br/>
+        <input id="dateSelect" type="date" class="border px-3 py-2 rounded">
+      </div>
+      <div class="flex items-end">
+        <button id="loadChartBtn" class="px-4 py-2 border rounded">Show Occupancy</button>
+      </div>
+    </div>
+
+    <!-- Room Inventory Cards -->
+    <div id="inventoryGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10"></div>
+
+    <!-- Chart Section -->
+    <section class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-xl font-semibold mb-4">Occupancy Chart</h2>
+      <canvas id="occupancyChart" height="120"></canvas>
+    </section>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script client:load>
+    // Default inventory structure
+    let inventory = {
+      "standard": { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2300 },
+      "deluxe": { label: "Deluxe Room", qty: 2, rateNonAC: 2300, rateAC: 2600 },
+      "family": { label: "Family Room", qty: 1, rateNonAC: 3000, rateAC: 3500 },
+      "deluxeFamily": { label: "Deluxe Family Room", qty: 1, rateNonAC: 3300, rateAC: 3800 }
+    };
+
+    const grid = document.getElementById('inventoryGrid');
+    const saveBtn = document.getElementById('saveBtn');
+    const dateSelect = document.getElementById('dateSelect');
+    const loadChartBtn = document.getElementById('loadChartBtn');
+    const chartCanvas = document.getElementById('occupancyChart');
+    let chartInstance = null;
+
+    // Render inventory as editable cards
+    function renderInventory() {
+      grid.innerHTML = '';
+      Object.keys(inventory).forEach(key => {
+        const r = inventory[key];
+        const div = document.createElement('div');
+        div.className = 'bg-white rounded-lg shadow p-5 border hover:shadow-md transition';
+        div.innerHTML = `
+          <h3 class="text-lg font-bold mb-2">${r.label}</h3>
+          <div class="mb-2 text-sm text-gray-600">Quantity:
+            <input type="number" min="1" id="qty-${key}" value="${r.qty}" class="border px-2 py-1 w-20 ml-2 rounded">
+          </div>
+          <div class="mb-2 text-sm text-gray-600">Rate (Non-AC):
+            <input type="number" id="rateNonAC-${key}" value="${r.rateNonAC}" class="border px-2 py-1 w-24 ml-2 rounded">
+          </div>
+          <div class="text-sm text-gray-600">Rate (AC):
+            <input type="number" id="rateAC-${key}" value="${r.rateAC}" class="border px-2 py-1 w-24 ml-2 rounded">
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    // Fetch current inventory from API (if any)
+    async function loadInventory() {
+      try {
+        const res = await fetch('/api/inventory');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') inventory = data;
+        }
+      } catch (err) {
+        console.warn('Inventory API not found, using defaults.');
+      }
+      renderInventory();
+    }
+
+    // Save updates back to API
+    async function saveInventory() {
+      // read form values
+      Object.keys(inventory).forEach(k => {
+        inventory[k].qty = parseInt(document.getElementById(`qty-${k}`).value);
+        inventory[k].rateNonAC = parseFloat(document.getElementById(`rateNonAC-${k}`).value);
+        inventory[k].rateAC = parseFloat(document.getElementById(`rateAC-${k}`).value);
+      });
+
+      try {
+        const res = await fetch('/api/inventory', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(inventory)
+        });
+        if (res.ok) alert('✅ Inventory updated successfully!');
+        else throw new Error('Failed to update inventory');
+      } catch (err) {
+        console.error(err);
+        alert('Error saving inventory.');
+      }
+    }
+
+    // Load occupancy chart for selected date
+    async function loadChart() {
+      const date = dateSelect.value;
+      if (!date) return alert('Please select a date first.');
+
+      try {
+        const res = await fetch('/api/bookings');
+        const bookings = await res.json();
+        const counts = {};
+
+        // Count occupied rooms per type for that date
+        Object.keys(inventory).forEach(k => counts[k] = 0);
+        bookings.forEach(b => {
+          const d = new Date(date);
+          const ci = new Date(b.checkin);
+          const co = new Date(b.checkout);
+          if (d >= ci && d < co && b.status !== 'cancelled') {
+            counts[b.room] = (counts[b.room] || 0) + 1;
+          }
+        });
+
+        // Build chart data
+        const labels = Object.keys(inventory).map(k => inventory[k].label);
+        const data = Object.keys(inventory).map(k => {
+          const total = inventory[k].qty;
+          return (counts[k] / total) * 100;
+        });
+
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(chartCanvas, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Occupancy (%)',
+              data,
+              backgroundColor: 'rgba(14, 165, 233, 0.6)',
+              borderColor: 'rgba(14, 165, 233, 1)',
+              borderWidth: 1,
+            }]
+          },
+          options: {
+            scales: {
+              y: { beginAtZero: true, max: 100, title: { display: true, text: 'Percent Occupied' } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      } catch (err) {
+        console.error('Chart error:', err);
+        alert('Failed to load chart.');
+      }
+    }
+
+    saveBtn.addEventListener('click', saveInventory);
+    loadChartBtn.addEventListener('click', loadChart);
+
+    loadInventory();
+  </script>
+</Layout>
