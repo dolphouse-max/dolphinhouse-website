@@ -78,10 +78,10 @@ import Layout from "../layouts/Layout.astro";
     // Config & defaults
     // -----------------------
     const DEFAULT_INVENTORY = {
-      "standard": { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2300 },
-      "deluxe": { label: "Deluxe Room", qty: 2, rateNonAC: 2300, rateAC: 2600 },
-      "family": { label: "Family Room", qty: 1, rateNonAC: 3000, rateAC: 3500 },
-      "deluxeFamily": { label: "Deluxe Family Room", qty: 1, rateNonAC: 3300, rateAC: 3800 }
+      "standard": { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2300, occupancy: 2, extraPerson: 700 },
+      "deluxe": { label: "Deluxe Room", qty: 2, rateNonAC: 2300, rateAC: 2600, occupancy: 3, extraPerson: 700 },
+      "family": { label: "Family Room", qty: 1, rateNonAC: 3000, rateAC: 3500, occupancy: 4, extraPerson: 700 },
+      "deluxeFamily": { label: "Deluxe Family Room", qty: 1, rateNonAC: 3300, rateAC: 3800, occupancy: 4, extraPerson: 700 }
     };
     let inventory = DEFAULT_INVENTORY;
 
@@ -163,17 +163,29 @@ import Layout from "../layouts/Layout.astro";
         const div = document.createElement('div');
         div.className = 'bg-white rounded-lg shadow p-5 border hover:shadow-md transition';
         div.innerHTML = `
-          <h3 class="text-lg font-bold mb-2">${r.label}</h3>
-          <div class="mb-2 text-sm text-gray-600">Quantity:
-            <input type="number" min="0" id="qty-${key}" value="${r.qty}" class="border px-2 py-1 w-20 ml-2 rounded">
-          </div>
-          <div class="mb-2 text-sm text-gray-600">Rate (Non-AC):
-            <input type="number" id="rateNonAC-${key}" value="${r.rateNonAC ?? r.rate}" class="border px-2 py-1 w-24 ml-2 rounded">
-          </div>
-          <div class="text-sm text-gray-600">Rate (AC):
-            <input type="number" id="rateAC-${key}" value="${r.rateAC ?? r.rate}" class="border px-2 py-1 w-24 ml-2 rounded">
-          </div>
-        `;
+        <h3 class="text-lg font-bold mb-2">${r.label}</h3>
+
+        <div class="mb-2 text-sm text-gray-600">Quantity:
+          <input type="number" min="1" id="qty-${key}" value="${r.qty}" class="border px-2 py-1 w-20 ml-2 rounded">
+        </div>
+
+        <div class="mb-2 text-sm text-gray-600">Rate (Non-AC):
+          <input type="number" id="rateNonAC-${key}" value="${r.rateNonAC}" class="border px-2 py-1 w-24 ml-2 rounded">
+        </div>
+
+        <div class="mb-2 text-sm text-gray-600">Rate (AC):
+          <input type="number" id="rateAC-${key}" value="${r.rateAC}" class="border px-2 py-1 w-24 ml-2 rounded">
+        </div>
+
+        <div class="mb-2 text-sm text-gray-600">Occupancy:
+          <input type="number" id="occupancy-${key}" value="${r.occupancy}" class="border px-2 py-1 w-20 ml-2 rounded">
+        </div>
+
+        <div class="text-sm text-gray-600">Extra Person Charge:
+          <input type="number" id="extraPerson-${key}" value="${r.extraPerson}" class="border px-2 py-1 w-24 ml-2 rounded"> ₹
+        </div>
+      `;
+
         grid.appendChild(div);
       });
     }
@@ -189,9 +201,11 @@ import Layout from "../layouts/Layout.astro";
         const q = document.getElementById(`qty-${k}`);
         const r1 = document.getElementById(`rateNonAC-${k}`);
         const r2 = document.getElementById(`rateAC-${k}`);
-        inventory[k].qty = q ? parseInt(q.value || 0) : inventory[k].qty;
-        inventory[k].rateNonAC = r1 ? parseFloat(r1.value || 0) : (inventory[k].rateNonAC || inventory[k].rate);
-        inventory[k].rateAC = r2 ? parseFloat(r2.value || 0) : (inventory[k].rateAC || inventory[k].rate);
+        inventory[k].qty = parseInt(document.getElementById(`qty-${k}`).value);
+        inventory[k].rateNonAC = parseFloat(document.getElementById(`rateNonAC-${k}`).value);
+        inventory[k].rateAC = parseFloat(document.getElementById(`rateAC-${k}`).value);
+        inventory[k].occupancy = parseInt(document.getElementById(`occupancy-${k}`).value);
+        inventory[k].extraPerson = parseFloat(document.getElementById(`extraPerson-${k}`).value);
       });
 
       try {
