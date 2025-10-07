@@ -1,0 +1,118 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Admin — Bookings">
+  <div class="flex gap-4 mb-6">
+    <a href="/admin" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300">🏠 Dashboard</a>
+    <a href="/admin/inventory" class="px-3 py-2 bg-green-200 rounded hover:bg-green-300">🧾 Inventory</a>
+    <a href="/admin/calendar" class="px-3 py-2 bg-yellow-200 rounded hover:bg-yellow-300">📅 Calendar</a>
+  </div>
+
+  <section class="max-w-7xl mx-auto p-6 space-y-8">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-bold">Admin — Bookings</h1>
+      <button id="refreshBtn" class="px-4 py-2 bg-sky-600 text-white rounded shadow hover:bg-sky-700 transition">🔄 Refresh</button>
+    </div>
+
+    <!-- Filter + Summary -->
+    <div class="flex flex-wrap items-end gap-4">
+      <div>
+        <label class="text-sm font-medium text-gray-700">Select Date</label><br/>
+        <input id="filterDate" type="date" class="border px-3 py-2 rounded">
+      </div>
+      <div id="summary" class="text-gray-800 font-medium">
+        📅 Select a date to view occupancy
+      </div>
+    </div>
+
+    <!-- Occupancy Chart -->
+    <div class="bg-white p-6 rounded-lg shadow border">
+      <h2 class="text-xl font-semibold mb-4">📊 Daily Occupancy</h2>
+      <canvas id="occupancyChart" height="120"></canvas>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto bg-white rounded-lg shadow border">
+      <table class="w-full text-sm border-collapse">
+        <thead class="bg-gray-100 border-b text-left text-gray-700">
+          <tr>
+            <th class="px-4 py-2">ID</th>
+            <th class="px-4 py-2">Guest</th>
+            <th class="px-4 py-2">Room</th>
+            <th class="px-4 py-2">Dates</th>
+            <th class="px-4 py-2">Guests</th>
+            <th class="px-4 py-2">Total</th>
+            <th class="px-4 py-2">Status</th>
+          </tr>
+        </thead>
+        <tbody id="bookingTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script client:load>
+    let bookings = [];
+    let inventory = {};
+    let chartInstance = null;
+
+    const table = document.getElementById('bookingTable');
+    const dateInput = document.getElementById('filterDate');
+    const summary = document.getElementById('summary');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const chartCanvas = document.getElementById('occupancyChart');
+
+    function statusBadge(status) {
+      const map = {
+        confirmed: "bg-green-100 text-green-800 border-green-300",
+        pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
+        payment_submitted: "bg-blue-100 text-blue-800 border-blue-300",
+        cancelled: "bg-red-100 text-red-800 border-red-300"
+      };
+      const cls = map[status.toLowerCase()] || "bg-gray-100 text-gray-700 border-gray-300";
+      return `<span class="px-2 py-1 text-xs rounded border ${cls} capitalize">${status.replace('_',' ')}</span>`;
+    }
+
+    async function loadData() {
+      const [bRes, iRes] = await Promise.all([
+        fetch('/api/bookings'),
+        fetch('/api/inventory')
+      ]);
+      bookings = await bRes.json();
+      const invArr = await iRes.json();
+      inventory = Object.fromEntries(invArr.map(i => [i.room, i]));
+      renderTable();
+      renderChart();
+    }
+
+    function renderTable(filterDate = null) {
+      table.innerHTML = '';
+
+      let filtered = bookings;
+      if (filterDate) {
+        const sel = new Date(filterDate);
+        filtered = bookings.filter(b => {
+          const ci = new Date(b.checkin);
+          const co = new Date(b.checkout);
+          return sel >= ci && sel < co && b.status !== 'cancelled';
+        });
+      }
+
+      filtered.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.className = "border-b hover:bg-gray-50";
+        tr.innerHTML = `
+          <td class="px-4 py-2 text-xs text-gray-500">${b.id}</td>
+          <td class="px-4 py-2">${b.name || '(no name)'}</td>
+          <td class="px-4 py-2 capitalize">${b.room}</td>
+          <td class="px-4 py-2">${b.checkin} → ${b.checkout}</td>
+          <td class="px-4 py-2">${b.guests}</td>
+          <td class="px-4 py-2 font-semibold">₹${b.total}</td>
+          <td class="px-4 py-2">${statusBadge(b.status)}</td>
+        `;
+        table.appendChild(tr);
+      });
+
+      if (filterDate) updateSummary(filterDate, filtered);
