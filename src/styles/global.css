@@ -1,34 +1,80 @@
-@layer base, components, utilities;
-@import "tailwindcss/base" layer(base);
-@import "tailwindcss/components" layer(components);
-@import "tailwindcss/utilities" layer(utilities);
-
-/* ---- Your custom styles below ---- */
-body {
-  font-family: Inter, system-ui, sans-serif;
-  background-color: #f9fafb; /* Tailwind bg-gray-50 */
-  color: #111827;            /* Tailwind text-gray-900 */
-  margin: 0;
+/* 🌊 Global Layout Enhancements */
+.section {
+  @apply py-16 px-6 md:px-12;
+}
+.container {
+  @apply max-w-6xl mx-auto;
+}
+.heading {
+  @apply text-4xl md:text-5xl font-extrabold text-gray-800 mb-6;
+}
+.subtext {
+  @apply text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed;
 }
 
-.btn-primary {
-  background-color: #0284c7;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  transition: all 0.2s ease;
+/* 🏖 Hero Section */
+.hero-img {
+  @apply w-full h-[520px] object-cover rounded-3xl shadow-2xl transform scale-105 transition duration-700;
 }
-.btn-primary:hover {
-  background-color: #0369a1;
+.hero-overlay {
+  @apply absolute inset-0 flex flex-col justify-center items-center bg-black/50 text-center rounded-3xl;
+}
+.hero-title {
+  @apply text-5xl md:text-7xl font-extrabold text-white drop-shadow-2xl tracking-tight;
+}
+.hero-sub {
+  @apply text-lg md:text-2xl text-white/90 mt-4;
 }
 
+/* 💠 Cards */
 .card {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  transition: 0.2s;
+  @apply relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300;
 }
-.card:hover {
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+.card-img {
+  @apply w-full h-80 object-cover;
+}
+.card-overlay {
+  @apply absolute inset-0 bg-black/40 flex items-end p-6 transition duration-300;
+}
+.card-title {
+  @apply text-white text-2xl font-semibold;
+}
+.hover-glow:hover {
+  @apply transform scale-105 shadow-2xl;
+}
+
+/* ✨ Facilities */
+.dark-section {
+  @apply bg-gradient-to-b from-gray-900 to-gray-800 text-white;
+}
+.facility-card {
+  @apply bg-gray-700 p-6 rounded-xl shadow-md flex flex-col items-center transition-all duration-300;
+}
+.facility-card:hover {
+  @apply bg-gray-600 transform scale-105 shadow-lg;
+}
+
+/* 📍 How to Reach */
+.reach-list li {
+  @apply flex items-center gap-3 text-lg text-gray-700 mb-2;
+}
+
+/* 💬 CTA */
+.cta-section {
+  @apply bg-gradient-to-r from-sky-700 to-sky-500 text-white py-16 rounded-3xl shadow-2xl;
+}
+.btn-primary {
+  @apply bg-sky-600 hover:bg-sky-700 text-white px-8 py-3 rounded-full text-lg font-semibold transition transform hover:scale-105;
+}
+.btn-light {
+  @apply bg-white text-sky-700 px-8 py-4 rounded-full text-xl font-bold shadow-2xl hover:bg-gray-100 transition transform hover:scale-105;
+}
+
+/* 🪶 Subtle hover lift */
+.hover-lift {
+  transition: all 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
