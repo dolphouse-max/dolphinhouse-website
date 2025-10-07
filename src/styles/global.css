@@ -78,3 +78,17 @@
   transform: translateY(-6px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
+/* 🌟 Reusable Feature Card Style */
+.feature-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+.feature-card:hover {
+  background: #e0f2fe;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}

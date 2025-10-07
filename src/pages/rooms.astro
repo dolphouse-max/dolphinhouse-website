@@ -1,39 +1,130 @@
 ---
-import Layout from "../layouts/Layout.astro"; 
-import Card from "../components/Card.astro";
+import Layout from "../layouts/Layout.astro";
 
-const rooms = [
-  { image: "/uploader/Room-1.webp", title: "Room No.1", description: "Max 2 · 140 sq.ft" },
-  { image: "/uploader/Room-2.webp", title: "Room No.2", description: "Max 3 · 160 sq.ft" },
-  { image: "/uploader/room-3.webp", title: "Room No.3", description: "Max 2 · 140 sq.ft" },
-  { image: "/uploader/Room-4.webp", title: "Room No.4", description: "Max 3 · 160 sq.ft" },
-  { image: "/uploader/room-5.webp", title: "Room No.5 (Cottage)", description: "Max 6 · 300 sq.ft" },
-  { image: "/uploader/Room-6.webp", title: "Room No.6", description: "Max 2 · 120 sq.ft" },
-  { image: "/uploader/Room-7.webp", title: "Room No.7", description: "Max 6 · 200 sq.ft" },
-  { image: "/uploader/room-8.webp", title: "Room No.8", description: "Max 6 · 200 sq.ft" },
-  { image: "/uploader/room-9.webp", title: "Room No.9", description: "Max 6 · 200 sq.ft" },
+const roomCategories = [
+  {
+    image: "/uploader/Room-1.webp",
+    title: "Standard Room",
+    type: "Non-AC / AC Available",
+    description: "Ideal for couples or solo travelers — cozy and affordable stay near Nagaon Beach.",
+    max: 2,
+    area: 140,
+    rateNonAC: 2000,
+    rateAC: 2300,
+    features: ["Queen Bed", "Attached Bathroom", "Wi-Fi", "TV", "Generator Backup"]
+  },
+  {
+    image: "/uploader/Room-4.webp",
+    title: "Deluxe Room",
+    type: "Non-AC / AC Available",
+    description: "Spacious comfort with premium interiors, perfect for couples or small families.",
+    max: 3,
+    area: 160,
+    rateNonAC: 2300,
+    rateAC: 2600,
+    features: ["King Bed", "Balcony View", "Hot Water", "TV", "Wi-Fi"]
+  },
+  {
+    image: "/uploader/room-5.webp",
+    title: "Family Room",
+    type: "Non-AC / AC Available",
+    description: "A large, airy room for families with children or groups. Relax and enjoy together!",
+    max: 4,
+    area: 200,
+    rateNonAC: 3000,
+    rateAC: 3500,
+    features: ["Double Beds", "Extra Person Option", "TV", "Wi-Fi", "Hot Water"]
+  },
+  {
+    image: "/uploader/room-9.webp",
+    title: "Deluxe Family Room",
+    type: "Non-AC / AC Available",
+    description: "Luxury family suite with pool view and private balcony. Perfect for long stays.",
+    max: 5,
+    area: 300,
+    rateNonAC: 3300,
+    rateAC: 3800,
+    features: ["King Bed", "Private Balcony", "Pool View", "TV", "Wi-Fi"]
+  },
 ];
 ---
 
-<Layout title="Rooms | Dolphin House">
-  <header class="mb-8">
-    <h1 class="text-3xl font-bold">Our Rooms</h1>
-    <p class="text-gray-600 mt-2">Comfortable cottages & rooms near Nagaon Beach.</p>
-  </header>
+<Layout title="Rooms & Tariffs | Dolphin House Beach Resort">
 
-  <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-    {rooms.map(room => (
-      <Card image={room.image} title={room.title} description={room.description} href={`/rooms/${room.title.replace(/\s+/g, '-').toLowerCase()}`} />
-    ))}
-  </div>
-
-  <section class="mt-12">
-    <h2 class="text-2xl font-semibold mb-4">Indoor Swimming Pool</h2>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <img src="/uploader/swimming-pool1.webp" alt="Pool 1" class="rounded-2xl shadow-md w-full h-44 object-cover" />
-      <img src="/uploader/swimming-pool1_1.webp" alt="Pool 2" class="rounded-2xl shadow-md w-full h-44 object-cover" />
-      <img src="/uploader/swimming-pool2.webp" alt="Pool 3" class="rounded-2xl shadow-md w-full h-44 object-cover" />
-      <img src="/uploader/swimming-pool3.webp" alt="Pool 4" class="rounded-2xl shadow-md w-full h-44 object-cover" />
+  <!-- Hero Section -->
+  <section class="relative mb-16">
+    <img src="/uploader/hotel-front-1.webp" alt="Dolphin House Resort Rooms" class="w-full h-80 md:h-[450px] object-cover rounded-3xl shadow-xl" />
+    <div class="absolute inset-0 bg-black/50 flex items-center justify-center rounded-3xl">
+      <h1 class="text-4xl md:text-6xl font-extrabold text-white text-center tracking-tight">
+        Rooms & Tariffs
+      </h1>
     </div>
   </section>
+
+  <!-- Summary Section -->
+  <section class="text-center mb-16 max-w-4xl mx-auto">
+    <h2 class="text-3xl font-bold text-gray-800 mb-4">Relax in Comfort by the Beach</h2>
+    <p class="text-lg text-gray-600 leading-relaxed">
+      Choose from our range of cozy, well-furnished rooms and cottages — each designed for comfort, peace, and convenience. 
+      Enjoy your vacation just <strong>2 minutes’ walk from Nagaon Beach</strong>, with all modern amenities you expect from a top Alibaug resort.
+    </p>
+  </section>
+
+  <!-- Rooms Grid -->
+  <section class="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
+    {roomCategories.map(room => (
+      <div class="group bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition transform hover:-translate-y-1">
+        <div class="relative overflow-hidden">
+          <img src={room.image} alt={room.title} class="w-full h-64 object-cover group-hover:scale-110 transition duration-500" />
+          <div class="absolute top-0 left-0 bg-sky-600 text-white px-3 py-1 text-sm rounded-br-xl shadow-md">
+            {room.type}
+          </div>
+        </div>
+        <div class="p-6 flex flex-col justify-between h-[320px]">
+          <div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">{room.title}</h3>
+            <p class="text-gray-600 text-sm mb-3">{room.description}</p>
+            <ul class="text-sm text-gray-500 space-y-1">
+              <li>👥 <strong>Max Guests:</strong> {room.max}</li>
+              <li>📏 <strong>Size:</strong> {room.area} sq.ft</li>
+              <li>💰 <strong>Tariff:</strong> ₹{room.rateNonAC} (Non-AC) / ₹{room.rateAC} (AC)</li>
+            </ul>
+          </div>
+          <div class="mt-4 flex justify-between items-center">
+            <a href="/booking" class="inline-block bg-sky-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-sky-700 transition text-sm shadow-md">
+              Book Now
+            </a>
+            <span class="text-gray-400 text-xs italic">+ ₹700 / extra person</span>
+          </div>
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <!-- Amenities Section -->
+  <section class="mt-20 bg-blue-50/50 border border-blue-100 rounded-3xl p-10 shadow-inner text-center">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">Room Features & Facilities</h2>
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-gray-700">
+      <div class="feature-card">🛏️ Air-conditioned Rooms</div>
+      <div class="feature-card">📺 Satellite TV</div>
+      <div class="feature-card">💧 Attached Bathrooms</div>
+      <div class="feature-card">🌐 Free Wi-Fi</div>
+      <div class="feature-card">⚡ Generator Backup</div>
+      <div class="feature-card">🏊 Indoor Swimming Pool</div>
+      <div class="feature-card">🍽️ In-house Restaurant</div>
+      <div class="feature-card">🚗 Car Parking</div>
+    </div>
+  </section>
+
+  <!-- Pool Gallery -->
+  <section class="mt-20">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Indoor Swimming Pool</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <img src="/uploader/swimming-pool1.webp" alt="Pool 1" class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" />
+      <img src="/uploader/swimming-pool1_1.webp" alt="Pool 2" class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" />
+      <img src="/uploader/swimming-pool2.webp" alt="Pool 3" class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" />
+      <img src="/uploader/swimming-pool3.webp" alt="Pool 4" class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" />
+    </div>
+  </section>
+
 </Layout>
