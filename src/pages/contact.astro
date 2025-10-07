@@ -1,68 +1,120 @@
 ---
-import Layout from "../layouts/Layout.astro"; 
+import Layout from "../layouts/Layout.astro";
 ---
-<Layout title="Contact | Dolphin House">
-  <div class="max-w-2xl mx-auto">
-    <div class="section-card">
-      <h2 class="text-2xl font-semibold mb-2">Contact Us</h2>
-      <p class="text-sm text-gray-700 mb-4">Nagaon Beach Road, Nagaon — 402204, Alibaug</p>
-      <p class="text-sm">Phone: <a href="tel:+919730627615" class="text-sky-600">9730627615</a></p>
-      <p class="text-sm">Email: <a class="text-sky-600" href="mailto:dolphinhouse19@gmail.com">dolphinhouse19@gmail.com</a></p>
+
+<Layout title="Contact Us | Dolphin House Beach Resort">
+
+  <!-- 🌴 Hero Section -->
+  <section class="relative mb-16">
+    <img src="/uploader/dolphinhouse-front-4.webp" alt="Dolphin House Beach Resort"
+      class="w-full h-72 md:h-[480px] object-cover rounded-3xl shadow-lg" />
+    <div class="absolute inset-0 bg-black/40 flex flex-col justify-center items-center rounded-3xl text-white text-center px-6">
+      <h1 class="text-5xl font-extrabold mb-2 drop-shadow-xl">Contact Us</h1>
+      <p class="text-lg text-gray-200 max-w-2xl">We’d love to hear from you — reach out for bookings, availability, or inquiries.</p>
     </div>
-  </div>
-  <!-- 🧠 LocalBusiness Schema for Contact Page -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Hotel",
-  "name": "Dolphin House Beach Resort",
-  "alternateName": "Dolphin House Resort Nagaon Alibaug",
-  "url": "https://dolphinhouse-website.pages.dev/contact",
-  "logo": "https://dolphinhouse-website.pages.dev/uploader/logo-512.webp",
-  "image": [
-    "https://dolphinhouse-website.pages.dev/uploader/dolphinhouse-front-4.webp",
-    "https://dolphinhouse-website.pages.dev/uploader/hotel-front-1.webp",
-    "https://dolphinhouse-website.pages.dev/uploader/swimming-pool1.webp"
-  ],
-  "description": "Contact Dolphin House Beach Resort in Nagaon, Alibaug — book your stay, check availability, or request details about our AC rooms, cottages, and swimming pool.",
-  "telephone": "+91-9730627615",
-  "email": "dolphinhouse19@gmail.com",
-  "priceRange": "₹₹₹",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Nagaon Beach Road, Nagaon",
-    "addressLocality": "Alibaug",
-    "addressRegion": "Maharashtra",
-    "postalCode": "402204",
-    "addressCountry": "IN"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": "18.5830",
-    "longitude": "72.9028"
-  },
-  "openingHoursSpecification": [{
-    "@type": "OpeningHoursSpecification",
-    "dayOfWeek": [
-      "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+  </section>
+
+  <!-- 🌺 Contact Info Card -->
+  <section class="max-w-5xl mx-auto grid lg:grid-cols-2 gap-10 mb-20">
+    
+    <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 hover:shadow-2xl transition duration-300">
+      <h2 class="text-3xl font-bold text-gray-800 mb-6">Dolphin House Beach Resort</h2>
+      <p class="text-gray-600 mb-6 leading-relaxed">
+        Nestled near the peaceful Nagaon Beach, Alibaug — the perfect getaway for families and couples seeking luxury and tranquility.
+      </p>
+
+      <div class="space-y-4 text-gray-700">
+        <div class="flex items-start space-x-3">
+          <span class="text-2xl text-sky-600">📍</span>
+          <p>Nagaon Beach Road, Nagaon — 402204, Alibaug, Raigad, Maharashtra</p>
+        </div>
+
+        <div class="flex items-start space-x-3">
+          <span class="text-2xl text-sky-600">📞</span>
+          <div>
+            <p><a href="tel:+918554871073" class="text-sky-600 hover:underline">+91 8554871073</a></p>
+            <p><a href="tel:+917276171735" class="text-sky-600 hover:underline">+91 7276171735</a></p>
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-3">
+          <span class="text-2xl text-sky-600">✉️</span>
+          <p><a href="mailto:dolphouse@gmail.com" class="text-sky-600 hover:underline">dolphouse@gmail.com</a></p>
+        </div>
+
+        <div class="flex items-start space-x-3">
+          <span class="text-2xl text-sky-600">🕒</span>
+          <p>Open daily from 8:00 AM – 10:00 PM</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4 mt-8">
+        <a href="https://wa.me/+918554871073" target="_blank"
+          class="inline-flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-full font-semibold hover:bg-green-600 transition transform hover:scale-105">
+          💬 WhatsApp
+        </a>
+        <a href="https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8" target="_blank"
+          class="inline-flex items-center gap-2 bg-sky-600 text-white px-5 py-3 rounded-full font-semibold hover:bg-sky-700 transition transform hover:scale-105">
+          📍 Google Maps
+        </a>
+      </div>
+    </div>
+
+    <!-- 📍 Embedded Google Map -->
+    <div class="rounded-3xl overflow-hidden shadow-lg border border-gray-200 h-[400px]">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3776.928496160403!2d72.9015!3d18.583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be9e85d6d0ebbbb%3A0x8b68a3db57b5d74f!2sDolphin%20House%20Beach%20Resort!5e0!3m2!1sen!2sin!4v1699876543210"
+        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </section>
+
+  <!-- 🌊 Optional Inquiry CTA -->
+  <section class="text-center bg-sky-600 text-white rounded-3xl shadow-2xl p-12 mb-16">
+    <h2 class="text-3xl font-extrabold mb-3">Have a Question or Want to Book Directly?</h2>
+    <p class="text-lg mb-6">Call or WhatsApp us anytime — we’re happy to help you plan your perfect beach getaway!</p>
+    <a href="tel:+918554871073"
+       class="inline-block bg-white text-sky-600 font-bold text-lg px-8 py-4 rounded-full hover:bg-gray-100 transition transform hover:scale-105">
+       📞 Call Now
+    </a>
+  </section>
+
+  <!-- 🧭 Schema for LocalBusiness / Hotel -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": ["Hotel", "LocalBusiness"],
+    "name": "Dolphin House Beach Resort",
+    "alternateName": "Dolphin House Resort Nagaon Alibaug",
+    "url": "https://dolphinhouse-website.pages.dev/contact",
+    "logo": "https://dolphinhouse-website.pages.dev/uploader/logo-512.webp",
+    "image": [
+      "https://dolphinhouse-website.pages.dev/uploader/dolphinhouse-front-4.webp",
+      "https://dolphinhouse-website.pages.dev/uploader/hotel-front-1.webp",
+      "https://dolphinhouse-website.pages.dev/uploader/swimming-pool1.webp"
     ],
-    "opens": "08:00",
-    "closes": "22:00"
-  }],
-  "sameAs": [
-    "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
-    "https://www.facebook.com/dolphinhousealibaug/",
-    "https://www.instagram.com/dolphinhousealibaug/"
-  ],
-  "hasMap": "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
-  "contactPoint": [{
-    "@type": "ContactPoint",
-    "telephone": "+91-9730627615",
-    "contactType": "reservations",
-    "areaServed": "IN",
-    "availableLanguage": ["English", "Hindi", "Marathi"]
-  }]
-}
-</script>
+    "description": "Contact Dolphin House Beach Resort in Nagaon, Alibaug — beachfront resort with AC cottages, restaurant, pool, and premium hospitality.",
+    "telephone": "+91-8554871073",
+    "email": "dolphinhouse19@gmail.com",
+    "priceRange": "₹2000 - ₹3800",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Nagaon Beach Road, Nagaon",
+      "addressLocality": "Alibaug",
+      "addressRegion": "Maharashtra",
+      "postalCode": "402204",
+      "addressCountry": "IN"
+    },
+    "geo": { "@type": "GeoCoordinates", "latitude": "18.5830", "longitude": "72.9028" },
+    "openingHours": "Mo-Su 08:00-22:00",
+    "sameAs": [
+      "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
+      "https://www.facebook.com/dolphinhousealibaug/",
+      "https://www.instagram.com/dolphinhousealibaug/"
+    ],
+    "hasMap": "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8"
+  }
+  </script>
 
 </Layout>
+
