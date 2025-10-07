@@ -1,22 +1,33 @@
-export async function onRequestGet(context) {
-  const db = context.env.DB;
-  const { searchParams } = new URL(context.request.url);
+export async function onRequestGet({ env, request }) {
+  const db = env.DB;
+  const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
 
-  if (id) {
-    const booking = await db.prepare("SELECT * FROM bookings WHERE id = ?").bind(id).first();
-    return new Response(JSON.stringify(booking || {}), { status: 200 });
-  }
+  try {
+    if (id) {
+      const booking = await db
+        .prepare("SELECT * FROM bookings WHERE id = ?")
+        .bind(id)
+        .first();
+      return Response.json(booking || {});
+    }
 
-  const rows = await db.prepare("SELECT * FROM bookings ORDER BY createdAt DESC").all();
-  return new Response(JSON.stringify(rows.results), { status: 200 });
+    const { results } = await db
+      .prepare("SELECT * FROM bookings ORDER BY createdAt DESC")
+      .all();
+    return Response.json(results);
+  } catch (err) {
+    console.error("GET /api/bookings failed:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
-export async function onRequestPost(context) {
-  const db = context.env.DB;
-  const body = await context.request.json();
-
-  // auto-generate UUID for D1
+export async function onRequestPost({ env, request }) {
+  const db = env.DB;
+  const body = await request.json();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
@@ -27,27 +38,47 @@ export async function onRequestPost(context) {
     checkin,
     checkout,
     guests = 2,
-    nights,
-    total,
-    status = "payment_pending"
+    nights = 1,
+    total = 0,
+    status = "payment_pending",
   } = body;
 
-  await db
-    .prepare(
-      `INSERT INTO bookings (id, name, email, room, checkin, checkout, guests, nights, total, status, createdAt)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    )
-    .bind(id, name, email, room, checkin, checkout, guests, nights, total, status, now)
-    .run();
+  try {
+    await db
+      .prepare(
+        `INSERT INTO bookings (
+          id, name, email, room, checkin, checkout,
+          guests, nights, total, status, createdAt
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .bind(id, name, email, room, checkin, checkout, guests, nights, total, status, now)
+      .run();
 
-  return new Response(JSON.stringify({ success: true, id }), { status: 200 });
+    return Response.json({ success: true, id });
+  } catch (err) {
+    console.error("POST /api/bookings failed:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
-export async function onRequestPut(context) {
-  const db = context.env.DB;
-  const body = await context.request.json();
+export async function onRequestPut({ env, request }) {
+  const db = env.DB;
+  const body = await request.json();
   const { id, status } = body;
 
-  await db.prepare("UPDATE bookings SET status = ? WHERE id = ?").bind(status, id).run();
-  return new Response(JSON.stringify({ success: true }), { status: 200 });
+  try {
+    await db.prepare("UPDATE bookings SET status = ? WHERE id = ?")
+      .bind(status, id)
+      .run();
+    return Response.json({ success: true });
+  } catch (err) {
+    console.error("PUT /api/bookings failed:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
