@@ -10,4 +10,59 @@ import Layout from "../layouts/Layout.astro";
       <p class="text-sm">Email: <a class="text-sky-600" href="mailto:dolphinhouse19@gmail.com">dolphinhouse19@gmail.com</a></p>
     </div>
   </div>
+  <!-- 🧠 LocalBusiness Schema for Contact Page -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Hotel",
+  "name": "Dolphin House Beach Resort",
+  "alternateName": "Dolphin House Resort Nagaon Alibaug",
+  "url": "https://dolphinhouse-website.pages.dev/contact",
+  "logo": "https://dolphinhouse-website.pages.dev/uploader/logo-512.webp",
+  "image": [
+    "https://dolphinhouse-website.pages.dev/uploader/dolphinhouse-front-4.webp",
+    "https://dolphinhouse-website.pages.dev/uploader/hotel-front-1.webp",
+    "https://dolphinhouse-website.pages.dev/uploader/swimming-pool1.webp"
+  ],
+  "description": "Contact Dolphin House Beach Resort in Nagaon, Alibaug — book your stay, check availability, or request details about our AC rooms, cottages, and swimming pool.",
+  "telephone": "+91-9730627615",
+  "email": "dolphinhouse19@gmail.com",
+  "priceRange": "₹₹₹",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Nagaon Beach Road, Nagaon",
+    "addressLocality": "Alibaug",
+    "addressRegion": "Maharashtra",
+    "postalCode": "402204",
+    "addressCountry": "IN"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "18.5830",
+    "longitude": "72.9028"
+  },
+  "openingHoursSpecification": [{
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": [
+      "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+    ],
+    "opens": "08:00",
+    "closes": "22:00"
+  }],
+  "sameAs": [
+    "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
+    "https://www.facebook.com/dolphinhousealibaug/",
+    "https://www.instagram.com/dolphinhousealibaug/"
+  ],
+  "hasMap": "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
+  "contactPoint": [{
+    "@type": "ContactPoint",
+    "telephone": "+91-9730627615",
+    "contactType": "reservations",
+    "areaServed": "IN",
+    "availableLanguage": ["English", "Hindi", "Marathi"]
+  }]
+}
+</script>
+
 </Layout>
