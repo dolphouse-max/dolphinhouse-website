@@ -4,15 +4,37 @@ import Layout from "../../layouts/Layout.astro";
 
 <Layout title="Admin Dashboard | Dolphin House">
 
-  <section class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-lg mt-10 mb-16">
-    <h1 class="text-3xl font-bold text-sky-700 mb-2 text-center">🏠 Admin Dashboard</h1>
-    <p class="text-center text-gray-600 mb-10">Overview of bookings, payments, and room availability</p>
+  <section id="reportArea" class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-lg mt-10 mb-16">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-sky-700">🏨 Admin Dashboard</h1>
+        <p class="text-gray-600">Monitor bookings, occupancy, and revenue trends in real time</p>
+      </div>
+      <button id="downloadPdfBtn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg shadow">
+        📥 Download PDF Report
+      </button>
+    </div>
+
+    <!-- 🗓 Filters -->
+    <div class="flex flex-wrap justify-center items-center gap-4 mb-8">
+      <div class="flex gap-2">
+        <button class="filter-btn bg-sky-600 text-white px-4 py-2 rounded" data-filter="today">Today</button>
+        <button class="filter-btn bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded" data-filter="week">This Week</button>
+        <button class="filter-btn bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded" data-filter="month">This Month</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="startDate" type="date" class="border rounded px-3 py-2" />
+        <span>→</span>
+        <input id="endDate" type="date" class="border rounded px-3 py-2" />
+        <button id="applyRangeBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Apply</button>
+      </div>
+    </div>
 
     <!-- ✅ Summary Cards -->
-    <div id="summary" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <div id="summary" class="grid sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
       <div class="p-6 bg-sky-50 rounded-xl text-center border">
-        <h3 class="text-gray-700 text-sm font-medium mb-1">Today’s Bookings</h3>
-        <div id="todayCount" class="text-3xl font-bold text-sky-700">—</div>
+        <h3 class="text-gray-700 text-sm font-medium mb-1">Bookings</h3>
+        <div id="totalCount" class="text-3xl font-bold text-sky-700">—</div>
       </div>
       <div class="p-6 bg-yellow-50 rounded-xl text-center border">
         <h3 class="text-gray-700 text-sm font-medium mb-1">Pending</h3>
@@ -26,16 +48,51 @@ import Layout from "../../layouts/Layout.astro";
         <h3 class="text-gray-700 text-sm font-medium mb-1">Vacant Rooms</h3>
         <div id="vacantCount" class="text-3xl font-bold text-gray-700">—</div>
       </div>
+      <div class="p-6 bg-emerald-50 rounded-xl text-center border">
+        <h3 class="text-gray-700 text-sm font-medium mb-1">Revenue (₹)</h3>
+        <div id="revenueCount" class="text-3xl font-bold text-emerald-700">—</div>
+      </div>
     </div>
 
-    <!-- 📊 Quick Chart -->
+    <!-- 📊 Bar Chart -->
     <section class="bg-gray-50 p-6 rounded-lg mb-10 border">
-      <h2 class="text-xl font-semibold mb-4">Occupancy Snapshot</h2>
+      <div class="flex justify-between items-center mb-4">
+        <h2 id="chartTitle" class="text-xl font-semibold">Occupancy Snapshot</h2>
+        <button id="refreshBtn" class="text-sm px-3 py-1 bg-sky-600 text-white rounded hover:bg-sky-700">🔄 Refresh Now</button>
+      </div>
       <canvas id="occupancyChart" height="120"></canvas>
     </section>
 
-    <!-- 🔗 Navigation Buttons -->
-    <div class="flex flex-wrap justify-center gap-6 mt-8">
+    <!-- 📈 Occupancy Trend -->
+    <section class="bg-white p-6 rounded-lg shadow border mb-10">
+      <h2 class="text-xl font-semibold mb-4">📈 Occupancy Trend Over Time</h2>
+      <canvas id="trendChart" height="120"></canvas>
+    </section>
+
+    <!-- 💰 Revenue Trend -->
+    <section class="bg-white p-6 rounded-lg shadow border mb-10">
+      <h2 class="text-xl font-semibold mb-4">💰 Revenue Trend (₹/Day)</h2>
+      <canvas id="revenueChart" height="120"></canvas>
+    </section>
+
+    <!-- 🕓 Recent Bookings -->
+    <section class="bg-white p-6 rounded-lg shadow border">
+      <h2 class="text-xl font-semibold mb-4">Recent Bookings</h2>
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="border-b bg-gray-100 text-left">
+            <th class="py-2 px-3">Guest</th>
+            <th class="py-2 px-3">Room</th>
+            <th class="py-2 px-3">Dates</th>
+            <th class="py-2 px-3 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody id="recentBookings"></tbody>
+      </table>
+    </section>
+
+    <!-- 🔗 Navigation -->
+    <div class="flex flex-wrap justify-center gap-6 mt-10">
       <a href="/admin/bookings" class="px-6 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-700">📘 Bookings</a>
       <a href="/admin/inventory" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700">🧾 Inventory</a>
       <a href="/admin/calendar" class="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">📅 Calendar</a>
@@ -44,57 +101,66 @@ import Layout from "../../layouts/Layout.astro";
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script client:load>
-    async function loadData() {
-      try {
-        const [bookRes, invRes] = await Promise.all([
-          fetch('/api/bookings'),
-          fetch('/api/inventory')
-        ]);
+    const { jsPDF } = window.jspdf;
+    let chartInstance = null, trendInstance = null, revenueInstance = null;
+    let currentFilter = 'today';
 
-        const bookings = await bookRes.json();
-        const inventory = await invRes.json();
-
-        const today = new Date().toISOString().split('T')[0];
-        const todayBookings = bookings.filter(b => b.checkin === today).length;
-        const pending = bookings.filter(b => b.status === 'payment_pending').length;
-        const confirmed = bookings.filter(b => b.status === 'confirmed').length;
-
-        const totalRooms = inventory.reduce((sum, r) => sum + r.qty, 0);
-        const occupiedRooms = bookings.filter(b => b.status !== 'cancelled').length;
-        const vacant = totalRooms - occupiedRooms;
-
-        document.getElementById('todayCount').textContent = todayBookings;
-        document.getElementById('pendingCount').textContent = pending;
-        document.getElementById('confirmedCount').textContent = confirmed;
-        document.getElementById('vacantCount').textContent = vacant;
-
-        // 📊 Chart
-        const ctx = document.getElementById('occupancyChart');
-        new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: ['Booked', 'Vacant'],
-            datasets: [{
-              label: 'Rooms',
-              data: [occupiedRooms, vacant],
-              backgroundColor: ['rgba(59,130,246,0.7)', 'rgba(34,197,94,0.7)'],
-              borderColor: ['#3B82F6', '#22C55E'],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            scales: {
-              y: { beginAtZero: true, title: { display: true, text: 'Rooms' } }
-            },
-            plugins: { legend: { display: false } }
-          }
-        });
-      } catch (err) {
-        console.error(err);
-      }
+    async function loadDashboard() {
+      const [bookRes, invRes] = await Promise.all([fetch('/api/bookings'), fetch('/api/inventory')]);
+      const bookings = await bookRes.json();
+      const inventory = await invRes.json();
+      const filtered = filterBookings(bookings, currentFilter);
+      const pending = filtered.filter(b => b.status === 'payment_pending').length;
+      const confirmed = filtered.filter(b => b.status === 'confirmed').length;
+      const totalRooms = inventory.reduce((sum, r) => sum + r.qty, 0);
+      const occupiedRooms = filtered.filter(b => b.status !== 'cancelled').length;
+      const vacant = totalRooms - occupiedRooms;
+      const totalRevenue = Math.round(filtered.reduce((sum, b) => sum + (b.finalTotal || b.total || 0), 0));
+      document.getElementById('totalCount').textContent = filtered.length;
+      document.getElementById('pendingCount').textContent = pending;
+      document.getElementById('confirmedCount').textContent = confirmed;
+      document.getElementById('vacantCount').textContent = vacant;
+      document.getElementById('revenueCount').textContent = "₹" + totalRevenue.toLocaleString();
+      updateRecent(filtered);
     }
-    loadData();
+
+    function filterBookings(bookings, filter) {
+      const now = new Date(); const start = new Date(); let end = new Date();
+      if (filter === 'today') return bookings.filter(b => b.checkin === now.toISOString().split('T')[0]);
+      if (filter === 'week') { start.setDate(now.getDate() - now.getDay()); end.setDate(start.getDate() + 7); }
+      if (filter === 'month') { start.setDate(1); end = new Date(now.getFullYear(), now.getMonth() + 1, 0); }
+      return bookings.filter(b => { const ci = new Date(b.checkin); return ci >= start && ci <= end; });
+    }
+
+    function updateRecent(list) {
+      const tbody = document.getElementById('recentBookings');
+      tbody.innerHTML = list.slice(0, 5).map(b => `
+        <tr class="border-b hover:bg-gray-50">
+          <td class="py-2 px-3">${b.name || '—'}</td>
+          <td class="py-2 px-3">${b.room}</td>
+          <td class="py-2 px-3">${b.checkin} → ${b.checkout}</td>
+          <td class="py-2 px-3 text-center">${b.status}</td>
+        </tr>`).join('');
+    }
+
+    document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
+      const report = document.getElementById('reportArea');
+      const canvas = await html2canvas(report, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const imgHeight = (canvas.height * pageWidth) / canvas.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
+      pdf.setFontSize(10);
+      pdf.text(`Generated on ${new Date().toLocaleString()}`, 10, 290);
+      pdf.text('Dolphin House Beach Resort – Admin Report', 10, 285);
+      pdf.save('DolphinHouse_Report.pdf');
+    });
+
+    loadDashboard();
   </script>
 </Layout>
