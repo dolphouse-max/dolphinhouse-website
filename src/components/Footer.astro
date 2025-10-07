@@ -1,31 +1,54 @@
 ---
+const currentYear = new Date().getFullYear();
 ---
-<footer class="bg-gray-900 text-gray-300 py-10 mt-12">
-  <div class="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 px-4">
+
+<footer class="bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300 pt-12 pb-8 mt-16 border-t border-gray-800 shadow-inner">
+  <div class="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 px-6">
+
+    <!-- Resort Intro -->
     <div>
-      <h4 class="text-white font-semibold mb-2">Dolphin House</h4>
-      <p class="text-sm">Luxury beach resort at Nagaon Beach, Alibaug.</p>
+      <h4 class="text-white text-lg font-bold mb-3">🏖️ Dolphin House</h4>
+      <p class="text-sm leading-relaxed mb-3">
+        Luxury beach resort at <strong>Nagaon Beach, Alibaug</strong> — where comfort meets coastal beauty.
+      </p>
+      <a href="/contact" class="inline-block mt-2 text-sky-400 hover:text-sky-300 transition">
+        → Contact Us
+      </a>
     </div>
+
+    <!-- Quick Links -->
     <div>
-      <h4 class="text-white font-semibold mb-2">Quick Links</h4>
-      <ul class="text-sm space-y-2">
-        <li><a href="/about" class="hover:text-white">About Us</a></li>
-        <li><a href="/policy" class="hover:text-white">Booking Policy</a></li>
-        <li><a href="/disclaimer" class="hover:text-white">Disclaimer</a></li>
-        <li><a href="/privacy" class="hover:text-white">Privacy Policy</a></li>  
-        <li><a href="/terms" class="hover:text-white">Terms & Conditions</a></li>
+      <h4 class="text-white text-lg font-bold mb-3">Quick Links</h4>
+      <ul class="space-y-2 text-sm">
+        <li><a href="/about" class="hover:text-sky-400 transition">About Us</a></li>
+        <li><a href="/booking-policy" class="hover:text-sky-400 transition">Booking Policy</a></li>
+        <li><a href="/privacy" class="hover:text-sky-400 transition">Privacy Policy</a></li>
+        <li><a href="/terms" class="hover:text-sky-400 transition">Terms & Conditions</a></li>
+        <li><a href="/disclaimer" class="hover:text-sky-400 transition">Disclaimer</a></li>
       </ul>
     </div>
+
+    <!-- Contact Info -->
     <div>
-      <h4 class="text-white font-semibold mb-2">Contact</h4>
-      <p class="text-sm">Nagaon Beach Road, Nagaon — 402204</p>
-      <p class="text-sm">📞 8554871073 / 7276171735</p>
-      <p class="text-sm">✉ dolphouse@gmail.com</p>
+      <h4 class="text-white text-lg font-bold mb-3">Contact</h4>
+      <ul class="space-y-2 text-sm">
+        <li>📍 Nagaon Beach Road, Nagaon — 402204</li>
+        <li>📞 <a href="tel:+918554871073" class="hover:text-sky-400 transition">+91 8554871073</a> / 
+                 <a href="tel:+917276171735" class="hover:text-sky-400 transition">7276171735</a></li>
+        <li>✉ <a href="mailto:dolphouse@gmail.com" class="hover:text-sky-400 transition">dolphouse@gmail.com</a></li>
+      </ul>
+
+      <div class="flex space-x-4 mt-4">
+        <a href="https://facebook.com/dolphinhousealibaug" target="_blank" class="hover:text-white text-xl transition">📘</a>
+        <a href="https://www.instagram.com/dolphinhousealibaug" target="_blank" class="hover:text-white text-xl transition">📸</a>
+        <a href="https://wa.me/+918552960807" target="_blank" class="hover:text-white text-xl transition">💬</a>
+      </div>
     </div>
   </div>
 
-  <div class="max-w-7xl mx-auto mt-8 px-4 text-xs text-gray-500 text-center">
-    © {new Date().getFullYear()} Dolphin House Beach Resort. All rights reserved. 
-    <a href="/admin" class="text-gray-900">.</a>
+  <!-- Bottom Bar -->
+  <div class="max-w-7xl mx-auto mt-10 px-6 text-center text-xs text-gray-500 border-t border-gray-800 pt-6">
+    © {currentYear} <strong>Dolphin House Beach Resort</strong>. All rights reserved.
+    <a href="/admin" class="text-gray-800 ml-1">.</a>
   </div>
 </footer>
