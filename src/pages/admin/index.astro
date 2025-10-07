@@ -4,31 +4,97 @@ import Layout from "../../layouts/Layout.astro";
 
 <Layout title="Admin Dashboard | Dolphin House">
 
-  <section class="max-w-4xl mx-auto p-10 bg-white rounded-2xl shadow-lg mt-12 space-y-8">
-    <h1 class="text-3xl font-bold text-center text-sky-700">🏠 Admin Dashboard</h1>
-    <p class="text-center text-gray-600 mb-8">Manage all aspects of Dolphin House — bookings, rooms, and occupancy at a glance.</p>
+  <section class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-lg mt-10 mb-16">
+    <h1 class="text-3xl font-bold text-sky-700 mb-2 text-center">🏠 Admin Dashboard</h1>
+    <p class="text-center text-gray-600 mb-10">Overview of bookings, payments, and room availability</p>
 
-    <div class="grid sm:grid-cols-2 gap-6 text-center">
-      <a href="/admin/bookings" class="p-8 bg-sky-50 hover:bg-sky-100 border rounded-xl shadow transition">
-        <h2 class="text-xl font-semibold mb-2">📘 Bookings</h2>
-        <p class="text-sm text-gray-600">View, confirm, and manage all bookings.</p>
-      </a>
+    <!-- ✅ Summary Cards -->
+    <div id="summary" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="p-6 bg-sky-50 rounded-xl text-center border">
+        <h3 class="text-gray-700 text-sm font-medium mb-1">Today’s Bookings</h3>
+        <div id="todayCount" class="text-3xl font-bold text-sky-700">—</div>
+      </div>
+      <div class="p-6 bg-yellow-50 rounded-xl text-center border">
+        <h3 class="text-gray-700 text-sm font-medium mb-1">Pending</h3>
+        <div id="pendingCount" class="text-3xl font-bold text-yellow-600">—</div>
+      </div>
+      <div class="p-6 bg-green-50 rounded-xl text-center border">
+        <h3 class="text-gray-700 text-sm font-medium mb-1">Confirmed</h3>
+        <div id="confirmedCount" class="text-3xl font-bold text-green-700">—</div>
+      </div>
+      <div class="p-6 bg-gray-50 rounded-xl text-center border">
+        <h3 class="text-gray-700 text-sm font-medium mb-1">Vacant Rooms</h3>
+        <div id="vacantCount" class="text-3xl font-bold text-gray-700">—</div>
+      </div>
+    </div>
 
-      <a href="/admin/inventory" class="p-8 bg-green-50 hover:bg-green-100 border rounded-xl shadow transition">
-        <h2 class="text-xl font-semibold mb-2">🧾 Inventory</h2>
-        <p class="text-sm text-gray-600">Edit room quantities, rates, and occupancy details.</p>
-      </a>
+    <!-- 📊 Quick Chart -->
+    <section class="bg-gray-50 p-6 rounded-lg mb-10 border">
+      <h2 class="text-xl font-semibold mb-4">Occupancy Snapshot</h2>
+      <canvas id="occupancyChart" height="120"></canvas>
+    </section>
 
-      <a href="/admin/calendar" class="p-8 bg-yellow-50 hover:bg-yellow-100 border rounded-xl shadow transition">
-        <h2 class="text-xl font-semibold mb-2">📅 Calendar</h2>
-        <p class="text-sm text-gray-600">Visualize occupancy and booking trends per day.</p>
-      </a>
-
-      <a href="/" class="p-8 bg-gray-50 hover:bg-gray-100 border rounded-xl shadow transition">
-        <h2 class="text-xl font-semibold mb-2">🏖 Back to Website</h2>
-        <p class="text-sm text-gray-600">Return to main Dolphin House site.</p>
-      </a>
+    <!-- 🔗 Navigation Buttons -->
+    <div class="flex flex-wrap justify-center gap-6 mt-8">
+      <a href="/admin/bookings" class="px-6 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-700">📘 Bookings</a>
+      <a href="/admin/inventory" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700">🧾 Inventory</a>
+      <a href="/admin/calendar" class="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">📅 Calendar</a>
+      <a href="/" class="px-6 py-3 bg-gray-200 rounded-lg hover:bg-gray-300">🏖 Back to Website</a>
     </div>
   </section>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script client:load>
+    async function loadData() {
+      try {
+        const [bookRes, invRes] = await Promise.all([
+          fetch('/api/bookings'),
+          fetch('/api/inventory')
+        ]);
+
+        const bookings = await bookRes.json();
+        const inventory = await invRes.json();
+
+        const today = new Date().toISOString().split('T')[0];
+        const todayBookings = bookings.filter(b => b.checkin === today).length;
+        const pending = bookings.filter(b => b.status === 'payment_pending').length;
+        const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+
+        const totalRooms = inventory.reduce((sum, r) => sum + r.qty, 0);
+        const occupiedRooms = bookings.filter(b => b.status !== 'cancelled').length;
+        const vacant = totalRooms - occupiedRooms;
+
+        document.getElementById('todayCount').textContent = todayBookings;
+        document.getElementById('pendingCount').textContent = pending;
+        document.getElementById('confirmedCount').textContent = confirmed;
+        document.getElementById('vacantCount').textContent = vacant;
+
+        // 📊 Chart
+        const ctx = document.getElementById('occupancyChart');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Booked', 'Vacant'],
+            datasets: [{
+              label: 'Rooms',
+              data: [occupiedRooms, vacant],
+              backgroundColor: ['rgba(59,130,246,0.7)', 'rgba(34,197,94,0.7)'],
+              borderColor: ['#3B82F6', '#22C55E'],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: { beginAtZero: true, title: { display: true, text: 'Rooms' } }
+            },
+            plugins: { legend: { display: false } }
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadData();
+  </script>
 </Layout>
