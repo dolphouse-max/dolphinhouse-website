@@ -6,9 +6,12 @@ import Layout from "../../layouts/Layout.astro";
 
   <section id="reportArea" class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-lg mt-10 mb-16">
     <div class="flex justify-between items-center mb-6">
-      <div>
-        <h1 class="text-3xl font-bold text-sky-700">🏨 Admin Dashboard</h1>
-        <p class="text-gray-600">Monitor bookings, occupancy, and revenue trends in real time</p>
+      <div class="flex items-center gap-4">
+        <img src="/uploader/logo-512.webp" alt="Logo" class="w-12 h-12 rounded-full border shadow">
+        <div>
+          <h1 class="text-3xl font-bold text-sky-700">🏨 Dolphin House Admin Dashboard</h1>
+          <p class="text-gray-600">Bookings, Occupancy, and Revenue Insights</p>
+        </div>
       </div>
       <button id="downloadPdfBtn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg shadow">
         📥 Download PDF Report
@@ -54,22 +57,17 @@ import Layout from "../../layouts/Layout.astro";
       </div>
     </div>
 
-    <!-- 📊 Bar Chart -->
+    <!-- 📊 Charts -->
     <section class="bg-gray-50 p-6 rounded-lg mb-10 border">
-      <div class="flex justify-between items-center mb-4">
-        <h2 id="chartTitle" class="text-xl font-semibold">Occupancy Snapshot</h2>
-        <button id="refreshBtn" class="text-sm px-3 py-1 bg-sky-600 text-white rounded hover:bg-sky-700">🔄 Refresh Now</button>
-      </div>
+      <h2 id="chartTitle" class="text-xl font-semibold mb-4">📊 Occupancy Snapshot</h2>
       <canvas id="occupancyChart" height="120"></canvas>
     </section>
 
-    <!-- 📈 Occupancy Trend -->
     <section class="bg-white p-6 rounded-lg shadow border mb-10">
       <h2 class="text-xl font-semibold mb-4">📈 Occupancy Trend Over Time</h2>
       <canvas id="trendChart" height="120"></canvas>
     </section>
 
-    <!-- 💰 Revenue Trend -->
     <section class="bg-white p-6 rounded-lg shadow border mb-10">
       <h2 class="text-xl font-semibold mb-4">💰 Revenue Trend (₹/Day)</h2>
       <canvas id="revenueChart" height="120"></canvas>
@@ -77,7 +75,7 @@ import Layout from "../../layouts/Layout.astro";
 
     <!-- 🕓 Recent Bookings -->
     <section class="bg-white p-6 rounded-lg shadow border">
-      <h2 class="text-xl font-semibold mb-4">Recent Bookings</h2>
+      <h2 class="text-xl font-semibold mb-4">🕓 Recent Bookings</h2>
       <table class="w-full text-sm border-collapse">
         <thead>
           <tr class="border-b bg-gray-100 text-left">
@@ -90,14 +88,6 @@ import Layout from "../../layouts/Layout.astro";
         <tbody id="recentBookings"></tbody>
       </table>
     </section>
-
-    <!-- 🔗 Navigation -->
-    <div class="flex flex-wrap justify-center gap-6 mt-10">
-      <a href="/admin/bookings" class="px-6 py-3 bg-sky-600 text-white rounded-lg hover:bg-sky-700">📘 Bookings</a>
-      <a href="/admin/inventory" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700">🧾 Inventory</a>
-      <a href="/admin/calendar" class="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">📅 Calendar</a>
-      <a href="/" class="px-6 py-3 bg-gray-200 rounded-lg hover:bg-gray-300">🏖 Back to Website</a>
-    </div>
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -106,61 +96,72 @@ import Layout from "../../layouts/Layout.astro";
 
   <script client:load>
     const { jsPDF } = window.jspdf;
-    let chartInstance = null, trendInstance = null, revenueInstance = null;
-    let currentFilter = 'today';
 
-    async function loadDashboard() {
-      const [bookRes, invRes] = await Promise.all([fetch('/api/bookings'), fetch('/api/inventory')]);
-      const bookings = await bookRes.json();
-      const inventory = await invRes.json();
-      const filtered = filterBookings(bookings, currentFilter);
-      const pending = filtered.filter(b => b.status === 'payment_pending').length;
-      const confirmed = filtered.filter(b => b.status === 'confirmed').length;
-      const totalRooms = inventory.reduce((sum, r) => sum + r.qty, 0);
-      const occupiedRooms = filtered.filter(b => b.status !== 'cancelled').length;
-      const vacant = totalRooms - occupiedRooms;
-      const totalRevenue = Math.round(filtered.reduce((sum, b) => sum + (b.finalTotal || b.total || 0), 0));
-      document.getElementById('totalCount').textContent = filtered.length;
-      document.getElementById('pendingCount').textContent = pending;
-      document.getElementById('confirmedCount').textContent = confirmed;
-      document.getElementById('vacantCount').textContent = vacant;
-      document.getElementById('revenueCount').textContent = "₹" + totalRevenue.toLocaleString();
-      updateRecent(filtered);
-    }
-
-    function filterBookings(bookings, filter) {
-      const now = new Date(); const start = new Date(); let end = new Date();
-      if (filter === 'today') return bookings.filter(b => b.checkin === now.toISOString().split('T')[0]);
-      if (filter === 'week') { start.setDate(now.getDate() - now.getDay()); end.setDate(start.getDate() + 7); }
-      if (filter === 'month') { start.setDate(1); end = new Date(now.getFullYear(), now.getMonth() + 1, 0); }
-      return bookings.filter(b => { const ci = new Date(b.checkin); return ci >= start && ci <= end; });
-    }
-
-    function updateRecent(list) {
-      const tbody = document.getElementById('recentBookings');
-      tbody.innerHTML = list.slice(0, 5).map(b => `
-        <tr class="border-b hover:bg-gray-50">
-          <td class="py-2 px-3">${b.name || '—'}</td>
-          <td class="py-2 px-3">${b.room}</td>
-          <td class="py-2 px-3">${b.checkin} → ${b.checkout}</td>
-          <td class="py-2 px-3 text-center">${b.status}</td>
-        </tr>`).join('');
-    }
-
-    document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
-      const report = document.getElementById('reportArea');
-      const canvas = await html2canvas(report, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
+    // Generate PDF with multiple pages and custom branding
+    async function generatePDF() {
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const imgHeight = (canvas.height * pageWidth) / canvas.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
-      pdf.setFontSize(10);
-      pdf.text(`Generated on ${new Date().toLocaleString()}`, 10, 290);
-      pdf.text('Dolphin House Beach Resort – Admin Report', 10, 285);
-      pdf.save('DolphinHouse_Report.pdf');
-    });
+      const report = document.getElementById('reportArea');
+      const logoUrl = '/uploader/logo-512.webp';
+      const start = document.getElementById('startDate').value || '—';
+      const end = document.getElementById('endDate').value || '—';
+      const dateRange = (start !== '—' || end !== '—') ? `${start} → ${end}` : "All Data";
 
-    loadDashboard();
+      // 1️⃣ Header Page
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(22);
+      pdf.text("🏨 Dolphin House Beach Resort", 20, 40);
+      pdf.setFontSize(14);
+      pdf.setTextColor(60);
+      pdf.text("Admin Performance Report", 20, 55);
+      pdf.setFontSize(12);
+      pdf.text(`Date Range: ${dateRange}`, 20, 70);
+      pdf.text(`Generated on: ${new Date().toLocaleString()}`, 20, 80);
+      pdf.addImage(logoUrl, 'WEBP', 150, 20, 40, 40);
+      pdf.setLineWidth(0.5);
+      pdf.line(20, 90, 190, 90);
+      pdf.text("Summary and Analytics Overview", 20, 100);
+      pdf.addPage();
+
+      // 2️⃣ Summary Page
+      const summaryCanvas = await html2canvas(document.getElementById('summary'), { scale: 2 });
+      const summaryImg = summaryCanvas.toDataURL('image/png');
+      const width = 190;
+      const height = (summaryCanvas.height * width) / summaryCanvas.width;
+      pdf.addImage(summaryImg, 'PNG', 10, 20, width, height);
+      pdf.text("Booking & Revenue Summary", 20, 15);
+      pdf.addPage();
+
+      // 3️⃣ Charts Page
+      const charts = ['occupancyChart', 'trendChart', 'revenueChart'];
+      for (let i = 0; i < charts.length; i++) {
+        const chart = document.getElementById(charts[i]);
+        if (chart) {
+          const chartCanvas = await html2canvas(chart, { scale: 2 });
+          const imgData = chartCanvas.toDataURL('image/png');
+          pdf.addImage(imgData, 'PNG', 10, 20, 190, 110);
+          pdf.text(chart.parentElement.querySelector('h2').innerText, 20, 15);
+          if (i < charts.length - 1) pdf.addPage();
+        }
+      }
+
+      // 4️⃣ Recent Bookings Table
+      const table = document.querySelector('#recentBookings').closest('section');
+      const tableCanvas = await html2canvas(table, { scale: 2 });
+      const tableImg = tableCanvas.toDataURL('image/png');
+      pdf.addImage(tableImg, 'PNG', 10, 20, 190, (tableCanvas.height * 190) / tableCanvas.width);
+
+      // Footer & Page Numbers
+      const pageCount = pdf.internal.getNumberOfPages();
+      pdf.setFontSize(9);
+      for (let i = 1; i <= pageCount; i++) {
+        pdf.setPage(i);
+        pdf.text(`Page ${i} of ${pageCount}`, 180, 290, { align: "right" });
+        pdf.text("© Dolphin House Beach Resort", 20, 290);
+      }
+
+      pdf.save(`DolphinHouse_Report_${Date.now()}.pdf`);
+    }
+
+    document.getElementById('downloadPdfBtn').addEventListener('click', generatePDF);
   </script>
 </Layout>
