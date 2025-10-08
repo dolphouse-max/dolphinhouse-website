@@ -1,0 +1,56 @@
+---
+const phoneNumber = "+918554871073"; // ✅ your resort’s WhatsApp number
+const message = "Hello Dolphin House! I'd like to know about room availability.";
+const encodedMsg = encodeURIComponent(message);
+const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
+---
+
+<style>
+  .whatsapp-float {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    background-color: #25D366;
+    color: white;
+    border-radius: 50%;
+    width: 58px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    animation: floatUp 0.8s ease-out;
+  }
+
+  .whatsapp-float:hover {
+    transform: scale(1.1);
+    background-color: #20ba5a;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(40px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @media (max-width: 640px) {
+    .whatsapp-float {
+      width: 50px;
+      height: 50px;
+      font-size: 26px;
+      bottom: 18px;
+      right: 18px;
+    }
+  }
+</style>
+
+<a href={whatsappURL} 
+   target="_blank" 
+   rel="noopener noreferrer" 
+   aria-label="Chat on WhatsApp"
+   class="whatsapp-float">
+  💬
+</a>
