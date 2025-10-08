@@ -1,8 +1,9 @@
 ---
-const phoneNumber = "+918554871073"; // ✅ your resort’s WhatsApp number
+const phoneNumber = "+918554871073"; // ✅ your WhatsApp number
 const message = "Hello Dolphin House! I'd like to know about room availability.";
 const encodedMsg = encodeURIComponent(message);
-const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
+const whatsappWeb = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
+const whatsappApp = `whatsapp://send?phone=${phoneNumber}&text=${encodedMsg}`;
 ---
 
 <style>
@@ -31,26 +32,85 @@ const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMsg}`;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
   }
 
+  /* Tooltip */
+  .whatsapp-tooltip {
+    position: absolute;
+    right: 70px;
+    bottom: 18px;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(5px);
+    pointer-events: none;
+    transition: all 0.25s ease;
+  }
+
+  .whatsapp-float:hover + .whatsapp-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Animation */
   @keyframes floatUp {
     0% { transform: translateY(40px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
   }
 
+  /* Hide on scroll (JS toggles this) */
+  .hidden {
+    opacity: 0;
+    transform: translateY(80px);
+    pointer-events: none;
+  }
+
   @media (max-width: 640px) {
     .whatsapp-float {
-      width: 50px;
-      height: 50px;
+      width: 52px;
+      height: 52px;
       font-size: 26px;
       bottom: 18px;
       right: 18px;
     }
+    .whatsapp-tooltip {
+      display: none; /* hide tooltip on mobile */
+    }
   }
 </style>
 
-<a href={whatsappURL} 
-   target="_blank" 
-   rel="noopener noreferrer" 
+<a id="whatsappBtn"
+   href={whatsappWeb}
+   target="_blank"
+   rel="noopener noreferrer"
    aria-label="Chat on WhatsApp"
    class="whatsapp-float">
   💬
 </a>
+<span class="whatsapp-tooltip">Chat with us!</span>
+
+<script>
+  const btn = document.getElementById('whatsappBtn');
+  let lastScroll = window.scrollY;
+
+  // Detect mobile → open app directly
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobile) {
+    btn.href = "{whatsappApp}";
+  }
+
+  // Auto-hide when scrolling up
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.scrollY;
+    if (currentScroll < lastScroll) {
+      // scrolling up
+      btn.classList.add('hidden');
+    } else {
+      // scrolling down
+      btn.classList.remove('hidden');
+    }
+    lastScroll = currentScroll;
+  });
+</script>
