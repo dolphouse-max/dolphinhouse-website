@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "astro": "^5.14.1",
-    "sharp": "^0.34.4"
+    "csv-parser": "^3.2.0",
+    "node-fetch": "^3.3.2",
+    "sharp": "^0.34.4",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@astrojs/tailwind": "^6.0.2",

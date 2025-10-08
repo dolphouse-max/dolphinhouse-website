@@ -1,0 +1,9 @@
+RoomType,StandardRate,Capacity,KeyFeatures,BookingNote
+Standard Non AC Room,2000,2,"Private veranda, Geyser, Satellite TV. ,",Best for couples looking for privacy.
+Standard AC Room,2300,2,"AC, Private veranda, Geyser, Satellite TV.  ,",Best for couples looking for privacy.
+Deluxe Non AC Room,2300,3,"Large room, Veranda, Geyser, Satellite TV.  ,",Our most popular option for small families.
+Deluxe AC Room,2600,3,"AC, Large room, Veranda, Geyser, Satellite TV.  ",Our most popular option for small families.
+Standard Family  Non AC Room,3000,4,"Two interconnected rooms, One bathroom, Geyser.  ,",Ideal for larger families or two couples.
+Standard Family  AC Room,3500,4,"AC, Two interconnected rooms, One bathroom, Geyser. Satellite TV.  ,",Ideal for larger families or two couples.
+Deluxe Family  Non AC Room,3300,4,"Two interconnected rooms, One bathroom, Geyser. Satellite TV.  ,",Ideal for larger families or two couples.
+Deluxe Family  AC Room,3800,4,"AC, Two interconnected rooms, One bathroom, Geyser. Satellite TV.  ,",Ideal for larger families or two couples.

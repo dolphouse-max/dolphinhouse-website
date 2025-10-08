@@ -92,3 +92,15 @@
   transform: translateY(-4px);
   box-shadow: 0 8px 15px rgba(0,0,0,0.1);
 }
+/* Contact Card Enhancements */
+.section-card {
+  @apply bg-white rounded-3xl shadow-xl p-8 border border-gray-100 transition transform hover:scale-[1.02] hover:shadow-2xl;
+}
+
+/* Button Transitions */
+.btn-primary {
+  @apply bg-sky-600 text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-sky-700 transition transform hover:scale-105;
+}
+.btn-secondary {
+  @apply border border-sky-600 text-sky-600 px-6 py-3 rounded-full font-semibold hover:bg-sky-50 transition transform hover:scale-105;
+}
