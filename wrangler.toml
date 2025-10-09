@@ -9,5 +9,4 @@ command = "npm run build"
 bucket = "./dist"
 
 [pages]
-# 👇 This line is critical
 functions = "./functions"
