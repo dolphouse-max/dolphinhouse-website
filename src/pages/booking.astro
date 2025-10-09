@@ -6,6 +6,7 @@ import Layout from "../layouts/Layout.astro";
 
   <section class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
     <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Check Availability & Book</h1>
+    <div id="errorBox" class="hidden bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center"></div>
 
     <!-- Step 1: Guest Info -->
     <div id="guestForm" class="space-y-4 mb-8">
@@ -45,17 +46,43 @@ import Layout from "../layouts/Layout.astro";
       <div id="roomList" class="grid gap-4"></div>
     </div>
   </section>
+  
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.remove('hidden');
+  }
 
   <script client:load>
-    async function fetchBookings() {
-      const res = await fetch('/api/bookings');
-      return await res.json();
+   async function fetchBookings() {
+      try {
+        const res = await fetch('/api/bookings');
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.warn('⚠️ bookings API unavailable:', err);
+        showError("We’re unable to load current bookings — showing estimated availability.");
+        return []; // fallback: no existing bookings
+      }
     }
 
     async function fetchInventory() {
-      const res = await fetch('/api/inventory');
-      return await res.json();
+      try {
+        const res = await fetch('/api/inventory');
+        if (!res.ok) throw new Error(`Server returned ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.warn('⚠️ inventory API unavailable:', err);
+        showError("Inventory service is temporarily unavailable — using sample data for now.");
+        // fallback mock data so user can still proceed
+        return {
+          standard: { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2500 },
+          deluxe: { label: "Deluxe Room", qty: 3, rateNonAC: 3000, rateAC: 3500 },
+          suite: { label: "Suite Room", qty: 2, rateNonAC: 4500, rateAC: 5000 }
+        };
+      }
     }
+
 
     function rangesOverlap(aStart, aEnd, bStart, bEnd) {
       return (aStart < bEnd) && (bStart < aEnd);

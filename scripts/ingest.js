@@ -48,7 +48,7 @@ async function insertToD1({ source, ref, text, vector }) {
 }
 
 async function processCSV(filename, source) {
-  const filePath = path.join(__dirname, filename);
+  const filePath = path.join(__dirname, "../data", filename);
   const rows = await readCSV(filePath);
   console.log(`📘 Ingesting ${rows.length} rows from ${filename}`);
 
