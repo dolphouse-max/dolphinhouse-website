@@ -1,11 +1,12 @@
 name = "dolphinhouse-website"
 compatibility_date = "2024-10-01"
 
+# ✅ This is required for Cloudflare Pages to detect Astro build output
+pages_build_output_dir = "./dist"
+
+# Optional but helpful for warnings about the old Workers Site system
+main = "dist/_worker.js"
+
 [build]
 command = "npm run build"
 
-[site]
-bucket = "./dist"
-
-[pages_build_output_dir]
-pages_build_output_dir = "./dist"
