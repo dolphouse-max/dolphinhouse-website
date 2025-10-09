@@ -4,8 +4,8 @@ import tailwind from "@astrojs/tailwind";
 
 export default defineConfig({
   integrations: [tailwind()],
-  output: "server", // ✅ WORKS in all Cloudflare Pages environments
+  output: "server", // ✅ Cloudflare Pages + Functions requires "server"
   adapter: cloudflare({
-    pages: true, // ✅ enables `/functions/` support
+    pages: true, // ✅ ensures Cloudflare Pages detects the "functions/" folder
   }),
 });
