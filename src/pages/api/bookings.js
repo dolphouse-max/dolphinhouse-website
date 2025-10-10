@@ -1,5 +1,5 @@
-export async function GET({ env }) { 
-  const db = env.DB;
+export async function GET({ locals, url }) {
+  const db = locals.runtime.env.DB;
   const id = url.searchParams.get("id");
 
   try {
@@ -31,8 +31,8 @@ export async function GET({ env }) {
   }
 }
 
-export async function POST({ env, request }) {
-  const db = env.DB;
+export async function POST({ locals, request }) {
+  const db = locals.runtime.env.DB;
   const body = await request.json();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -86,8 +86,8 @@ export async function POST({ env, request }) {
   }
 }
 
-export async function PUT({ env, request }) {
-  const db = env.DB;
+export async function PUT({ locals, request }) {
+  const db = locals.runtime.env.DB;
   const body = await request.json();
   const { id, status } = body;
 
