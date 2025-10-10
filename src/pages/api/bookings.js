@@ -42,7 +42,6 @@ export async function POST({ locals, request }) {
     name = "",
     email = "",
     room,
-    acType = "nonac",
     checkin,
     checkout,
     guests = 2,
@@ -55,7 +54,7 @@ export async function POST({ locals, request }) {
     await db
       .prepare(
         `INSERT INTO bookings (
-          id, name, email, room, ac_type, checkin, checkout,
+          id, name, email, room, checkin, checkout,
           guests, nights, total, status, createdAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
@@ -64,7 +63,6 @@ export async function POST({ locals, request }) {
         name,
         email,
         room,
-        acType,
         checkin,
         checkout,
         guests,
