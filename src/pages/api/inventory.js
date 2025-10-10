@@ -1,6 +1,6 @@
-export async function GET({ locals }) {
+export async function GET({ env }) {
   try {
-    const db = locals.runtime.env.DB;
+    const db = env.DB;
     const { results } = await db.prepare(`
       SELECT room_type AS room, label, qty, rate_non_ac AS rateNonAC, rate_ac AS rateAC
       FROM inventory
@@ -28,9 +28,9 @@ export async function GET({ locals }) {
   }
 }
 
-export async function PUT({ locals, request }) {
+export async function PUT({ env, request }) {
   try {
-    const db = locals.runtime.env.DB;
+    const db = env.DB;
     const data = await request.json();
 
     // Clear old inventory
