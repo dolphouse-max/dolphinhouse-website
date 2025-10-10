@@ -46,15 +46,16 @@ import Layout from "../layouts/Layout.astro";
       <div id="roomList" class="grid gap-4"></div>
     </div>
   </section>
-  
-  function showError(msg) {
-    const box = document.getElementById('errorBox');
-    box.textContent = msg;
-    box.classList.remove('hidden');
-  }
 
   <script client:load>
-   async function fetchBookings() {
+    // ✅ Moved inside script (fixes build error)
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+    }
+
+    async function fetchBookings() {
       try {
         const res = await fetch('/api/bookings');
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
@@ -74,7 +75,6 @@ import Layout from "../layouts/Layout.astro";
       } catch (err) {
         console.warn('⚠️ inventory API unavailable:', err);
         showError("Inventory service is temporarily unavailable — using sample data for now.");
-        // fallback mock data so user can still proceed
         return {
           standard: { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2500 },
           deluxe: { label: "Deluxe Room", qty: 3, rateNonAC: 3000, rateAC: 3500 },
@@ -82,7 +82,6 @@ import Layout from "../layouts/Layout.astro";
         };
       }
     }
-
 
     function rangesOverlap(aStart, aEnd, bStart, bEnd) {
       return (aStart < bEnd) && (bStart < aEnd);
