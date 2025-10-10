@@ -1,4 +1,4 @@
-export async function GET({ locals }) {
+export async function GET({ locals, request }) {
   try {
     const db = locals.runtime.env.DB;
     const { results } = await db.prepare(`

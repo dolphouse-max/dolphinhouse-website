@@ -1,5 +1,6 @@
-export async function GET({ locals, url }) {
+export async function GET({ locals, request }) {
   const db = locals.runtime.env.DB;
+  const url = new URL(request.url);
   const id = url.searchParams.get("id");
 
   try {
