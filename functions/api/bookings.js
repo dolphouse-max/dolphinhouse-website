@@ -1,21 +1,29 @@
+// functions/api/bookings.js
 export async function onRequestGet({ env, request }) {
   const db = env.DB;
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
 
   try {
     if (id) {
+      // Fetch single booking
       const booking = await db
         .prepare("SELECT * FROM bookings WHERE id = ?")
         .bind(id)
         .first();
-      return Response.json(booking || {});
+      return new Response(JSON.stringify(booking || {}), {
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
+    // Fetch all bookings
     const { results } = await db
       .prepare("SELECT * FROM bookings ORDER BY createdAt DESC")
       .all();
-    return Response.json(results);
+
+    return new Response(JSON.stringify(results), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("GET /api/bookings failed:", err);
     return new Response(JSON.stringify({ error: err.message }), {
@@ -35,6 +43,7 @@ export async function onRequestPost({ env, request }) {
     name = "",
     email = "",
     room,
+    acType = "nonac",
     checkin,
     checkout,
     guests = 2,
@@ -47,14 +56,29 @@ export async function onRequestPost({ env, request }) {
     await db
       .prepare(
         `INSERT INTO bookings (
-          id, name, email, room, checkin, checkout,
+          id, name, email, room, ac_type, checkin, checkout,
           guests, nights, total, status, createdAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
-      .bind(id, name, email, room, checkin, checkout, guests, nights, total, status, now)
+      .bind(
+        id,
+        name,
+        email,
+        room,
+        acType,
+        checkin,
+        checkout,
+        guests,
+        nights,
+        total,
+        status,
+        now
+      )
       .run();
 
-    return Response.json({ success: true, id });
+    return new Response(JSON.stringify({ success: true, id }), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("POST /api/bookings failed:", err);
     return new Response(JSON.stringify({ error: err.message }), {
@@ -73,7 +97,10 @@ export async function onRequestPut({ env, request }) {
     await db.prepare("UPDATE bookings SET status = ? WHERE id = ?")
       .bind(status, id)
       .run();
-    return Response.json({ success: true });
+
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("PUT /api/bookings failed:", err);
     return new Response(JSON.stringify({ error: err.message }), {
