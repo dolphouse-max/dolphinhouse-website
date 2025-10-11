@@ -26,43 +26,25 @@ export async function POST({ locals, request }) {
       });
     }
 
-    // Step 1: Get embedding for user's question
-    console.log('🔍 Generating embedding...');
-    const embeddingRes = await fetch("https://api.openai.com/v1/embeddings", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "text-embedding-3-small",
-        input: message
-      })
-    });
-
-    if (!embeddingRes.ok) {
-      const error = await embeddingRes.text();
-      console.error('❌ Embedding error:', error);
-      console.error('❌ Status:', embeddingRes.status);
-      throw new Error(`OpenAI API Error (${embeddingRes.status}): ${error}`);
-    }
-
-    const embeddingData = await embeddingRes.json();
-    const queryVector = embeddingData.data[0].embedding;
-    console.log('✅ Embedding generated');
-
-    // Step 2: Search for relevant knowledge chunks
+    // Step 1: Search for relevant knowledge chunks using text search
     console.log('📚 Searching knowledge base...');
+    
+    // Simple keyword search in text field
+    const searchTerms = message.toLowerCase().split(' ').filter(word => word.length > 3);
+    const searchQuery = searchTerms.length > 0 
+      ? `%${searchTerms[0]}%` 
+      : '%room%';
+    
     const { results } = await db.prepare(`
       SELECT text, source, ref
       FROM knowledge_chunks
-      ORDER BY vector <-> ? 
+      WHERE LOWER(text) LIKE ?
       LIMIT 3
-    `).bind(JSON.stringify(queryVector)).all();
+    `).bind(searchQuery).all();
 
     console.log(`✅ Found ${results.length} relevant chunks`);
 
-    // Step 3: Build context from retrieved chunks
+    // Step 2: Build context from retrieved chunks
     const context = results.length > 0 
       ? results.map(r => r.text).join("\n\n")
       : "No specific knowledge found in database.";
