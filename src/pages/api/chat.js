@@ -43,7 +43,8 @@ export async function POST({ locals, request }) {
     if (!embeddingRes.ok) {
       const error = await embeddingRes.text();
       console.error('❌ Embedding error:', error);
-      throw new Error('Failed to generate embedding');
+      console.error('❌ Status:', embeddingRes.status);
+      throw new Error(`OpenAI API Error (${embeddingRes.status}): ${error}`);
     }
 
     const embeddingData = await embeddingRes.json();
