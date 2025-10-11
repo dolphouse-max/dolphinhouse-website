@@ -29,27 +29,42 @@ export async function POST({ locals, request }) {
     // Step 1: Search for relevant knowledge chunks using text search
     console.log('📚 Searching knowledge base...');
     
-    // Simple keyword search in text field
-    const searchTerms = message.toLowerCase().split(' ').filter(word => word.length > 3);
-    const searchQuery = searchTerms.length > 0 
-      ? `%${searchTerms[0]}%` 
-      : '%room%';
+    // Extract keywords and search multiple terms
+    const searchTerms = message.toLowerCase()
+      .replace(/[?!.,]/g, ' ')
+      .split(' ')
+      .filter(word => word.length > 3)
+      .slice(0, 3); // Take first 3 meaningful words
     
-    const { results } = await db.prepare(`
-      SELECT text, source, ref
-      FROM knowledge_chunks
-      WHERE LOWER(text) LIKE ?
-      LIMIT 3
-    `).bind(searchQuery).all();
+    console.log('Search terms:', searchTerms);
+    
+    // Search for any matching keyword
+    let results = [];
+    
+    if (searchTerms.length > 0) {
+      for (const term of searchTerms) {
+        const { results: matches } = await db.prepare(`
+          SELECT text, source, ref
+          FROM knowledge_chunks
+          WHERE LOWER(text) LIKE ? OR LOWER(source) LIKE ? OR LOWER(ref) LIKE ?
+          LIMIT 5
+        `).bind(`%${term}%`, `%${term}%`, `%${term}%`).all();
+        
+        results.push(...matches);
+      }
+    }
+    
+    // Remove duplicates and limit to 3
+    const uniqueResults = [...new Map(results.map(r => [r.ref, r])).values()].slice(0, 3);
 
-    console.log(`✅ Found ${results.length} relevant chunks`);
+    console.log(`✅ Found ${uniqueResults.length} relevant chunks`);
 
     // Step 2: Build context from retrieved chunks
-    const context = results.length > 0 
-      ? results.map(r => r.text).join("\n\n")
+    const context = uniqueResults.length > 0 
+      ? uniqueResults.map(r => r.text).join("\n\n")
       : "No specific knowledge found in database.";
 
-    // Step 4: Call OpenAI Chat API
+    // Step 3: Call OpenAI Chat API
     console.log('💬 Calling OpenAI Chat...');
     const chatRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -91,7 +106,7 @@ If the context doesn't contain relevant information, politely say you don't have
 
     return new Response(JSON.stringify({ 
       reply,
-      sources: results.map(r => ({ source: r.source, ref: r.ref }))
+      sources: uniqueResults.map(r => ({ source: r.source, ref: r.ref }))
     }), {
       headers: { "Content-Type": "application/json" }
     });
