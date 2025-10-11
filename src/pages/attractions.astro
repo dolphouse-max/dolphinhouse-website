@@ -1,12 +1,156 @@
 ---
-import Layout from "../layouts/Layout.astro"; 
+// src/pages/attractions.astro
+import Layout from "../layouts/Layout.astro";
+
+const attractions = [
+  {
+    name: "Nagaon Beach",
+    image: "/uploader/nagaon-beach.webp",
+    description: "A pristine stretch of golden sand just 2 minutes from Dolphin House. Perfect for water sports like parasailing, jet skiing, and banana boat rides. Clean, safe, and ideal for families.",
+    distance: "2 min walk",
+    activities: ["Water Sports", "Swimming", "Beach Walks"]
+  },
+  {
+    name: "Alibaug Beach",
+    image: "/uploader/alibaug-beach.webp",
+    description: "The main town beach famous for its stunning sunset views and horseback rides along the shore. Lined with street food stalls and local vendors, it's perfect for an evening stroll.",
+    distance: "8 km",
+    activities: ["Sunset Views", "Horse Rides", "Street Food"]
+  },
+  {
+    name: "Kashid Beach",
+    image: "/uploader/kashid-beach.webp",
+    description: "One of the most beautiful beaches in Konkan, known for its white sands, crystal-clear waters, and swaying casuarina trees. Less crowded and perfect for a peaceful day trip.",
+    distance: "28 km",
+    activities: ["Swimming", "Photography", "Beach Games"]
+  },
+  {
+    name: "Kolaba Fort",
+    image: "/uploader/kolaba-fort.webp",
+    description: "A historic 17th-century sea fort accessible by foot during low tide. Explore ancient temples, cannons, and enjoy panoramic views of the Arabian Sea from the ramparts.",
+    distance: "9 km",
+    activities: ["History", "Photography", "Trekking"]
+  },
+  {
+    name: "Murud-Janjira Fort",
+    image: "/uploader/murud-janjira-fort.webp",
+    description: "An unconquered island fortress from the 15th century, accessible only by boat. Marvel at its massive walls, cannons, and the engineering marvel that withstood numerous attacks.",
+    distance: "45 km",
+    activities: ["Boat Ride", "History", "Photography"]
+  },
+  {
+    name: "Mandwa Beach",
+    image: "/uploader/mandwa-beach.webp",
+    description: "A serene beach near the ferry jetty, offering beautiful views of Mumbai's skyline. Popular spot for water sports and a quick getaway from the city hustle.",
+    distance: "15 km",
+    activities: ["Ferry Rides", "Water Sports", "City Views"]
+  },
+  {
+    name: "Revdanda Beach",
+    image: "/uploader/revdanda-beach.webp",
+    description: "A hidden gem with soft black sand and calm waters, surrounded by coconut groves. Visit the nearby Revdanda Fort and Korlai Fort for a dose of Portuguese history.",
+    distance: "22 km",
+    activities: ["Beach Camping", "Fort Visits", "Fishing"]
+  }
+];
 ---
-<Layout title="Attractions | Alibaug">
-  <h1 class="text-2xl font-semibold">Alibaug Attractions</h1>
-  <ul class="list-disc pl-6 mt-4">
-    <li>Nagaon Beach</li>
-    <li>Mandwa Ferry</li>
-    <li>Kolaba Fort</li>
-    <li>Kihim Beach</li>
-  </ul>
+
+<Layout title="Tourist Attractions near Alibaug | Dolphin House" 
+        description="Explore the best beaches, forts, and attractions near Dolphin House Resort. From Nagaon Beach to Murud-Janjira Fort, discover Alibaug's hidden gems.">
+
+  <!-- Hero Section -->
+  <section class="relative mb-16 overflow-hidden">
+    <div class="relative h-[400px] bg-gradient-to-r from-sky-600 to-teal-500">
+      <div class="absolute inset-0 bg-black/30"></div>
+      <div class="relative max-w-6xl mx-auto px-6 h-full flex flex-col justify-center items-center text-center text-white">
+        <h1 class="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">
+          Explore Alibaug
+        </h1>
+        <p class="text-xl md:text-2xl text-white/90 max-w-2xl">
+          Discover pristine beaches, historic forts, and hidden gems around Dolphin House Resort
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Attractions Grid -->
+  <section class="max-w-7xl mx-auto px-6 pb-20">
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {attractions.map((place) => (
+        <div class="attraction-card group">
+          <!-- Image -->
+          <div class="relative overflow-hidden rounded-t-2xl h-64">
+            <img 
+              src={place.image} 
+              alt={place.name}
+              class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              loading="lazy"
+            />
+            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold text-sky-700">
+              {place.distance}
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="p-6 bg-white">
+            <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-sky-600 transition">
+              {place.name}
+            </h3>
+            <p class="text-gray-600 leading-relaxed mb-4">
+              {place.description}
+            </p>
+
+            <!-- Activities -->
+            <div class="flex flex-wrap gap-2">
+              {place.activities.map((activity) => (
+                <span class="activity-tag">
+                  {activity}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <!-- Hover Effect Border -->
+          <div class="absolute inset-0 border-2 border-transparent group-hover:border-sky-400 rounded-2xl transition-colors duration-300 pointer-events-none"></div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="bg-gradient-to-r from-sky-700 to-teal-600 text-white py-16 mx-6 rounded-3xl shadow-2xl mb-20">
+    <div class="max-w-4xl mx-auto text-center px-6">
+      <h2 class="text-4xl font-bold mb-4">Ready to Explore Alibaug?</h2>
+      <p class="text-xl mb-8 text-white/90">
+        Book your stay at Dolphin House and experience the best of coastal Maharashtra
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="/booking" class="btn-light">
+          Book Your Stay
+        </a>
+        <a href="/contact" class="border-2 border-white text-white px-8 py-4 rounded-full text-xl font-bold hover:bg-white hover:text-sky-700 transition transform hover:scale-105">
+          Contact Us
+        </a>
+      </div>
+    </div>
+  </section>
+
 </Layout>
+
+<style>
+  .attraction-card {
+    @apply relative bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300;
+  }
+  
+  .attraction-card:hover {
+    @apply shadow-2xl transform -translate-y-2;
+  }
+
+  .activity-tag {
+    @apply bg-sky-50 text-sky-700 px-3 py-1 rounded-full text-sm font-medium border border-sky-200 transition-colors;
+  }
+
+  .activity-tag:hover {
+    @apply bg-sky-100 border-sky-300;
+  }
+</style>

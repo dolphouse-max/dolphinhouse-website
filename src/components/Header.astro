@@ -1,4 +1,5 @@
 ---
+// src/components/Header.astro
 ---
 <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -8,10 +9,11 @@
     </a>
 
     <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
-      <a href="/" class="hover:text-sky-600">Home</a>
-      <a href="/rooms" class="hover:text-sky-600">Rooms</a>
-      <a href="/booking" class="hover:text-sky-600">Booking</a>
-      <a href="/contact" class="hover:text-sky-600">Contact</a>
+      <a href="/" class="hover:text-sky-600 transition">Home</a>
+      <a href="/rooms" class="hover:text-sky-600 transition">Rooms</a>
+      <a href="/attractions" class="hover:text-sky-600 transition">Attractions</a>
+      <a href="/booking" class="hover:text-sky-600 transition">Booking</a>
+      <a href="/contact" class="hover:text-sky-600 transition">Contact</a>
     </nav>
 
     <div class="md:hidden">
@@ -25,10 +27,11 @@
 
   <div id="mobile-menu" class="hidden md:hidden border-t bg-white">
     <div class="px-4 py-4 flex flex-col gap-3">
-      <a href="/" class="hover:text-sky-600">Home</a>
-      <a href="/rooms" class="hover:text-sky-600">Rooms</a>
-      <a href="/booking" class="hover:text-sky-600">Booking</a>
-      <a href="/contact" class="hover:text-sky-600">Contact</a>
+      <a href="/" class="hover:text-sky-600 transition">Home</a>
+      <a href="/rooms" class="hover:text-sky-600 transition">Rooms</a>
+      <a href="/attractions" class="hover:text-sky-600 transition">Attractions</a>
+      <a href="/booking" class="hover:text-sky-600 transition">Booking</a>
+      <a href="/contact" class="hover:text-sky-600 transition">Contact</a>
     </div>
   </div>
 </header>
