@@ -56,7 +56,7 @@ export async function POST({ locals, request }) {
         `INSERT INTO bookings (
           id, name, email, room, checkin, checkout,
           guests, nights, total, status, createdAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         id,
