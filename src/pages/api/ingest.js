@@ -6,15 +6,14 @@ export async function POST({ locals, request }) {
     for (const item of body) {
       await db
         .prepare(
-          `INSERT INTO knowledge_chunks (id, source, ref, text, vector, createdAt)
-           VALUES (?, ?, ?, ?, ?, datetime('now'))`
+          `INSERT INTO knowledge_chunks (id, source, ref, text, createdAt)
+           VALUES (?, ?, ?, ?, datetime('now'))`
         )
         .bind(
           crypto.randomUUID(),
           item.source,
           item.ref,
-          item.text,
-          JSON.stringify(item.vector)
+          item.text
         )
         .run();
     }

@@ -1,0 +1,102 @@
+[
+  {
+    "source": "rooms",
+    "ref": "deluxe-room",
+    "text": "Deluxe Rooms at Dolphin House are spacious and comfortable, available in both AC and Non-AC options. Non-AC rooms are ₹2,300 per night and AC rooms are ₹2,600 per night. Each room has an attached bathroom with geyser, satellite TV, and free Wi-Fi. Perfect for couples or small families."
+  },
+  {
+    "source": "rooms",
+    "ref": "family-room",
+    "text": "Family Rooms can accommodate up to 4 guests comfortably. Non-AC family rooms are ₹3,000 per night and AC rooms are ₹3,500 per night. These rooms are perfect for families with children and include all standard amenities like attached bathrooms, TV, and Wi-Fi."
+  },
+  {
+    "source": "rooms",
+    "ref": "room-amenities",
+    "text": "All rooms at Dolphin House include attached bathrooms with hot water geysers, satellite TV, free Wi-Fi, and are available in both AC and Non-AC options. Rooms are clean, well-maintained, and serviced daily."
+  },
+  {
+    "source": "location",
+    "ref": "beach-distance",
+    "text": "Dolphin House Beach Resort is located just 2 minutes walking distance from Nagaon Beach. The resort is on Nagaon Beach Road in Nagaon, Alibaug, making it extremely convenient for beach access and water sports."
+  },
+  {
+    "source": "location",
+    "ref": "address",
+    "text": "Dolphin House is located at Nagaon Beach Road, Nagaon, Alibaug, Maharashtra 402204. We are just 2 minutes walk from the beautiful Nagaon Beach."
+  },
+  {
+    "source": "facilities",
+    "ref": "amenities-list",
+    "text": "Dolphin House offers excellent facilities including air-conditioned rooms and cottages, attached bathrooms with geysers, satellite TV in all rooms, 24-hour generator backup for uninterrupted power, free Wi-Fi throughout the property, ample car parking space, an in-house restaurant serving delicious food, and an indoor swimming pool with waterfall feature."
+  },
+  {
+    "source": "facilities",
+    "ref": "swimming-pool",
+    "text": "We have a beautiful indoor swimming pool with a waterfall feature. The pool is well-maintained and available for all guests. It's perfect for families and children."
+  },
+  {
+    "source": "facilities",
+    "ref": "restaurant",
+    "text": "Dolphin House has an in-house restaurant serving delicious Indian and local Konkani cuisine. We serve breakfast, lunch, and dinner. Special dietary requirements can be accommodated on request. The food is fresh and home-style."
+  },
+  {
+    "source": "booking",
+    "ref": "check-in-out",
+    "text": "Check-in time at Dolphin House is 12:00 PM (noon) and check-out time is 10:00 AM. Early check-in or late check-out may be available on request, subject to room availability. Please contact us in advance if you need special timings."
+  },
+  {
+    "source": "booking",
+    "ref": "cancellation-policy",
+    "text": "Our cancellation policy is: Full refund if you cancel 7 days or more before check-in date. 50% refund if you cancel 3-7 days before check-in. No refund for cancellations within 3 days of check-in date. Please plan your bookings accordingly."
+  },
+  {
+    "source": "booking",
+    "ref": "payment",
+    "text": "We accept online payments via UPI, Google Pay, and bank transfer. Payment can be made at the time of booking or upon arrival. For advance bookings, we recommend paying online to confirm your reservation."
+  },
+  {
+    "source": "contact",
+    "ref": "phone-email",
+    "text": "Contact Dolphin House at +91-8554871073 or +91-7276171735 for bookings and inquiries. You can also email us at dolphouse@gmail.com. We are available on WhatsApp at +91-8554871073 for quick responses."
+  },
+  {
+    "source": "contact",
+    "ref": "whatsapp",
+    "text": "For quick booking and queries, message us on WhatsApp at +91-8554871073. We respond quickly and can help you with room availability, pricing, and special requests."
+  },
+  {
+    "source": "attractions",
+    "ref": "nagaon-beach",
+    "text": "Nagaon Beach is just 2 minutes walk from Dolphin House. It's a beautiful, clean beach perfect for swimming, water sports like parasailing, jet skiing, banana boat rides, and beach games. The beach has clean sand and is safe for families and children."
+  },
+  {
+    "source": "attractions",
+    "ref": "nearby-places",
+    "text": "Nearby tourist attractions include Nagaon Beach (2 min walk), Alibaug Beach (8 km) famous for sunset views, Kashid Beach (28 km) with white sand, Kolaba Fort (9 km) - a historic sea fort, and Murud-Janjira Fort (45 km) - an unconquered island fortress. All are worth visiting during your stay."
+  },
+  {
+    "source": "transport",
+    "ref": "how-to-reach",
+    "text": "How to reach Dolphin House: By air - nearest airports are Mumbai (107 km) or Pune (153 km). By train - nearest railway station is Pen (35 km). By ferry - take catamaran from Gateway of India, Mumbai to Mandwa Jetty, then drive 15 km to Nagaon. By road - drive from Mumbai or Pune via Pune-Mumbai expressway."
+  },
+  {
+    "source": "transport",
+    "ref": "ferry-details",
+    "text": "The most scenic way to reach Alibaug is by ferry. Take a catamaran from Gateway of India in Mumbai to Mandwa Jetty. The ferry ride takes about 1 hour. From Mandwa, Dolphin House is just 15 km away. Local taxis and auto-rickshaws are available at the jetty."
+  },
+  {
+    "source": "activities",
+    "ref": "water-sports",
+    "text": "Nagaon Beach, just 2 minutes from Dolphin House, offers exciting water sports including parasailing, jet skiing, banana boat rides, bumper rides, and speed boats. Operators are available on the beach from morning till evening. Prices are reasonable and safety equipment is provided."
+  },
+  {
+    "source": "pricing",
+    "ref": "extra-person",
+    "text": "Extra person charges: ₹700 per person per night for additional guests beyond the standard room capacity. Deluxe rooms accommodate 2 guests standard, Family rooms accommodate 4 guests standard. Children under 5 years stay free."
+  },
+  {
+    "source": "general",
+    "ref": "about-resort",
+    "text": "Dolphin House Beach Resort is a luxury beach resort in Nagaon, Alibaug. We are known for our excellent location (2 minutes from beach), comfortable rooms, swimming pool, good food, and friendly service. Perfect for weekend getaways, family vacations, and romantic trips. We have been serving guests for many years and have excellent reviews."
+  }
+]
