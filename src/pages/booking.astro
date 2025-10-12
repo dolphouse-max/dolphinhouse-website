@@ -1,201 +1,252 @@
 ---
 import Layout from "../layouts/Layout.astro";
 ---
-<Layout title="Booking | Dolphin House">
 
-  <section class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
-    <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Check Availability & Book</h1>
-    <div id="errorBox" class="hidden bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center"></div>
+<Layout title="Payment | Dolphin House">
 
-    <!-- Step 1: Date and Guest Count ONLY (no name/email) -->
-    <div class="space-y-4 mb-8">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Number of Guests</label>
-        <input id="guestCount" type="number" min="1" max="10" value="2"
-               class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
-      </div>
+  <section class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
+    <h1 class="text-2xl font-bold mb-4 text-gray-800">Complete Your Booking</h1>
+    
+    <!-- Booking Summary -->
+    <div id="bookingSummary" class="mb-6 p-4 bg-sky-50 rounded-lg border border-sky-200"></div>
+
+    <!-- Guest Details Form -->
+    <form id="guestForm" class="space-y-4 mb-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Guest Details</h2>
       
       <label class="block">
-        <span class="text-sm font-medium text-gray-700 mb-1">Check-in</span>
-        <input id="checkin" type="date" class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
+        <span class="text-sm font-medium text-gray-700">Full Name <span class="text-red-500">*</span></span>
+        <input id="name" type="text" class="w-full border px-3 py-2 rounded mt-1 focus:ring-2 focus:ring-sky-400 focus:outline-none" required placeholder="Enter your full name">
       </label>
-      
+
       <label class="block">
-        <span class="text-sm font-medium text-gray-700 mb-1">Check-out</span>
-        <input id="checkout" type="date" class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
+        <span class="text-sm font-medium text-gray-700">Mobile Number <span class="text-red-500">*</span></span>
+        <input id="mobile" type="tel" pattern="[0-9]{10}" class="w-full border px-3 py-2 rounded mt-1 focus:ring-2 focus:ring-sky-400 focus:outline-none" required placeholder="10-digit mobile number">
+        <span class="text-xs text-gray-500">We'll send booking confirmation on WhatsApp</span>
       </label>
-      
-      <button id="checkBtn" class="w-full bg-sky-600 text-white py-3 rounded-lg hover:bg-sky-700 transition font-semibold">
-        Check Availability
+
+      <label class="block">
+        <span class="text-sm font-medium text-gray-700">Email (Optional)</span>
+        <input id="email" type="email" class="w-full border px-3 py-2 rounded mt-1 focus:ring-2 focus:ring-sky-400 focus:outline-none" placeholder="your@email.com">
+      </label>
+
+      <label class="block">
+        <span class="text-sm font-medium text-gray-700">Number of Guests</span>
+        <input id="guests" type="number" min="1" max="10" class="w-full border px-3 py-2 rounded mt-1" value="2">
+      </label>
+    </form>
+
+    <!-- Payment Charges -->
+    <div id="charges" class="mb-6 p-4 bg-gray-50 rounded border"></div>
+
+    <!-- Payment QR Code -->
+    <div class="text-center mb-6">
+      <img id="gpay" src="/uploader/qr-code.webp" alt="Payment QR Code" class="mx-auto w-48 h-48 object-contain"/>
+      <p class="text-sm text-gray-600 mt-2">Scan QR code and pay the amount shown above</p>
+    </div>
+
+    <!-- File Upload with Validation -->
+    <div class="mb-6">
+      <label class="block mb-2 text-sm font-medium text-gray-700">
+        Upload Payment Screenshot <span class="text-red-500">*</span>
+      </label>
+      <input 
+        id="screenshot" 
+        type="file" 
+        accept="image/*"
+        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-sky-50 file:text-sky-700 hover:file:bg-sky-100" 
+      />
+      <p class="text-xs text-gray-500 mt-1">Only image files (JPG, PNG, etc.) up to 5MB</p>
+      <div id="preview" class="mt-4"></div>
+      <div id="fileError" class="hidden text-red-600 text-sm mt-2"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-4">
+      <button id="confirmBtn" class="flex-1 bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition font-semibold">
+        Confirm Booking
       </button>
+      <a href="/booking" class="flex-1 text-center border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 transition font-semibold">
+        Cancel
+      </a>
     </div>
 
-    <!-- Step 2: Room selection -->
-    <div id="availability" class="hidden mt-8">
-      <h2 class="text-xl font-semibold mb-3 text-gray-800 text-center">Available Room Types</h2>
-      <div id="roomList" class="grid gap-4"></div>
-    </div>
+    <p id="msg" class="text-green-600 mt-4 hidden text-center font-medium"></p>
   </section>
 
   <script>
-    function showError(msg) {
-      const box = document.getElementById('errorBox');
-      box.textContent = msg;
-      box.classList.remove('hidden');
+    const params = new URLSearchParams(location.search);
+    const bookingId = params.get('bookingId');
+    const customerId = params.get('customerId');
+    const room = params.get('room');
+    const roomLabel = params.get('roomLabel');
+    const acType = params.get('acType');
+    const checkin = params.get('checkin');
+    const checkout = params.get('checkout');
+    const guests = parseInt(params.get('guests') || '2');
+    const nights = parseInt(params.get('nights') || '1');
+    const baseTotal = parseFloat(params.get('total') || '0');
+
+    const summaryDiv = document.getElementById('bookingSummary');
+    const chargesDiv = document.getElementById('charges');
+    const guestsInput = document.getElementById('guests') as HTMLInputElement;
+    const fileInput = document.getElementById('screenshot') as HTMLInputElement;
+    const preview = document.getElementById('preview');
+    const fileError = document.getElementById('fileError');
+
+    let screenshotData = null;
+    const extraPersonCharge = 700;
+
+    // Display booking summary with Customer ID
+    summaryDiv.innerHTML = `
+      <div class="space-y-2">
+        <div class="flex justify-between text-lg font-bold text-sky-700">
+          <span>Customer ID:</span>
+          <span class="font-mono">${customerId}</span>
+        </div>
+        <div class="border-t pt-2">
+          <div class="flex justify-between"><span class="font-medium">Room:</span><span>${roomLabel} (${acType.toUpperCase()})</span></div>
+          <div class="flex justify-between"><span class="font-medium">Check-in:</span><span>${checkin}</span></div>
+          <div class="flex justify-between"><span class="font-medium">Check-out:</span><span>${checkout}</span></div>
+          <div class="flex justify-between"><span class="font-medium">Nights:</span><span>${nights}</span></div>
+        </div>
+      </div>
+    `;
+
+    function updateCharges() {
+      const currentGuests = parseInt(guestsInput.value);
+      const baseGuests = room.includes('family') ? 4 : 2;
+      const extras = Math.max(0, currentGuests - baseGuests);
+      const extraCharges = extras * extraPersonCharge * nights;
+      const finalTotal = baseTotal + extraCharges;
+
+      chargesDiv.innerHTML = `
+        <div class="space-y-2">
+          <div class="flex justify-between"><span>Room Charges:</span><span class="font-semibold">₹${baseTotal}</span></div>
+          ${extras > 0 ? `<div class="flex justify-between text-sm"><span>Extra Person (${extras} × ₹${extraPersonCharge} × ${nights} nights):</span><span>₹${extraCharges}</span></div>` : ''}
+          <div class="border-t pt-2 mt-2 flex justify-between text-lg"><span class="font-bold">Total Payable:</span><span class="font-bold text-sky-600">₹${finalTotal}</span></div>
+        </div>
+      `;
     }
 
-    async function fetchBookings() {
-      try {
-        const res = await fetch('/api/bookings');
-        if (!res.ok) throw new Error(`Server returned ${res.status}`);
-        return await res.json();
-      } catch (err) {
-        console.warn('⚠️ bookings API unavailable:', err);
-        showError("We're unable to load current bookings – showing estimated availability.");
-        return [];
-      }
-    }
+    guestsInput.addEventListener('input', updateCharges);
+    updateCharges();
 
-    async function fetchInventory() {
-      try {
-        const res = await fetch('/api/inventory');
-        if (!res.ok) throw new Error(`Server returned ${res.status}`);
-        return await res.json();
-      } catch (err) {
-        console.warn('⚠️ inventory API unavailable:', err);
-        showError("Inventory service is temporarily unavailable – using sample data for now.");
-        return {
-          standard: { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2500 },
-          deluxe: { label: "Deluxe Room", qty: 3, rateNonAC: 3000, rateAC: 3500 },
-          suite: { label: "Suite Room", qty: 2, rateNonAC: 4500, rateAC: 5000 }
-        };
-      }
-    }
+    // File upload with validation
+    fileInput.addEventListener('change', async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
 
-    function rangesOverlap(aStart, aEnd, bStart, bEnd) {
-      return (aStart < bEnd) && (bStart < aEnd);
-    }
+      // Clear previous errors
+      fileError.classList.add('hidden');
+      preview.innerHTML = '';
 
-    function countBooked(bookings, roomType, checkin, checkout) {
-      const inD = new Date(checkin);
-      const outD = new Date(checkout);
-      let c = 0;
-      bookings.forEach(b => {
-        if (b.room !== roomType || b.status === 'cancelled') return;
-        const bi = new Date(b.checkin), bo = new Date(b.checkout);
-        if (rangesOverlap(inD, outD, bi, bo)) c++;
-      });
-      return c;
-    }
-
-    function availableRooms(inv, bookings, rt, ci, co) {
-      const total = inv[rt]?.qty || 0;
-      const reserved = countBooked(bookings, rt, ci, co);
-      return Math.max(0, total - reserved);
-    }
-
-    const checkBtn = document.getElementById('checkBtn');
-    const availability = document.getElementById('availability');
-    const roomList = document.getElementById('roomList');
-
-    checkBtn.addEventListener('click', async () => {
-      const guests = parseInt(document.getElementById('guestCount').value);
-      const checkin = document.getElementById('checkin').value;
-      const checkout = document.getElementById('checkout').value;
-
-      // Only validate dates now (no name/email)
-      if (!checkin || !checkout || new Date(checkin) >= new Date(checkout)) {
-        alert('Please choose valid check-in and check-out dates.');
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        fileError.textContent = '❌ Please upload only image files (JPG, PNG, etc.)';
+        fileError.classList.remove('hidden');
+        fileInput.value = '';
         return;
       }
 
-      const inv = await fetchInventory();
-      const bookings = await fetchBookings();
+      // Validate file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        fileError.textContent = '❌ Image must be smaller than 5MB. Please compress or choose another image.';
+        fileError.classList.remove('hidden');
+        fileInput.value = '';
+        return;
+      }
 
-      roomList.innerHTML = '';
-      Object.keys(inv).forEach(rt => {
-        const avail = availableRooms(inv, bookings, rt, checkin, checkout);
-        const div = document.createElement('div');
-        div.className = "border p-4 rounded-lg flex justify-between items-center bg-gray-50 hover:bg-white shadow-sm";
-        div.innerHTML = `
-          <div>
-            <div class="text-lg font-semibold">${inv[rt].label}</div>
-            <div class="text-sm text-gray-600">₹${inv[rt].rateNonAC} / night (Non-AC) | ₹${inv[rt].rateAC} / night (AC)</div>
-            <div class="text-sm text-gray-500">Available: ${avail}</div>
-          </div>
-          <div class="flex gap-2">
-            <button ${avail===0?'disabled':''} data-rt="${rt}" data-type="nonac"
-              class="bg-sky-500 text-white px-4 py-2 rounded-md hover:bg-sky-600 disabled:opacity-40 selectRoom">
-              Book Non-AC
-            </button>
-            <button ${avail===0?'disabled':''} data-rt="${rt}" data-type="ac"
-              class="bg-teal-500 text-white px-4 py-2 rounded-md hover:bg-teal-600 disabled:opacity-40 selectRoom">
-              Book AC
-            </button>
-          </div>`;
-        roomList.appendChild(div);
-      });
+      // Show preview
+      const url = URL.createObjectURL(file);
+      preview.innerHTML = `
+        <div class="border rounded-lg p-2 bg-white">
+          <p class="text-sm text-gray-600 mb-2">Preview:</p>
+          <img src="${url}" class="max-w-full h-48 object-contain rounded-lg shadow mx-auto"/>
+          <p class="text-xs text-gray-500 mt-2 text-center">${file.name} (${(file.size / 1024).toFixed(1)} KB)</p>
+        </div>
+      `;
 
-      availability.classList.remove('hidden');
-
-      document.querySelectorAll('.selectRoom').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const rt = btn.dataset.rt;
-          const type = btn.dataset.type;
-          const rate = type === "ac" ? inv[rt].rateAC : inv[rt].rateNonAC;
-          const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
-          const total = nights * rate;
-
-          try {
-            // Create booking WITHOUT name/email (will be added on payment page)
-            const res = await fetch('/api/bookings', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                name: '', // Empty - filled on payment page
-                email: '', // Empty - filled on payment page
-                room: rt,
-                checkin, 
-                checkout, 
-                guests, 
-                nights, 
-                total, 
-                status: 'payment_pending'
-              })
-            });
-            
-            if (!res.ok) {
-              const error = await res.json();
-              showError(error.error || 'Failed to create booking. Please try again.');
-              return;
-            }
-            
-            const data = await res.json();
-            
-            if (data.success && data.id) {
-              // Pass ALL booking details in URL to payment page
-              const params = new URLSearchParams({
-                bookingId: data.id,
-                room: rt,
-                roomLabel: inv[rt].label,
-                acType: type,
-                checkin,
-                checkout,
-                guests: guests.toString(),
-                nights: nights.toString(),
-                total: total.toString()
-              });
-              window.location.href = `/pay?${params.toString()}`;
-            } else {
-              showError('Booking created but no ID returned. Please contact support.');
-            }
-          } catch (err) {
-            console.error('Booking submission error:', err);
-            showError('Network error. Please check your connection and try again.');
-          }
-        });
-      });
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onload = () => screenshotData = reader.result;
+      reader.readAsDataURL(file);
     });
+
+    // Confirm booking
+    document.getElementById('confirmBtn')?.addEventListener('click', async () => {
+      const name = (document.getElementById('name') as HTMLInputElement).value.trim();
+      const mobile = (document.getElementById('mobile') as HTMLInputElement).value.trim();
+      const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+
+      // Validation
+      if (!name) {
+        alert('Please enter your full name');
+        return;
+      }
+
+      if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
+        alert('Please enter a valid 10-digit mobile number');
+        return;
+      }
+
+      if (!screenshotData) {
+        alert('Please upload payment screenshot');
+        return;
+      }
+
+      const currentGuests = parseInt(guestsInput.value);
+      const baseGuests = room.includes('family') ? 4 : 2;
+      const extras = Math.max(0, currentGuests - baseGuests);
+      const extraCharges = extras * extraPersonCharge * nights;
+      const finalTotal = baseTotal + extraCharges;
+
+      try {
+        // Update booking with customer details
+        const updateRes = await fetch('/api/bookings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: bookingId,
+            name,
+            email: email || '',
+            mobile,
+            guests: currentGuests,
+            total: finalTotal,
+            screenshot: screenshotData,
+            status: 'payment_submitted'
+          })
+        });
+
+        if (!updateRes.ok) {
+          throw new Error('Failed to update booking');
+        }
+
+        // Generate customer ID
+        const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+        const customerId = `DH-${today}-${bookingId.substring(0, 4).toUpperCase()}`;
+
+        const msg = document.getElementById('msg');
+        msg.innerHTML = `✅ Booking confirmed! Your Customer ID: <strong>${customerId}</strong><br>Redirecting...`;
+        msg.classList.remove('hidden');
+
+        setTimeout(() => {
+          window.location.href = `/thank-you?customerId=${customerId}&name=${encodeURIComponent(name)}`;
+        }, 2000);
+
+      } catch (err) {
+        console.error('Booking confirmation error:', err);
+        alert('Failed to confirm booking. Please try again or contact us at +91-8554871073');
+      }
+    });
+
+    // Validate booking ID
+    if (!bookingId) {
+      summaryDiv.innerHTML = '<p class="text-red-600">❌ Invalid booking. Please start from the booking page.</p>';
+      document.getElementById('guestForm')?.remove();
+      document.getElementById('confirmBtn')?.remove();
+    }
   </script>
 
 </Layout>
