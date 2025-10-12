@@ -1,6 +1,5 @@
-export async function GET({ locals, request }) {
+export async function GET({ locals, url }) {
   const db = locals.runtime.env.DB;
-  const url = new URL(request.url);
   const id = url.searchParams.get("id");
 
   try {
@@ -88,11 +87,43 @@ export async function POST({ locals, request }) {
 export async function PUT({ locals, request }) {
   const db = locals.runtime.env.DB;
   const body = await request.json();
-  const { id, status } = body;
+  const { id, name, email, mobile, guests, total, screenshot, status } = body;
 
   try {
-    await db.prepare("UPDATE bookings SET status = ? WHERE id = ?")
-      .bind(status, id)
+    // Build dynamic SQL based on what fields are provided
+    const updates = [];
+    const values = [];
+
+    if (status) {
+      updates.push('status = ?');
+      values.push(status);
+    }
+    if (name) {
+      updates.push('name = ?');
+      values.push(name);
+    }
+    if (email !== undefined) {
+      updates.push('email = ?');
+      values.push(email);
+    }
+    if (mobile) {
+      updates.push('mobile = ?');
+      values.push(mobile);
+    }
+    if (guests) {
+      updates.push('guests = ?');
+      values.push(guests);
+    }
+    if (total) {
+      updates.push('total = ?');
+      values.push(total);
+    }
+    // Note: screenshot is stored separately or in a blob storage
+
+    values.push(id); // ID for WHERE clause
+
+    await db.prepare(`UPDATE bookings SET ${updates.join(', ')} WHERE id = ?`)
+      .bind(...values)
       .run();
 
     return new Response(JSON.stringify({ success: true }), {
