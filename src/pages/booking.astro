@@ -1,54 +1,43 @@
 ---
 import Layout from "../layouts/Layout.astro";
 ---
-
 <Layout title="Booking | Dolphin House">
 
   <section class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
     <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Check Availability & Book</h1>
     <div id="errorBox" class="hidden bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center"></div>
 
-    <!-- Step 1: Guest Info -->
-    <div id="guestForm" class="space-y-4 mb-8">
+    <!-- Step 1: Date and Guest Count ONLY (no name/email) -->
+    <div class="space-y-4 mb-8">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Guest Name</label>
-        <input id="guestName" type="text" placeholder="Enter full name"
-               class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-        <input id="guestEmail" type="email" placeholder="Enter email address"
-               class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Number of Persons</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Number of Guests</label>
         <input id="guestCount" type="number" min="1" max="10" value="2"
                class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
       </div>
-    </div>
-
-    <!-- Step 2: Date selection -->
-    <div class="space-y-4 mb-6">
-      <label class="block">Check-in
+      
+      <label class="block">
+        <span class="text-sm font-medium text-gray-700 mb-1">Check-in</span>
         <input id="checkin" type="date" class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
       </label>
-      <label class="block">Check-out
+      
+      <label class="block">
+        <span class="text-sm font-medium text-gray-700 mb-1">Check-out</span>
         <input id="checkout" type="date" class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
       </label>
+      
       <button id="checkBtn" class="w-full bg-sky-600 text-white py-3 rounded-lg hover:bg-sky-700 transition font-semibold">
         Check Availability
       </button>
     </div>
 
-    <!-- Step 3: Room selection -->
+    <!-- Step 2: Room selection -->
     <div id="availability" class="hidden mt-8">
       <h2 class="text-xl font-semibold mb-3 text-gray-800 text-center">Available Room Types</h2>
       <div id="roomList" class="grid gap-4"></div>
     </div>
   </section>
 
-  <script client:load>
-    // ✅ Moved inside script (fixes build error)
+  <script>
     function showError(msg) {
       const box = document.getElementById('errorBox');
       box.textContent = msg;
@@ -62,8 +51,8 @@ import Layout from "../layouts/Layout.astro";
         return await res.json();
       } catch (err) {
         console.warn('⚠️ bookings API unavailable:', err);
-        showError("We’re unable to load current bookings — showing estimated availability.");
-        return []; // fallback: no existing bookings
+        showError("We're unable to load current bookings – showing estimated availability.");
+        return [];
       }
     }
 
@@ -74,7 +63,7 @@ import Layout from "../layouts/Layout.astro";
         return await res.json();
       } catch (err) {
         console.warn('⚠️ inventory API unavailable:', err);
-        showError("Inventory service is temporarily unavailable — using sample data for now.");
+        showError("Inventory service is temporarily unavailable – using sample data for now.");
         return {
           standard: { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2500 },
           deluxe: { label: "Deluxe Room", qty: 3, rateNonAC: 3000, rateAC: 3500 },
@@ -110,16 +99,11 @@ import Layout from "../layouts/Layout.astro";
     const roomList = document.getElementById('roomList');
 
     checkBtn.addEventListener('click', async () => {
-      const name = document.getElementById('guestName').value.trim();
-      const email = document.getElementById('guestEmail').value.trim();
       const guests = parseInt(document.getElementById('guestCount').value);
       const checkin = document.getElementById('checkin').value;
       const checkout = document.getElementById('checkout').value;
 
-      if (!name || !email) {
-        alert('Please fill in guest name and email.');
-        return;
-      }
+      // Only validate dates now (no name/email)
       if (!checkin || !checkout || new Date(checkin) >= new Date(checkout)) {
         alert('Please choose valid check-in and check-out dates.');
         return;
@@ -162,17 +146,53 @@ import Layout from "../layouts/Layout.astro";
           const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
           const total = nights * rate;
 
-          const res = await fetch('/api/bookings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name, email, room: rt, acType: type,
-              checkin, checkout, guests, nights, total, status: 'payment_pending'
-            })
-          });
-          const data = await res.json();
-          if (data.id) window.location.href = `/pay?bookingId=${data.id}`;
-          else alert('Error creating booking.');
+          try {
+            // Create booking WITHOUT name/email (will be added on payment page)
+            const res = await fetch('/api/bookings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: '', // Empty - filled on payment page
+                email: '', // Empty - filled on payment page
+                room: rt,
+                checkin, 
+                checkout, 
+                guests, 
+                nights, 
+                total, 
+                status: 'payment_pending'
+              })
+            });
+            
+            if (!res.ok) {
+              const error = await res.json();
+              showError(error.error || 'Failed to create booking. Please try again.');
+              return;
+            }
+            
+            const data = await res.json();
+            
+            if (data.success && data.id) {
+              // Pass ALL booking details in URL to payment page
+              const params = new URLSearchParams({
+                bookingId: data.id,
+                room: rt,
+                roomLabel: inv[rt].label,
+                acType: type,
+                checkin,
+                checkout,
+                guests: guests.toString(),
+                nights: nights.toString(),
+                total: total.toString()
+              });
+              window.location.href = `/pay?${params.toString()}`;
+            } else {
+              showError('Booking created but no ID returned. Please contact support.');
+            }
+          } catch (err) {
+            console.error('Booking submission error:', err);
+            showError('Network error. Please check your connection and try again.');
+          }
         });
       });
     });
