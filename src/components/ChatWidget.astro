@@ -1,0 +1,214 @@
+---
+// src/components/ChatWidget.astro
+---
+
+<div id="chat-widget" class="fixed bottom-6 right-6 z-50">
+  <!-- Chat Button -->
+  <button id="chat-toggle" class="chat-button shadow-2xl">
+    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+    </svg>
+  </button>
+
+  <!-- Chat Box -->
+  <div id="chat-box" class="chat-box hidden">
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+        <span class="font-semibold">Dolphin House Assistant</span>
+      </div>
+      <button id="chat-close" class="text-white/80 hover:text-white transition">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div id="chat-messages" class="chat-messages">
+      <div class="message bot-message">
+        👋 Hi! I'm your Dolphin House assistant. Ask me about rooms, facilities, prices, or how to reach us!
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-container">
+      <input 
+        id="chat-input" 
+        type="text" 
+        placeholder="Ask me anything..."
+        class="chat-input"
+      />
+      <button id="chat-send" class="chat-send-btn">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const toggle = document.getElementById('chat-toggle');
+  const box = document.getElementById('chat-box');
+  const close = document.getElementById('chat-close');
+  const input = document.getElementById('chat-input') as HTMLInputElement;
+  const send = document.getElementById('chat-send');
+  const messages = document.getElementById('chat-messages');
+
+  toggle?.addEventListener('click', () => {
+    box?.classList.remove('hidden');
+    input?.focus();
+  });
+
+  close?.addEventListener('click', () => {
+    box?.classList.add('hidden');
+  });
+
+  function addMessage(text: string, isBot = false) {
+    const div = document.createElement('div');
+    div.className = `message ${isBot ? 'bot-message' : 'user-message'}`;
+    div.textContent = text;
+    messages?.appendChild(div);
+    messages!.scrollTop = messages!.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const message = input?.value.trim();
+    if (!message) return;
+
+    addMessage(message, false);
+    input.value = '';
+
+    // Show typing indicator
+    const typing = document.createElement('div');
+    typing.className = 'message bot-message typing-message';
+    typing.innerHTML = '<span class="typing-indicator">●●●</span>';
+    messages?.appendChild(typing);
+    messages!.scrollTop = messages!.scrollHeight;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+      });
+
+      typing.remove();
+
+      if (!res.ok) {
+        addMessage('Sorry, I encountered an error. Please try again or call us at +91-8554871073.', true);
+        return;
+      }
+
+      const data = await res.json();
+      addMessage(data.reply, true);
+
+    } catch (err) {
+      typing.remove();
+      addMessage('Connection error. Please check your internet or call us at +91-8554871073.', true);
+    }
+  }
+
+  send?.addEventListener('click', sendMessage);
+  input?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+</script>
+
+<style>
+  .chat-button {
+    @apply w-14 h-14 bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200;
+  }
+
+  .chat-box {
+    @apply absolute bottom-20 right-0 w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .chat-header {
+    @apply bg-gradient-to-r from-sky-600 to-sky-500 text-white px-4 py-3 flex items-center justify-between;
+  }
+
+  .chat-messages {
+    @apply flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50;
+    scroll-behavior: smooth;
+  }
+
+  .message {
+    @apply max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .user-message {
+    @apply bg-sky-500 text-white ml-auto rounded-br-none;
+  }
+
+  .bot-message {
+    @apply bg-white text-gray-800 shadow-sm rounded-bl-none border border-gray-100;
+  }
+
+  .typing-message {
+    @apply bg-white;
+  }
+
+  .chat-input-container {
+    @apply flex gap-2 p-4 bg-white border-t;
+  }
+
+  .chat-input {
+    @apply flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-sky-400 transition;
+  }
+
+  .chat-send-btn {
+    @apply w-10 h-10 bg-sky-500 text-white rounded-full flex items-center justify-center hover:bg-sky-600 transition-colors;
+  }
+
+  .typing-indicator {
+    @apply inline-block;
+    animation: typing 1.4s infinite;
+  }
+
+  @keyframes typing {
+    0%, 60%, 100% {
+      opacity: 0.3;
+    }
+    30% {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .chat-box {
+      @apply w-[calc(100vw-2rem)] h-[70vh];
+    }
+    
+    .chat-button {
+      @apply w-12 h-12;
+    }
+  }
+</style>
