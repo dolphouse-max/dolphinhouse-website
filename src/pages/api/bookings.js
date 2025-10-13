@@ -1,5 +1,7 @@
-export async function GET({ locals, url }) {
+// src/pages/api/bookings.js
+export async function GET({ locals, request }) {
   const db = locals.runtime.env.DB;
+  const url = new URL(request.url);
   const id = url.searchParams.get("id");
 
   try {
@@ -49,16 +51,24 @@ export async function POST({ locals, request }) {
     status = "payment_pending",
   } = body;
 
+  // Generate Customer ID: DH-YYYYMMDD-XXXX
+  const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  const shortId = id.substring(0, 4).toUpperCase();
+  const customerId = `DH-${today}-${shortId}`;
+
+  console.log('Creating booking with Customer ID:', customerId);
+
   try {
     await db
       .prepare(
         `INSERT INTO bookings (
-          id, name, email, room, checkin, checkout,
+          id, customer_id, name, email, room, checkin, checkout,
           guests, nights, total, status, createdAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         id,
+        customerId,
         name,
         email,
         room,
@@ -72,7 +82,9 @@ export async function POST({ locals, request }) {
       )
       .run();
 
-    return new Response(JSON.stringify({ success: true, id }), {
+    console.log('Booking created successfully:', { id, customerId });
+
+    return new Response(JSON.stringify({ success: true, id, customerId }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
@@ -118,7 +130,6 @@ export async function PUT({ locals, request }) {
       updates.push('total = ?');
       values.push(total);
     }
-    // Note: screenshot is stored separately or in a blob storage
 
     values.push(id); // ID for WHERE clause
 
