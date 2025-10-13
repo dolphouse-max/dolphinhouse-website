@@ -19,11 +19,63 @@ import Layout from "../layouts/Layout.astro";
         <input id="name" type="text" class="w-full border px-3 py-2 rounded mt-1 focus:ring-2 focus:ring-sky-400 focus:outline-none" required placeholder="Enter your full name">
       </label>
 
+      <!-- Mobile Number with OTP -->
       <label class="block">
         <span class="text-sm font-medium text-gray-700">Mobile Number <span class="text-red-500">*</span></span>
-        <input id="mobile" type="tel" pattern="[0-9]{10}" class="w-full border px-3 py-2 rounded mt-1 focus:ring-2 focus:ring-sky-400 focus:outline-none" required placeholder="10-digit mobile number">
-        <span class="text-xs text-gray-500">We'll send booking confirmation on WhatsApp</span>
+        <div class="flex gap-2">
+          <input 
+            id="mobile" 
+            type="tel" 
+            pattern="[0-9]{10}" 
+            class="flex-1 border px-3 py-2 rounded mt-1 focus:ring-2 focus:ring-sky-400 focus:outline-none" 
+            required 
+            placeholder="10-digit mobile number"
+          >
+          <button 
+            id="sendOtpBtn" 
+            type="button"
+            class="mt-1 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition font-semibold whitespace-nowrap"
+          >
+            Send OTP
+          </button>
+        </div>
+        <span class="text-xs text-gray-500">We'll send a verification code via SMS</span>
       </label>
+
+      <!-- OTP Input (Hidden initially) -->
+      <div id="otpSection" class="hidden">
+        <label class="block">
+          <span class="text-sm font-medium text-gray-700">Enter OTP <span class="text-red-500">*</span></span>
+          <div class="flex gap-2">
+            <input 
+              id="otp" 
+              type="text" 
+              maxlength="6"
+              pattern="[0-9]{6}"
+              class="flex-1 border px-3 py-2 rounded mt-1 focus:ring-2 focus:ring-sky-400 focus:outline-none font-mono text-lg tracking-widest" 
+              placeholder="Enter 6-digit OTP"
+            >
+            <button 
+              id="verifyOtpBtn" 
+              type="button"
+              class="mt-1 bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700 transition font-semibold"
+            >
+              Verify
+            </button>
+          </div>
+          <span class="text-xs text-gray-500">OTP valid for 5 minutes</span>
+        </label>
+        <button 
+          id="resendOtpBtn" 
+          type="button"
+          class="text-sm text-sky-600 underline hover:text-sky-700 mt-2"
+        >
+          Resend OTP
+        </button>
+      </div>
+
+      <!-- Verification Status -->
+      <div id="otpStatus" class="hidden mt-2 p-2 rounded"></div>
 
       <label class="block">
         <span class="text-sm font-medium text-gray-700">Email (Optional)</span>
@@ -95,6 +147,7 @@ import Layout from "../layouts/Layout.astro";
     const fileError = document.getElementById('fileError');
 
     let screenshotData = null;
+    let mobileVerified = false;
     const extraPersonCharge = 700;
 
     // Display booking summary with Customer ID
@@ -137,11 +190,9 @@ import Layout from "../layouts/Layout.astro";
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // Clear previous errors
       fileError.classList.add('hidden');
       preview.innerHTML = '';
 
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         fileError.textContent = '❌ Please upload only image files (JPG, PNG, etc.)';
         fileError.classList.remove('hidden');
@@ -149,8 +200,7 @@ import Layout from "../layouts/Layout.astro";
         return;
       }
 
-      // Validate file size (5MB limit)
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         fileError.textContent = '❌ Image must be smaller than 5MB. Please compress or choose another image.';
         fileError.classList.remove('hidden');
@@ -158,7 +208,6 @@ import Layout from "../layouts/Layout.astro";
         return;
       }
 
-      // Show preview
       const url = URL.createObjectURL(file);
       preview.innerHTML = `
         <div class="border rounded-lg p-2 bg-white">
@@ -168,16 +217,123 @@ import Layout from "../layouts/Layout.astro";
         </div>
       `;
 
-      // Convert to base64
       const reader = new FileReader();
       reader.onload = () => screenshotData = reader.result;
       reader.readAsDataURL(file);
     });
 
-    // Confirm booking
+    // OTP Variables
+    const mobileInput = document.getElementById('mobile');
+    const sendOtpBtn = document.getElementById('sendOtpBtn');
+    const otpSection = document.getElementById('otpSection');
+    const otpInput = document.getElementById('otp');
+    const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+    const resendOtpBtn = document.getElementById('resendOtpBtn');
+    const otpStatus = document.getElementById('otpStatus');
+
+    // Show OTP Status
+    function showOtpStatus(message, type) {
+      otpStatus.textContent = message;
+      otpStatus.className = `mt-2 p-2 rounded ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+      otpStatus.classList.remove('hidden');
+    }
+
+    // Send OTP
+    sendOtpBtn?.addEventListener('click', async () => {
+      const mobile = mobileInput.value.trim();
+      
+      if (!mobile || !/^[6-9][0-9]{9}$/.test(mobile)) {
+        showOtpStatus('Please enter a valid 10-digit mobile number', 'error');
+        return;
+      }
+
+      sendOtpBtn.disabled = true;
+      sendOtpBtn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch('/api/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobile })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showOtpStatus('✅ OTP sent successfully! Check your SMS.', 'success');
+          otpSection.classList.remove('hidden');
+          mobileInput.disabled = true;
+          sendOtpBtn.textContent = 'OTP Sent';
+          otpInput.focus();
+        } else {
+          showOtpStatus(`❌ ${data.error}`, 'error');
+          sendOtpBtn.disabled = false;
+          sendOtpBtn.textContent = 'Send OTP';
+        }
+      } catch (err) {
+        showOtpStatus('❌ Network error. Please try again.', 'error');
+        sendOtpBtn.disabled = false;
+        sendOtpBtn.textContent = 'Send OTP';
+      }
+    });
+
+    // Verify OTP
+    verifyOtpBtn?.addEventListener('click', async () => {
+      const mobile = mobileInput.value.trim();
+      const otp = otpInput.value.trim();
+
+      if (!otp || otp.length !== 6) {
+        showOtpStatus('Please enter 6-digit OTP', 'error');
+        return;
+      }
+
+      verifyOtpBtn.disabled = true;
+      verifyOtpBtn.textContent = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mobile, otp })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showOtpStatus('✅ Mobile verified successfully!', 'success');
+          mobileVerified = true;
+          verifyOtpBtn.textContent = 'Verified ✓';
+          verifyOtpBtn.classList.remove('bg-sky-600');
+          verifyOtpBtn.classList.add('bg-green-600');
+          verifyOtpBtn.disabled = true;
+          otpInput.disabled = true;
+          resendOtpBtn.classList.add('hidden');
+        } else {
+          showOtpStatus(`❌ ${data.error}`, 'error');
+          verifyOtpBtn.disabled = false;
+          verifyOtpBtn.textContent = 'Verify';
+        }
+      } catch (err) {
+        showOtpStatus('❌ Network error. Please try again.', 'error');
+        verifyOtpBtn.disabled = false;
+        verifyOtpBtn.textContent = 'Verify';
+      }
+    });
+
+    // Resend OTP
+    resendOtpBtn?.addEventListener('click', () => {
+      mobileInput.disabled = false;
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = 'Resend OTP';
+      otpInput.value = '';
+      otpStatus.classList.add('hidden');
+      sendOtpBtn.click();
+    });
+
+    // Confirm booking - SINGLE HANDLER
     document.getElementById('confirmBtn')?.addEventListener('click', async () => {
       const name = document.getElementById('name').value.trim();
-      const mobile = document.getElementById('mobile').value.trim();
+      const mobile = mobileInput.value.trim();
       const email = document.getElementById('email').value.trim();
 
       // Validation
@@ -188,6 +344,12 @@ import Layout from "../layouts/Layout.astro";
 
       if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
         alert('Please enter a valid 10-digit mobile number');
+        return;
+      }
+
+      // Check OTP verification
+      if (!mobileVerified) {
+        alert('Please verify your mobile number with OTP first');
         return;
       }
 
@@ -203,7 +365,6 @@ import Layout from "../layouts/Layout.astro";
       const finalTotal = baseTotal + extraCharges;
 
       try {
-        // Update booking with customer details
         const updateRes = await fetch('/api/bookings', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -243,5 +404,5 @@ import Layout from "../layouts/Layout.astro";
       document.getElementById('confirmBtn')?.remove();
     }
   </script>
-
+  
 </Layout>
