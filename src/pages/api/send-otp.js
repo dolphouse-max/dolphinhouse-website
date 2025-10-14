@@ -1,5 +1,4 @@
 // src/pages/api/send-otp.js
-// src/pages/api/send-otp.js
 export async function POST({ locals, request }) {
   const MSG91_AUTH_KEY = locals.runtime.env.MSG91_AUTH_KEY;
   const MSG91_TEMPLATE_ID = locals.runtime.env.MSG91_TEMPLATE_ID;
