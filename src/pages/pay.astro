@@ -259,8 +259,14 @@ import Layout from "../layouts/Layout.astro";
 
         const data = await res.json();
 
-        if (data.success) {
-          showOtpStatus('✅ OTP sent successfully! Check your SMS.', 'success');
+       if (data.success) {
+          // Show test OTP if in test mode
+          if (data.testMode && data.testOtp) {
+            showOtpStatus(`✅ TEST MODE - Your OTP is: ${data.testOtp}`, 'success');
+            alert(`TEST OTP: ${data.testOtp}\n\nIn production, this will be sent via SMS.`);
+          } else {
+            showOtpStatus('✅ OTP sent successfully! Check your SMS.', 'success');
+          }
           otpSection.classList.remove('hidden');
           mobileInput.disabled = true;
           sendOtpBtn.textContent = 'OTP Sent';
