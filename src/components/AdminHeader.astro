@@ -1,0 +1,75 @@
+---
+// src/components/AdminHeader.astro
+---
+<header class="bg-slate-800 text-white sticky top-0 z-50 border-b border-slate-700">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <a href="/admin" class="flex items-center gap-3">
+        <img src="/uploader/logo-512.webp" alt="Dolphin House" class="w-11 h-11 rounded-full shadow-sm object-cover"/>
+        <span class="font-semibold text-lg">Dolphin House Admin</span>
+      </a>
+    </div>
+
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+      <a href="/admin" class="hover:text-sky-400 transition">Dashboard</a>
+      <a href="/admin/bookings" class="hover:text-sky-400 transition">Bookings</a>
+      <a href="/admin/inventory" class="hover:text-sky-400 transition">Inventory</a>
+      <a href="/admin/calendar" class="hover:text-sky-400 transition">Calendar</a>
+      <button id="logoutBtn" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm">Logout</button>
+    </nav>
+
+    <div class="md:hidden">
+      <button id="admin-menu-btn" class="p-2 rounded-lg hover:bg-slate-700">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="admin-mobile-menu" class="hidden md:hidden border-t bg-slate-900">
+    <div class="px-4 py-4 flex flex-col gap-3">
+      <a href="/admin" class="hover:text-sky-400 transition">Dashboard</a>
+      <a href="/admin/bookings" class="hover:text-sky-400 transition">Bookings</a>
+      <a href="/admin/inventory" class="hover:text-sky-400 transition">Inventory</a>
+      <a href="/admin/calendar" class="hover:text-sky-400 transition">Calendar</a>
+      <button id="mobileLogoutBtn" class="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm w-fit">Logout</button>
+    </div>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Mobile menu toggle
+    const btn = document.getElementById('admin-menu-btn');
+    const menu = document.getElementById('admin-mobile-menu');
+    btn?.addEventListener('click', () => menu.classList.toggle('hidden'));
+    
+    // Logout functionality
+    const setupLogout = (buttonId) => {
+      const button = document.getElementById(buttonId);
+      if (button) {
+        button.addEventListener('click', async () => {
+          try {
+            const response = await fetch('/api/admin-auth', {
+              method: 'DELETE'
+            });
+            
+            if (response.ok) {
+              window.location.href = '/admin/login';
+            } else {
+              alert('Logout failed. Please try again.');
+            }
+          } catch (error) {
+            console.error('Logout error:', error);
+            alert('An error occurred during logout.');
+          }
+        });
+      }
+    };
+    
+    // Setup logout for both desktop and mobile buttons
+    setupLogout('logoutBtn');
+    setupLogout('mobileLogoutBtn');
+  });
+</script>

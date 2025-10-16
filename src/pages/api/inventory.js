@@ -1,8 +1,8 @@
-export async function GET({ locals, request }) {
+export async function GET({ locals }) {
   try {
     const db = locals.runtime.env.DB;
     const { results } = await db.prepare(`
-      SELECT room, label, qty, rateNonAC, rateAC
+      SELECT room_type AS room, label, qty, rate_non_ac AS rateNonAC, rate_ac AS rateAC
       FROM inventory
     `).all();
 
@@ -39,7 +39,7 @@ export async function PUT({ locals, request }) {
     // Insert new data
     for (const [key, val] of Object.entries(data)) {
       await db.prepare(`
-        INSERT INTO inventory (room, label, qty, rateNonAC, rateAC)
+        INSERT INTO inventory (room_type, label, qty, rate_non_ac, rate_ac)
         VALUES (?, ?, ?, ?, ?)
       `).bind(key, val.label, val.qty, val.rateNonAC, val.rateAC).run();
     }

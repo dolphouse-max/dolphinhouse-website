@@ -1,18 +1,25 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminHeader from '../../components/AdminHeader.astro';
+import { isAuthenticated } from '../../middleware/auth.js';
+
+// Check if user is authenticated
+const authenticated = isAuthenticated(Astro);
+if (!authenticated) {
+  return Astro.redirect('/admin/login');
+}
 ---
 
-<Layout title="Admin — Bookings">
-  <div class="flex gap-4 mb-6">
-    <a href="/admin" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300">🏠 Dashboard</a>
-    <a href="/admin/inventory" class="px-3 py-2 bg-green-200 rounded hover:bg-green-300">🧾 Inventory</a>
-    <a href="/admin/calendar" class="px-3 py-2 bg-yellow-200 rounded hover:bg-yellow-300">📅 Calendar</a>
-  </div>
+<AdminLayout title="Admin — Bookings">
+  <AdminHeader />
 
   <section class="max-w-7xl mx-auto p-6 space-y-8">
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">Admin — Bookings</h1>
-      <button id="refreshBtn" class="px-4 py-2 bg-sky-600 text-white rounded shadow hover:bg-sky-700 transition">🔄 Refresh</button>
+      <div class="flex gap-3">
+        <button id="addBookingBtn" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 transition">➕ New Booking</button>
+        <button id="refreshBtn" class="px-4 py-2 bg-sky-600 text-white rounded shadow hover:bg-sky-700 transition">🔄 Refresh</button>
+      </div>
     </div>
 
     <!-- Filter + Summary -->
@@ -21,8 +28,25 @@ import Layout from "../../layouts/Layout.astro";
         <label class="text-sm font-medium text-gray-700">Select Date</label><br/>
         <input id="filterDate" type="date" class="border px-3 py-2 rounded">
       </div>
+      <div>
+        <label class="text-sm font-medium text-gray-700">Status</label><br/>
+        <select id="statusFilter" class="border px-3 py-2 rounded">
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="payment_submitted">Payment Submitted</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm font-medium text-gray-700">Room Type</label><br/>
+        <select id="roomFilter" class="border px-3 py-2 rounded">
+          <option value="">All Rooms</option>
+          <!-- Room options will be populated dynamically -->
+        </select>
+      </div>
       <div id="summary" class="text-gray-800 font-medium">
-        📅 Select a date to view occupancy
+        📅 Select filters to view bookings
       </div>
     </div>
 
@@ -37,13 +61,17 @@ import Layout from "../../layouts/Layout.astro";
       <table class="w-full text-sm border-collapse">
         <thead class="bg-gray-100 border-b text-left text-gray-700">
           <tr>
-            <th class="px-4 py-2">ID</th>
+            <th class="px-4 py-2">ID</th>             
+            <th class="px-4 py-2">Customer ID</th>
             <th class="px-4 py-2">Guest</th>
+            <th class="px-4 py-2">Mobile</th>
             <th class="px-4 py-2">Room</th>
             <th class="px-4 py-2">Dates</th>
+            <th class="px-4 py-2">Nights</th>         
             <th class="px-4 py-2">Guests</th>
             <th class="px-4 py-2">Total</th>
             <th class="px-4 py-2">Status</th>
+            <th class="px-4 py-2">Actions</th>
           </tr>
         </thead>
         <tbody id="bookingTable"></tbody>
@@ -51,18 +79,133 @@ import Layout from "../../layouts/Layout.astro";
     </div>
   </section>
 
+  <!-- Booking Modal -->
+  <div id="bookingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h2 id="modalTitle" class="text-xl font-bold">Add New Booking</h2>
+        <button id="closeModal" class="text-gray-500 hover:text-gray-700">✕</button>
+      </div>
+      
+      <form id="bookingForm" class="space-y-4">
+        <input type="hidden" id="bookingId" value="">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Guest Name</label>
+            <input type="text" id="guestName" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" id="guestEmail" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Mobile</label>
+            <input type="tel" id="guestMobile" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Customer ID</label>
+            <input type="text" id="customerId" class="mt-1 block w-full border rounded-md px-3 py-2">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Room Type</label>
+            <select id="roomType" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+              <!-- Room options will be populated dynamically -->
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Number of Guests</label>
+            <input type="number" id="guestCount" min="1" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Check-in Date</label>
+            <input type="date" id="checkinDate" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Check-out Date</label>
+            <input type="date" id="checkoutDate" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Total Amount (₹)</label>
+            <input type="number" id="totalAmount" min="0" step="0.01" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Status</label>
+            <select id="bookingStatus" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="payment_submitted">Payment Submitted</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="cancelBtn" class="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-100">Cancel</button>
+          <button type="submit" id="saveBookingBtn" class="px-4 py-2 bg-sky-600 text-white rounded-md hover:bg-sky-700">Save Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script client:load>
     let bookings = [];
     let inventory = {};
     let chartInstance = null;
+    let editMode = false;
+    
+    // Setup logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/admin-auth', {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          window.location.href = '/admin/login';
+        } else {
+          alert('Logout failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred during logout.');
+      }
+    });
+    
+    // Calculate nights between two dates
+    function calculateNights(checkin, checkout) {
+      const start = new Date(checkin);
+      const end = new Date(checkout);
+      const diffTime = Math.abs(end - start);
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
 
     const table = document.getElementById('bookingTable');
     const dateInput = document.getElementById('filterDate');
+    const statusFilter = document.getElementById('statusFilter');
+    const roomFilter = document.getElementById('roomFilter');
     const summary = document.getElementById('summary');
     const refreshBtn = document.getElementById('refreshBtn');
     const chartCanvas = document.getElementById('occupancyChart');
+    
+    // Modal elements
+    const bookingModal = document.getElementById('bookingModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const bookingForm = document.getElementById('bookingForm');
+    const addBookingBtn = document.getElementById('addBookingBtn');
+    const closeModal = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
 
     function statusBadge(status) {
       const map = {
@@ -76,43 +219,364 @@ import Layout from "../../layouts/Layout.astro";
     }
 
     async function loadData() {
-      const [bRes, iRes] = await Promise.all([
-        fetch('/api/bookings'),
-        fetch('/api/inventory')
-      ]);
-      bookings = await bRes.json();
-      const invArr = await iRes.json();
-      inventory = Object.fromEntries(invArr.map(i => [i.room, i]));
-      renderTable();
-      renderChart();
+      try {
+        const [bRes, iRes] = await Promise.all([
+          fetch('/api/bookings'),
+          fetch('/api/inventory')
+        ]);
+        
+        if (!bRes.ok || !iRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
+        
+        bookings = await bRes.json();
+        const invArr = await iRes.json();
+        inventory = Object.fromEntries(invArr.map(i => [i.room, i]));
+        
+        // Populate room filter dropdown
+        populateRoomFilter();
+        
+        // Apply any active filters
+        applyFilters();
+        renderChart();
+      } catch (error) {
+        console.error('Error loading data:', error);
+        alert('Failed to load data. Please try again.');
+      }
     }
-
-    function renderTable(filterDate = null) {
-      table.innerHTML = '';
-
+    
+    function populateRoomFilter() {
+      // Clear existing options except the first one
+      while (roomFilter.options.length > 1) {
+        roomFilter.remove(1);
+      }
+      
+      // Add room options from inventory
+      const roomTypes = Object.keys(inventory);
+      roomTypes.forEach(room => {
+        const option = document.createElement('option');
+        option.value = room;
+        option.textContent = inventory[room].label || room;
+        roomFilter.appendChild(option);
+      });
+      
+      // Also populate room options in the booking form
+      const roomTypeSelect = document.getElementById('roomType');
+      roomTypeSelect.innerHTML = '';
+      roomTypes.forEach(room => {
+        const option = document.createElement('option');
+        option.value = room;
+        option.textContent = inventory[room].label || room;
+        roomTypeSelect.appendChild(option);
+      });
+    }
+    
+    function applyFilters() {
+      const filterDate = dateInput.value;
+      const statusValue = statusFilter.value;
+      const roomValue = roomFilter.value;
+      
       let filtered = bookings;
+      
+      // Apply date filter if selected
       if (filterDate) {
         const sel = new Date(filterDate);
-        filtered = bookings.filter(b => {
+        filtered = filtered.filter(b => {
           const ci = new Date(b.checkin);
           const co = new Date(b.checkout);
           return sel >= ci && sel < co && b.status !== 'cancelled';
         });
       }
+      
+      // Apply status filter if selected
+      if (statusValue) {
+        filtered = filtered.filter(b => b.status.toLowerCase() === statusValue.toLowerCase());
+      }
+      
+      // Apply room filter if selected
+      if (roomValue) {
+        filtered = filtered.filter(b => b.room === roomValue);
+      }
+      
+      renderTable(filtered);
+      
+      if (filterDate) updateSummary(filterDate, filtered);
+    }
+    
+    function updateSummary(date, bookings) {
+      const count = bookings.length;
+      summary.textContent = `📅 ${count} booking(s) for ${new Date(date).toLocaleDateString()}`;
+    }
 
-      filtered.forEach(b => {
+    function renderTable(filtered) {
+      table.innerHTML = '';
+      
+      if (!filtered || filtered.length === 0) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `<td colspan="11" class="px-4 py-4 text-center text-gray-500">No bookings found matching your criteria</td>`;
+        table.appendChild(emptyRow);
+        return;
+      }
+          const ci = new Date(b.checkin);
+          const co = new Date(b.checkout);
+          return sel >= ci && sel < co && b.status !== 'cancelled';
+        });
+        }
+      filtered.forEach(b => { 
         const tr = document.createElement('tr');
         tr.className = "border-b hover:bg-gray-50";
-        tr.innerHTML = `
-          <td class="px-4 py-2 text-xs text-gray-500">${b.id}</td>
-          <td class="px-4 py-2">${b.name || '(no name)'}</td>
+        tr.innerHTML = ` 
+          <td class="px-4 py-2 font-mono text-xs text-gray-500">${b.id}</td> <td class="px-4 py-2 font-mono text-xs text-sky-600">${b.customer_id || 'N/A'}</td>
+          <td class="px-4 py-2">
+            <div class="font-medium">${b.name || '(no name)'}</div>
+            <div class="text-xs text-gray-500">${b.email || ''}</div>
+          </td>
+          <td class="px-4 py-2">
+            <a href="tel:${b.mobile}" class="text-sky-600 hover:underline">${b.mobile || 'N/A'}</a>
+          </td>
           <td class="px-4 py-2 capitalize">${b.room}</td>
           <td class="px-4 py-2">${b.checkin} → ${b.checkout}</td>
-          <td class="px-4 py-2">${b.guests}</td>
-          <td class="px-4 py-2 font-semibold">₹${b.total}</td>
+          <td class="px-4 py-2 text-center">${b.nights}</td> <td class="px-4 py-2 text-center">${b.guests}</td>
+          <td class="px-4 py-2 font-semibold">₹${b.total?.toLocaleString() || 'N/A'}</td>
           <td class="px-4 py-2">${statusBadge(b.status)}</td>
-        `;
+          <td class="px-4 py-2">
+            <div class="flex gap-2">
+              <button class="edit-btn px-2 py-1 text-xs bg-sky-100 text-sky-700 rounded hover:bg-sky-200" data-id="${b.id}">Edit</button>
+              <button class="delete-btn px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200" data-id="${b.id}">Delete</button>
+            </div>
+          </td> `;
         table.appendChild(tr);
+        
+        // Add event listeners to the buttons
+        const editBtn = tr.querySelector('.edit-btn');
+        const deleteBtn = tr.querySelector('.delete-btn');
+        
+        editBtn.addEventListener('click', () => openEditModal(b.id));
+        deleteBtn.addEventListener('click', () => deleteBooking(b.id));
       });
+    }
+    
+    function renderChart() {
+      // Chart implementation - using existing chart functionality
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+      
+      const ctx = chartCanvas.getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(inventory).map(room => inventory[room].label || room),
+          datasets: [{
+            label: 'Occupancy',
+            data: Object.keys(inventory).map(room => {
+              const roomBookings = bookings.filter(b => b.room === room && b.status !== 'cancelled');
+              return roomBookings.length;
+            }),
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Modal functions
+    function openAddModal() {
+      editMode = false;
+      modalTitle.textContent = 'Add New Booking';
+      bookingForm.reset();
+      document.getElementById('bookingId').value = '';
+      
+      // Set default dates
+      const today = new Date().toISOString().split('T')[0];
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = tomorrow.toISOString().split('T')[0];
+      
+      document.getElementById('checkinDate').value = today;
+      document.getElementById('checkoutDate').value = tomorrowStr;
+      
+      bookingModal.classList.remove('hidden');
+    }
+    
+    async function openEditModal(id) {
+      try {
+        editMode = true;
+        modalTitle.textContent = 'Edit Booking';
+        
+        // Fetch booking details
+        const response = await fetch(`/api/booking-crud?id=${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch booking details');
+        }
+        
+        const booking = await response.json();
+        
+        // Populate form fields
+        document.getElementById('bookingId').value = booking.id;
+        document.getElementById('guestName').value = booking.name;
+        document.getElementById('guestEmail').value = booking.email;
+        document.getElementById('guestMobile').value = booking.mobile || '';
+        document.getElementById('customerId').value = booking.customer_id || '';
+        document.getElementById('roomType').value = booking.room;
+        document.getElementById('guestCount').value = booking.guests;
+        document.getElementById('checkinDate').value = booking.checkin.split('T')[0];
+        document.getElementById('checkoutDate').value = booking.checkout.split('T')[0];
+        document.getElementById('totalAmount').value = booking.total;
+        document.getElementById('bookingStatus').value = booking.status;
+        
+        bookingModal.classList.remove('hidden');
+      } catch (error) {
+        console.error('Error fetching booking details:', error);
+        alert('Failed to load booking details. Please try again.');
+      }
+    }
+    
+    function closeModal() {
+      bookingModal.classList.add('hidden');
+    }
+    
+    async function saveBooking(event) {
+      event.preventDefault();
+      
+      try {
+        // Gather form data
+        const bookingId = document.getElementById('bookingId').value;
+        const name = document.getElementById('guestName').value;
+        const email = document.getElementById('guestEmail').value;
+        const mobile = document.getElementById('guestMobile').value;
+        const customer_id = document.getElementById('customerId').value;
+        const room = document.getElementById('roomType').value;
+        const guests = parseInt(document.getElementById('guestCount').value);
+        const checkin = document.getElementById('checkinDate').value;
+        const checkout = document.getElementById('checkoutDate').value;
+        const total = parseFloat(document.getElementById('totalAmount').value);
+        const status = document.getElementById('bookingStatus').value;
+        
+        // Calculate nights
+        const nights = calculateNights(checkin, checkout);
+        
+        const bookingData = {
+          name,
+          email,
+          mobile,
+          customer_id,
+          room,
+          guests,
+          checkin,
+          checkout,
+          nights,
+          total,
+          status
+        };
+        
+        let response;
+        
+        if (editMode) {
+          // Update existing booking
+          bookingData.id = bookingId;
+          response = await fetch('/api/booking-crud', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingData)
+          });
+        } else {
+          // Create new booking
+          response = await fetch('/api/booking-crud', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bookingData)
+          });
+        }
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save booking');
+        }
+        
+        // Close modal and refresh data
+        closeModal();
+        loadData();
+        
+        // Show success message
+        alert(editMode ? 'Booking updated successfully!' : 'New booking created successfully!');
+      } catch (error) {
+        console.error('Error saving booking:', error);
+        alert(`Failed to save booking: ${error.message}`);
+      }
+    }
+    
+    async function deleteBooking(id) {
+      if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/api/booking-crud?id=${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to delete booking');
+        }
+        
+        // Refresh data
+        loadData();
+        
+        // Show success message
+        alert('Booking deleted successfully!');
+      } catch (error) {
+        console.error('Error deleting booking:', error);
+        alert(`Failed to delete booking: ${error.message}`);
+      }
+    }
+    
+    // Event listeners
+    addBookingBtn.addEventListener('click', openAddModal);
+    closeModal.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    bookingForm.addEventListener('submit', saveBooking);
+    refreshBtn.addEventListener('click', loadData);
+    dateInput.addEventListener('change', applyFilters);
+    statusFilter.addEventListener('change', applyFilters);
+    roomFilter.addEventListener('change', applyFilters);
+    
+    // Auto-calculate nights when dates change
+    const checkinInput = document.getElementById('checkinDate');
+    const checkoutInput = document.getElementById('checkoutDate');
+    
+    function updateNightsAndTotal() {
+      const checkin = checkinInput.value;
+      const checkout = checkoutInput.value;
+      
+      if (checkin && checkout) {
+        const nights = calculateNights(checkin, checkout);
+        const roomType = document.getElementById('roomType').value;
+        const guests = parseInt(document.getElementById('guestCount').value) || 1;
+        
+        if (roomType && inventory[roomType]) {
+          // Basic rate calculation (can be enhanced with more complex pricing)
+          const baseRate = inventory[roomType].rateAC || 2000;
+          const total = baseRate * nights;
+          document.getElementById('totalAmount').value = total;
+        }
+      }
+    }
+    
+    checkinInput.addEventListener('change', updateNightsAndTotal);
+    checkoutInput.addEventListener('change', updateNightsAndTotal);
 
-      if (filterDate) updateSummary(filterDate, filtered);
+    // Initial load
+    loadData();

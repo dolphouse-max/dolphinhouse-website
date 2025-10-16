@@ -1,3 +1,9 @@
+
+
+git add src/pages/booking.astro 
+git commit -m "Phase 1: html correction"
+git push
+============================================================
 🧩 The 3 EmailJS Keys You’ll See
 
 Purpose	Example	Where to find it	Used in code
@@ -8,7 +14,7 @@ Purpose	Example	Where to find it	Used in code
 
 3️⃣ Public Key (previously called User ID)	your_public_key_abc123	Account → API Keys section in EmailJS Dashboard	emailjs.init("your_public_key_abc123")
 
-
+===============================================================
 Public Key :  vYmRU-6Ws4Ms2H9yj
 
 Service ID :  service_zw6trxu
@@ -19,7 +25,12 @@ Template ID:  template_3giqgsg
 Github
 
  0ABF-0C04
+===================================================================
+msg91 auth key
 
+auth key:  473324ARxQLJ59B768ecb81bP1
+Template id:   68ee3244b19fba0551555855
+============================================================
 curl https://dolphinhouse-website.pages.dev/api/bookings
 
 
@@ -33,3 +44,26 @@ git commit -m "Corrected Booking.astro"
 git push
 
 ☁️ As soon as you push, Cloudflare Pages will automatically detect the commit, rebuild, and deploy your site.
+
+
+==========================================================================================
+
+Quick Tips for Maintaining Your Chatbot
+
+1. Add more knowledge as needed:
+
+sql-- In Cloudflare D1 Console
+INSERT INTO knowledge_chunks (id, source, ref, text, createdAt)
+VALUES ('new-id', 'source', 'ref', 'Your new information here', datetime('now'));
+
+2. Check your OpenAI costs:
+
+https://platform.openai.com/usage
+
+3. If chatbot gets too many similar questions:
+
+Add that info to your knowledge base!
+
+=============================================================================================
+
+

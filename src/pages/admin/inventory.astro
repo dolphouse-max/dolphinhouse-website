@@ -1,19 +1,77 @@
---- 
-import Layout from "../../layouts/Layout.astro";
 ---
-<Layout title="Inventory | Dolphin House">
-  <div class="flex gap-4 mb-6">
-    <a href="/admin" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300">🏠 Dashboard</a>
-    <a href="/admin/bookings" class="px-3 py-2 bg-sky-200 rounded hover:bg-sky-300">📘 Bookings</a>
-    <a href="/admin/calendar" class="px-3 py-2 bg-yellow-200 rounded hover:bg-yellow-300">📅 Calendar</a>
-  </div>
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminHeader from '../../components/AdminHeader.astro';
+import { isAuthenticated } from '../../middleware/auth.js';
+
+// Check if user is authenticated
+const authenticated = isAuthenticated(Astro);
+if (!authenticated) {
+  return Astro.redirect('/admin/login');
+}
+---
+<AdminLayout title="Inventory | Dolphin House">
+  <AdminHeader />
+  <div class="max-w-7xl mx-auto px-4 py-6">
 
   <section class="max-w-7xl mx-auto p-6">
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold">Room Inventory & Rates</h1>
       <div class="flex gap-3">
+        <button id="addRoomBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Add Room</button>
         <button id="saveBtn" class="px-4 py-2 bg-sky-600 text-white rounded">Save Changes</button>
         <button id="refreshInventory" class="px-4 py-2 border rounded">Refresh</button>
+      </div>
+    </div>
+    
+    <!-- Room Inventory Modal -->
+    <div id="roomModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+          <h3 id="modalTitle" class="text-xl font-semibold">Add Room</h3>
+          <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <form id="roomForm" class="space-y-4">
+          <input type="hidden" id="editMode" value="false">
+          
+          <div>
+            <label for="roomId" class="block text-sm font-medium text-gray-700">Room ID</label>
+            <input type="text" id="roomId" name="roomId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+            <p class="text-xs text-gray-500 mt-1">Unique identifier for the room (e.g., deluxe1, standard2)</p>
+          </div>
+          
+          <div>
+            <label for="roomLabel" class="block text-sm font-medium text-gray-700">Room Label</label>
+            <input type="text" id="roomLabel" name="roomLabel" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+            <p class="text-xs text-gray-500 mt-1">Display name for the room (e.g., Deluxe Room, Standard Room)</p>
+          </div>
+          
+          <div>
+            <label for="roomQty" class="block text-sm font-medium text-gray-700">Quantity</label>
+            <input type="number" id="roomQty" name="roomQty" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="rateNonAC" class="block text-sm font-medium text-gray-700">Non-AC Rate (₹)</label>
+              <input type="number" id="rateNonAC" name="rateNonAC" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            
+            <div>
+              <label for="rateAC" class="block text-sm font-medium text-gray-700">AC Rate (₹)</label>
+              <input type="number" id="rateAC" name="rateAC" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+          </div>
+          
+          <div class="flex justify-end gap-2 pt-4">
+            <button type="button" id="cancelBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save Room</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -43,6 +101,31 @@ import Layout from "../../layouts/Layout.astro";
     <section class="bg-white p-6 rounded-lg shadow mb-8">
       <h2 class="text-xl font-semibold mb-4">Occupancy Chart</h2>
       <canvas id="occupancyChart" height="120"></canvas>
+    </section>
+
+    <!-- Room Inventory Table -->
+    <section class="bg-white p-6 rounded-lg shadow mb-8">
+      <h3 class="text-lg font-semibold mb-4">Room Inventory</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Label</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Non-AC Rate (₹)</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AC Rate (₹)</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTable" class="bg-white divide-y divide-gray-200">
+            <!-- Room data will be loaded here -->
+            <tr>
+              <td colspan="6" class="px-6 py-4 text-center text-gray-500">Loading room inventory...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Availability Calendar -->
@@ -79,6 +162,24 @@ import Layout from "../../layouts/Layout.astro";
   <!-- Main client script (runs in browser only) -->
   <script client:load>
   (async () => {
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/admin-auth', {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          window.location.href = '/admin/login';
+        } else {
+          alert('Logout failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred during logout.');
+      }
+    });
+    
     // -----------------------
     // Config & defaults
     // -----------------------
@@ -89,6 +190,17 @@ import Layout from "../../layouts/Layout.astro";
       "deluxeFamily": { label: "Deluxe Family Room", qty: 1, rateNonAC: 3300, rateAC: 3800, occupancy: 4, extraPerson: 700 }
     };
     let inventory = DEFAULT_INVENTORY;
+    
+    // Room inventory CRUD operations
+    const inventoryTable = document.getElementById('inventoryTable');
+    const addRoomBtn = document.getElementById('addRoomBtn');
+    const roomModal = document.getElementById('roomModal');
+    const closeModal = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const roomForm = document.getElementById('roomForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const roomIdInput = document.getElementById('roomId');
+    const editModeInput = document.getElementById('editMode');
 
     // DOM
     const grid = document.getElementById('inventoryGrid');
@@ -412,6 +524,103 @@ import Layout from "../../layouts/Layout.astro";
     saveBtn.addEventListener('click', saveInventory);
     refreshBtn.addEventListener('click', loadInventory);
     loadChartBtn.addEventListener('click', loadChart);
+    
+    // Room modal events
+     addRoomBtn.addEventListener('click', () => {
+       modalTitle.textContent = 'Add Room';
+       roomForm.reset();
+       editModeInput.value = 'false';
+       roomIdInput.disabled = false;
+       roomModal.classList.remove('hidden');
+     });
+     
+     closeModal.addEventListener('click', () => roomModal.classList.add('hidden'));
+     cancelBtn.addEventListener('click', () => roomModal.classList.add('hidden'));
+     
+     // Edit room button event delegation
+     inventoryTable.addEventListener('click', (e) => {
+       if (e.target.classList.contains('edit-room-btn')) {
+         const roomId = e.target.dataset.room;
+         openEditModal(roomId);
+       } else if (e.target.classList.contains('delete-room-btn')) {
+         const roomId = e.target.dataset.room;
+         deleteRoom(roomId);
+       }
+     });
+     
+     // Open edit modal
+     function openEditModal(roomId) {
+       const room = inventory[roomId];
+       if (!room) return;
+       
+       modalTitle.textContent = 'Edit Room';
+       editModeInput.value = 'true';
+       roomIdInput.value = room.room;
+       roomIdInput.disabled = true;
+       document.getElementById('roomLabel').value = room.label;
+       document.getElementById('roomQty').value = room.qty;
+       document.getElementById('rateNonAC').value = room.rateNonAC;
+       document.getElementById('rateAC').value = room.rateAC;
+       
+       roomModal.classList.remove('hidden');
+     }
+     
+     // Delete room
+     async function deleteRoom(roomId) {
+       if (!confirm(`Are you sure you want to delete room "${inventory[roomId].label}"?`)) return;
+       
+       try {
+         const response = await fetch(`/api/inventory-crud?room=${roomId}`, {
+           method: 'DELETE'
+         });
+         
+         if (!response.ok) {
+           const error = await response.json();
+           throw new Error(error.error || 'Failed to delete room');
+         }
+         
+         await loadData();
+         alert('Room deleted successfully');
+       } catch (error) {
+         console.error('Error deleting room:', error);
+         alert(error.message);
+       }
+     }
+     
+     // Save room form
+     roomForm.addEventListener('submit', async (e) => {
+       e.preventDefault();
+       
+       try {
+         const isEdit = editModeInput.value === 'true';
+         const roomData = {
+           room: document.getElementById('roomId').value,
+           label: document.getElementById('roomLabel').value,
+           qty: parseInt(document.getElementById('roomQty').value),
+           rateNonAC: parseFloat(document.getElementById('rateNonAC').value) || 0,
+           rateAC: parseFloat(document.getElementById('rateAC').value) || 0
+         };
+         
+         const method = isEdit ? 'PUT' : 'POST';
+         const response = await fetch('/api/inventory-crud', {
+           method,
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify(roomData)
+         });
+         
+         if (!response.ok) {
+           const error = await response.json();
+           throw new Error(error.error || 'Failed to save room');
+         }
+         
+         roomModal.classList.add('hidden');
+         await loadData();
+         alert(isEdit ? 'Room updated successfully' : 'Room added successfully');
+       } catch (error) {
+         console.error('Error saving room:', error);
+         alert(error.message);
+       }
+     });
 
     // load inventory then calendar
     await loadInventory();

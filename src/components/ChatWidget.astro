@@ -12,18 +12,25 @@
   </button>
 
   <!-- Chat Box -->
-  <div id="chat-box" class="chat-box hidden">
+  <div id="chat-box" class="chat-box is-hidden">
     <!-- Header -->
     <div class="chat-header">
       <div class="flex items-center gap-2">
         <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
         <span class="font-semibold">Dolphin House Assistant</span>
       </div>
-      <button id="chat-close" class="text-white/80 hover:text-white transition">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="chat-minimize" class="text-white/80 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"/>
+          </svg>
+        </button>
+        <button id="chat-close" class="text-white/80 hover:text-white transition">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Messages -->
@@ -50,71 +57,83 @@
   </div>
 </div>
 
-<script>
-  const toggle = document.getElementById('chat-toggle');
-  const box = document.getElementById('chat-box');
-  const close = document.getElementById('chat-close');
-  const input = document.getElementById('chat-input') as HTMLInputElement;
-  const send = document.getElementById('chat-send');
-  const messages = document.getElementById('chat-messages');
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const widget = document.getElementById('chat-widget');
 
-  toggle?.addEventListener('click', () => {
-    box?.classList.remove('hidden');
-    input?.focus();
-  });
-
-  close?.addEventListener('click', () => {
-    box?.classList.add('hidden');
-  });
-
-  function addMessage(text: string, isBot = false) {
-    const div = document.createElement('div');
-    div.className = `message ${isBot ? 'bot-message' : 'user-message'}`;
-    div.textContent = text;
-    messages?.appendChild(div);
-    messages!.scrollTop = messages!.scrollHeight;
-  }
-
-  async function sendMessage() {
-    const message = input?.value.trim();
-    if (!message) return;
-
-    addMessage(message, false);
-    input.value = '';
-
-    // Show typing indicator
-    const typing = document.createElement('div');
-    typing.className = 'message bot-message typing-message';
-    typing.innerHTML = '<span class="typing-indicator">●●●</span>';
-    messages?.appendChild(typing);
-    messages!.scrollTop = messages!.scrollHeight;
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
-      });
-
-      typing.remove();
-
-      if (!res.ok) {
-        addMessage('Sorry, I encountered an error. Please try again or call us at +91-8554871073.', true);
-        return;
-      }
-
-      const data = await res.json();
-      addMessage(data.reply, true);
-
-    } catch (err) {
-      typing.remove();
-      addMessage('Connection error. Please check your internet or call us at +91-8554871073.', true);
+    // Prevent widget on admin routes
+    if (location.pathname.startsWith('/admin')) {
+      widget?.remove();
+      return;
     }
-  }
 
-  send?.addEventListener('click', sendMessage);
-  input?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
+    const toggle = document.getElementById('chat-toggle');
+    const box = document.getElementById('chat-box');
+    const close = document.getElementById('chat-close');
+    const minimize = document.getElementById('chat-minimize');
+    const input = document.getElementById('chat-input');
+    const send = document.getElementById('chat-send');
+    const messages = document.getElementById('chat-messages');
+
+    // Toggle bubble open/close
+    toggle?.addEventListener('click', () => {
+      box?.classList.toggle('is-hidden');
+      if (!box?.classList.contains('is-hidden')) input?.focus();
+    });
+
+    // Close/minimize actions
+    close?.addEventListener('click', () => box?.classList.add('is-hidden'));
+    minimize?.addEventListener('click', () => box?.classList.add('is-hidden'));
+
+    function addMessage(text, isBot = false) {
+      const div = document.createElement('div');
+      div.className = `message ${isBot ? 'bot-message' : 'user-message'}`;
+      div.textContent = text;
+      messages?.appendChild(div);
+      if (messages) messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const message = input?.value.trim();
+      if (!message) return;
+
+      addMessage(message, false);
+      if (input) input.value = '';
+
+      // Show typing indicator
+      const typing = document.createElement('div');
+      typing.className = 'message bot-message typing-message';
+      typing.innerHTML = '<span class="typing-indicator">●●●</span>';
+      messages?.appendChild(typing);
+      if (messages) messages.scrollTop = messages.scrollHeight;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+
+        typing.remove();
+
+        if (!res.ok) {
+          addMessage('Sorry, I encountered an error. Please try again or call us at +91-8554871073.', true);
+          return;
+        }
+
+        const data = await res.json();
+        addMessage(data.reply, true);
+
+      } catch (err) {
+        typing.remove();
+        addMessage('Connection error. Please check your internet or call us at +91-8554871073.', true);
+      }
+    }
+
+    send?.addEventListener('click', sendMessage);
+    input?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
   });
 </script>
 
@@ -128,15 +147,12 @@
     animation: slideUp 0.3s ease-out;
   }
 
+  /* Component-scoped minimized state */
+  .is-hidden { display: none; }
+
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .chat-header {

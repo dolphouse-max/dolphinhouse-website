@@ -1,0 +1,16 @@
+---
+import "../styles/global.css";
+const { title = "Dolphin House Admin" } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{title}</title>
+    <link rel="icon" href="/uploader/logo-512.webp" />
+  </head>
+  <body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
+    <slot />
+  </body>
+</html>

@@ -1,8 +1,17 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminHeader from '../../components/AdminHeader.astro';
+import { isAuthenticated } from '../../middleware/auth.js';
+
+// Check if user is authenticated
+const authenticated = isAuthenticated(Astro);
+if (!authenticated) {
+  return Astro.redirect('/admin/login');
+}
 ---
 
-<Layout title="Admin Dashboard | Dolphin House">
+<AdminLayout title="Admin Dashboard | Dolphin House">
+  <AdminHeader />
 
   <section id="reportArea" class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-lg mt-10 mb-16">
     <div class="flex justify-between items-center mb-6">
@@ -96,6 +105,24 @@ import Layout from "../../layouts/Layout.astro";
 
   <script client:load>
     const { jsPDF } = window.jspdf;
+
+    // Setup logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        const response = await fetch('/api/admin-auth', {
+          method: 'DELETE'
+        });
+        
+        if (response.ok) {
+          window.location.href = '/admin/login';
+        } else {
+          alert('Logout failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+        alert('An error occurred during logout.');
+      }
+    });
 
     // Generate PDF with multiple pages and custom branding
     async function generatePDF() {
