@@ -3,16 +3,17 @@
 ---
 
 <div id="chat-widget" class="fixed bottom-6 right-6 z-50">
-  <!-- Chat Button -->
+  <!-- Chat Button (Always Visible) -->
   <button id="chat-toggle" class="chat-button shadow-2xl">
     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
             d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
     </svg>
+    <span class="notification-badge">💬</span>
   </button>
 
-  <!-- Chat Box -->
-  <div id="chat-box" class="chat-box is-hidden">
+  <!-- Chat Box (Hidden by Default) -->
+  <div id="chat-box" class="chat-box" style="display: none;">
     <!-- Header -->
     <div class="chat-header">
       <div class="flex items-center gap-2">
@@ -22,7 +23,7 @@
       <div class="flex items-center gap-2">
         <button id="chat-minimize" class="text-white/80 hover:text-white transition">
           <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
         <button id="chat-close" class="text-white/80 hover:text-white transition">
@@ -75,15 +76,28 @@
     const send = document.getElementById('chat-send');
     const messages = document.getElementById('chat-messages');
 
-    // Toggle bubble open/close
+    // Toggle chat box open/close
     toggle?.addEventListener('click', () => {
-      box?.classList.toggle('is-hidden');
-      if (!box?.classList.contains('is-hidden')) input?.focus();
+      if (box) {
+        if (box.style.display === 'none') {
+          box.style.display = 'flex';
+          box.style.animation = 'slideUp 0.3s ease-out';
+          input?.focus();
+        } else {
+          box.style.display = 'none';
+        }
+      }
     });
 
-    // Close/minimize actions
-    close?.addEventListener('click', () => box?.classList.add('is-hidden'));
-    minimize?.addEventListener('click', () => box?.classList.add('is-hidden'));
+    // Close button
+    close?.addEventListener('click', () => {
+      if (box) box.style.display = 'none';
+    });
+
+    // Minimize button
+    minimize?.addEventListener('click', () => {
+      if (box) box.style.display = 'none';
+    });
 
     function addMessage(text, isBot = false) {
       const div = document.createElement('div');
@@ -139,16 +153,17 @@
 
 <style>
   .chat-button {
-    @apply w-14 h-14 bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200;
+    @apply w-14 h-14 bg-gradient-to-br from-sky-500 to-sky-600 text-white rounded-full flex items-center justify-center hover:scale-110 transition-transform duration-200 relative;
+  }
+
+  .notification-badge {
+    @apply absolute -top-1 -right-1 text-xs;
   }
 
   .chat-box {
-    @apply absolute bottom-20 right-0 w-96 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-200;
-    animation: slideUp 0.3s ease-out;
+    @apply absolute bottom-20 right-0 w-96 h-[500px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200;
+    flex-direction: column;
   }
-
-  /* Component-scoped minimized state */
-  .is-hidden { display: none; }
 
   @keyframes slideUp {
     from { opacity: 0; transform: translateY(20px); }
