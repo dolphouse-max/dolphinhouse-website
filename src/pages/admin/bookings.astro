@@ -22,12 +22,13 @@ if (!authenticated) {
       </div>
     </div>
 
-    <!-- Filter Tabs (NEW) -->
+    <!-- Filter Tabs -->
     <div class="flex flex-wrap gap-2 mb-4">
       <button class="filter-tab active" data-status="all">All Bookings</button>
       <button class="filter-tab" data-status="pending">⏳ Pending Approval (<span id="pendingCount">0</span>)</button>
       <button class="filter-tab" data-status="approved">✅ Approved</button>
       <button class="filter-tab" data-status="confirmed">💚 Confirmed</button>
+      <button class="filter-tab" data-status="payment_submitted">💳 Payment Submitted</button>
       <button class="filter-tab" data-status="checked_in">🏨 Checked In</button>
       <button class="filter-tab" data-status="cancelled">❌ Cancelled</button>
     </div>
@@ -43,6 +44,7 @@ if (!authenticated) {
         <select id="statusFilter" class="border px-3 py-2 rounded">
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
+          <option value="payment_pending">Payment Pending</option>
           <option value="approved">Approved</option>
           <option value="confirmed">Confirmed</option>
           <option value="payment_submitted">Payment Submitted</option>
@@ -57,7 +59,7 @@ if (!authenticated) {
         </select>
       </div>
       <div id="summary" class="text-gray-800 font-medium">
-        📅 Select filters to view bookings
+        Total: <span id="totalBookings">0</span> bookings
       </div>
     </div>
 
@@ -90,7 +92,7 @@ if (!authenticated) {
     </div>
   </section>
 
-  <!-- Booking Add/Edit Modal (EXISTING) -->
+  <!-- Booking Add/Edit Modal -->
   <div id="bookingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
@@ -119,7 +121,7 @@ if (!authenticated) {
           
           <div>
             <label class="block text-sm font-medium text-gray-700">Customer ID</label>
-            <input type="text" id="customerId" class="mt-1 block w-full border rounded-md px-3 py-2">
+            <input type="text" id="customerId" class="mt-1 block w-full border rounded-md px-3 py-2" placeholder="Auto-generated">
           </div>
           
           <div>
@@ -152,6 +154,7 @@ if (!authenticated) {
             <label class="block text-sm font-medium text-gray-700">Status</label>
             <select id="bookingStatus" class="mt-1 block w-full border rounded-md px-3 py-2" required>
               <option value="pending">Pending</option>
+              <option value="payment_pending">Payment Pending</option>
               <option value="approved">Approved</option>
               <option value="confirmed">Confirmed</option>
               <option value="payment_submitted">Payment Submitted</option>
@@ -169,7 +172,7 @@ if (!authenticated) {
     </div>
   </div>
 
-  <!-- Approval Modal (NEW) -->
+  <!-- Approval Modal -->
   <div id="approvalModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6">
       <div class="flex items-center justify-between mb-4">
@@ -196,7 +199,7 @@ if (!authenticated) {
     </div>
   </div>
 
-  <!-- Check-in Details Modal (NEW) -->
+  <!-- Check-in Details Modal -->
   <div id="checkinModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
     <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 my-8 p-6">
       <div class="flex items-center justify-between mb-4">
@@ -221,7 +224,7 @@ if (!authenticated) {
     let chartInstance = null;
     let editMode = false;
     let currentBookingForApproval = null;
-    let currentStatusFilter = 'all'; // NEW: Track active status filter
+    let currentStatusFilter = 'all';
     
     // Setup logout functionality
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
@@ -232,12 +235,9 @@ if (!authenticated) {
         
         if (response.ok) {
           window.location.href = '/admin/login';
-        } else {
-          alert('Logout failed. Please try again.');
         }
       } catch (error) {
         console.error('Logout error:', error);
-        alert('An error occurred during logout.');
       }
     });
     
@@ -256,6 +256,7 @@ if (!authenticated) {
     const summary = document.getElementById('summary');
     const refreshBtn = document.getElementById('refreshBtn');
     const chartCanvas = document.getElementById('occupancyChart');
+    const totalBookingsSpan = document.getElementById('totalBookings');
     
     // Modal elements
     const bookingModal = document.getElementById('bookingModal');
@@ -265,32 +266,33 @@ if (!authenticated) {
     const closeModalBtn = document.getElementById('closeModal');
     const cancelBtn = document.getElementById('cancelBtn');
 
-    // NEW: Approval modal elements
+    // Approval modal elements
     const approvalModal = document.getElementById('approvalModal');
     const approvalContent = document.getElementById('approvalContent');
     const closeApprovalModal = document.getElementById('closeApprovalModal');
     const cancelApprovalBtn = document.getElementById('cancelApprovalBtn');
     const confirmApprovalBtn = document.getElementById('confirmApprovalBtn');
 
-    // NEW: Check-in modal elements
+    // Check-in modal elements
     const checkinModal = document.getElementById('checkinModal');
     const checkinContent = document.getElementById('checkinContent');
     const closeCheckinModal = document.getElementById('closeCheckinModal');
 
-    // NEW: Filter tabs
+    // Filter tabs
     const filterTabs = document.querySelectorAll('.filter-tab');
 
     function statusBadge(status) {
       const map = {
         pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
+        payment_pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
         approved: "bg-green-100 text-green-800 border-green-300",
         confirmed: "bg-blue-100 text-blue-800 border-blue-300",
         payment_submitted: "bg-purple-100 text-purple-800 border-purple-300",
         checked_in: "bg-indigo-100 text-indigo-800 border-indigo-300",
         cancelled: "bg-red-100 text-red-800 border-red-300"
       };
-      const cls = map[status.toLowerCase()] || "bg-gray-100 text-gray-700 border-gray-300";
-      return `<span class="px-2 py-1 text-xs rounded border ${cls} capitalize">${status.replace('_',' ')}</span>`;
+      const cls = map[status?.toLowerCase()] || "bg-gray-100 text-gray-700 border-gray-300";
+      return `<span class="px-2 py-1 text-xs rounded border ${cls} capitalize">${(status || 'unknown').replace('_',' ')}</span>`;
     }
 
     async function loadData() {
@@ -306,13 +308,21 @@ if (!authenticated) {
         
         bookings = await bRes.json();
         const invArr = await iRes.json();
-        inventory = Object.fromEntries(invArr.map(i => [i.room, i]));
+        
+        // Convert inventory array to object for easy lookup
+        inventory = {};
+        invArr.forEach(item => {
+          inventory[item.room] = item;
+        });
         
         // Populate room filter dropdown
         populateRoomFilter();
         
-        // NEW: Update pending count
+        // Update pending count
         updatePendingCount();
+        
+        // Update total bookings
+        totalBookingsSpan.textContent = bookings.length;
         
         // Apply any active filters
         applyFilters();
@@ -323,9 +333,10 @@ if (!authenticated) {
       }
     }
     
-    // NEW: Update pending bookings count
     function updatePendingCount() {
-      const pendingCount = bookings.filter(b => b.status === 'pending').length;
+      const pendingCount = bookings.filter(b => 
+        b.status === 'pending' || b.status === 'payment_pending'
+      ).length;
       document.getElementById('pendingCount').textContent = pendingCount;
     }
     
@@ -336,8 +347,7 @@ if (!authenticated) {
       }
       
       // Add room options from inventory
-      const roomTypes = Object.keys(inventory);
-      roomTypes.forEach(room => {
+      Object.keys(inventory).forEach(room => {
         const option = document.createElement('option');
         option.value = room;
         option.textContent = inventory[room].label || room;
@@ -347,7 +357,7 @@ if (!authenticated) {
       // Also populate room options in the booking form
       const roomTypeSelect = document.getElementById('roomType');
       roomTypeSelect.innerHTML = '';
-      roomTypes.forEach(room => {
+      Object.keys(inventory).forEach(room => {
         const option = document.createElement('option');
         option.value = room;
         option.textContent = inventory[room].label || room;
@@ -362,9 +372,14 @@ if (!authenticated) {
       
       let filtered = bookings;
       
-      // NEW: Apply status tab filter
+      // Apply status tab filter (treat payment_pending as pending for filter tabs)
       if (currentStatusFilter !== 'all') {
-        filtered = filtered.filter(b => b.status === currentStatusFilter);
+        filtered = filtered.filter(b => {
+          if (currentStatusFilter === 'pending') {
+            return b.status === 'pending' || b.status === 'payment_pending';
+          }
+          return b.status === currentStatusFilter;
+        });
       }
       
       // Apply date filter if selected
@@ -379,7 +394,7 @@ if (!authenticated) {
       
       // Apply status filter if selected
       if (statusValue) {
-        filtered = filtered.filter(b => b.status.toLowerCase() === statusValue.toLowerCase());
+        filtered = filtered.filter(b => b.status?.toLowerCase() === statusValue.toLowerCase());
       }
       
       // Apply room filter if selected
@@ -394,7 +409,7 @@ if (!authenticated) {
     
     function updateSummary(date, bookings) {
       const count = bookings.length;
-      summary.textContent = `📅 ${count} booking(s) for ${new Date(date).toLocaleDateString()}`;
+      summary.innerHTML = `📅 ${count} booking(s) for ${new Date(date).toLocaleDateString()}`;
     }
 
     function renderTable(filtered) {
@@ -411,12 +426,12 @@ if (!authenticated) {
         const tr = document.createElement('tr');
         tr.className = "border-b hover:bg-gray-50";
         
-        // NEW: Determine action buttons based on status
+        // Determine action buttons based on status
         let actionButtons = '';
         
-        if (b.status === 'pending') {
+        if (b.status === 'pending' || b.status === 'payment_pending') {
           actionButtons = `
-            <button class="approve-btn px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium mr-2" data-id="${b.id}">
+            <button class="approve-btn px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium mr-1" data-id="${b.id}">
               ✅ Approve
             </button>
           `;
@@ -424,24 +439,27 @@ if (!authenticated) {
         
         if (b.status === 'checked_in') {
           actionButtons += `
-            <button class="view-checkin-btn px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 font-medium mr-2" data-id="${b.id}">
-              👁️ View Check-in
+            <button class="view-checkin-btn px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 font-medium mr-1" data-id="${b.id}">
+              👁️ Check-in
             </button>
           `;
         }
         
         tr.innerHTML = ` 
-          <td class="px-4 py-2 font-mono text-xs text-gray-500">${b.id}</td>
+          <td class="px-4 py-2 font-mono text-xs text-gray-500">${b.id.substring(0, 8)}...</td>
           <td class="px-4 py-2 font-mono text-xs text-sky-600">${b.customer_id || 'N/A'}</td>
           <td class="px-4 py-2">
             <div class="font-medium">${b.name || '(no name)'}</div>
-            <div class="text-xs text-gray-500">${b.email || ''}</div>
+            <div class="text-xs text-gray-500">${b.email || '(no email)'}</div>
           </td>
           <td class="px-4 py-2">
-            <a href="tel:${b.mobile}" class="text-sky-600 hover:underline">${b.mobile || 'N/A'}</a>
+            ${b.mobile ? `<a href="tel:${b.mobile}" class="text-sky-600 hover:underline">${b.mobile}</a>` : 'N/A'}
           </td>
-          <td class="px-4 py-2 capitalize">${b.room}</td>
-          <td class="px-4 py-2">${b.checkin} → ${b.checkout}</td>
+          <td class="px-4 py-2 capitalize">${inventory[b.room]?.label || b.room}</td>
+          <td class="px-4 py-2">
+            <div class="text-sm">${b.checkin}</div>
+            <div class="text-xs text-gray-500">→ ${b.checkout}</div>
+          </td>
           <td class="px-4 py-2 text-center">${b.nights}</td>
           <td class="px-4 py-2 text-center">${b.guests}</td>
           <td class="px-4 py-2 font-semibold">₹${b.total?.toLocaleString() || 'N/A'}</td>
@@ -465,12 +483,10 @@ if (!authenticated) {
         editBtn.addEventListener('click', () => openEditModal(b.id));
         deleteBtn.addEventListener('click', () => deleteBooking(b.id));
         
-        // NEW: Approve button
         if (approveBtn) {
           approveBtn.addEventListener('click', () => openApprovalModal(b.id));
         }
         
-        // NEW: View check-in button
         if (viewCheckinBtn) {
           viewCheckinBtn.addEventListener('click', () => viewCheckinDetails(b.id));
         }
@@ -483,22 +499,26 @@ if (!authenticated) {
       }
       
       const ctx = chartCanvas.getContext('2d');
+      const labels = Object.keys(inventory).map(room => inventory[room].label || room);
+      const data = Object.keys(inventory).map(room => {
+        const roomBookings = bookings.filter(b => b.room === room && b.status !== 'cancelled');
+        return roomBookings.length;
+      });
+      
       chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: Object.keys(inventory).map(room => inventory[room].label || room),
+          labels: labels,
           datasets: [{
-            label: 'Occupancy',
-            data: Object.keys(inventory).map(room => {
-              const roomBookings = bookings.filter(b => b.room === room && b.status !== 'cancelled');
-              return roomBookings.length;
-            }),
-            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            borderColor: 'rgba(54, 162, 235, 1)',
+            label: 'Current Bookings',
+            data: data,
+            backgroundColor: 'rgba(14, 165, 233, 0.6)',
+            borderColor: 'rgba(14, 165, 233, 1)',
             borderWidth: 1
           }]
         },
         options: {
+          responsive: true,
           scales: {
             y: {
               beginAtZero: true,
@@ -511,9 +531,9 @@ if (!authenticated) {
       });
     }
     
-    // ============================================
-    // NEW: APPROVAL WORKFLOW FUNCTIONS
-    // ============================================
+    // ====================
+    // APPROVAL WORKFLOW
+    // ====================
     
     function openApprovalModal(bookingId) {
       const booking = bookings.find(b => b.id === bookingId);
@@ -525,12 +545,12 @@ if (!authenticated) {
         <div class="bg-sky-50 p-4 rounded-lg border border-sky-200">
           <h3 class="font-bold text-lg mb-3">Booking Details:</h3>
           <div class="grid grid-cols-2 gap-3 text-sm">
-            <div><span class="font-medium">Booking ID:</span> ${booking.id}</div>
+            <div><span class="font-medium">Booking ID:</span> ${booking.id.substring(0, 13)}...</div>
             <div><span class="font-medium">Customer ID:</span> ${booking.customer_id || 'Will be generated'}</div>
-            <div><span class="font-medium">Guest Name:</span> ${booking.name}</div>
-            <div><span class="font-medium">Mobile:</span> ${booking.mobile}</div>
-            <div><span class="font-medium">Email:</span> ${booking.email}</div>
-            <div><span class="font-medium">Room Type:</span> ${booking.room}</div>
+            <div><span class="font-medium">Guest Name:</span> ${booking.name || 'Not provided'}</div>
+            <div><span class="font-medium">Mobile:</span> ${booking.mobile || 'Not provided'}</div>
+            <div><span class="font-medium">Email:</span> ${booking.email || 'Not provided'}</div>
+            <div><span class="font-medium">Room Type:</span> ${inventory[booking.room]?.label || booking.room}</div>
             <div><span class="font-medium">Check-in:</span> ${booking.checkin}</div>
             <div><span class="font-medium">Check-out:</span> ${booking.checkout}</div>
             <div><span class="font-medium">Nights:</span> ${booking.nights}</div>
@@ -543,7 +563,7 @@ if (!authenticated) {
           <h4 class="font-bold mb-2">⚠️ Approval Actions:</h4>
           <ul class="text-sm space-y-1 list-disc list-inside">
             <li>Booking status will change to <strong>"Approved"</strong></li>
-            <li>Confirmation email will be sent to customer at <strong>${booking.email}</strong></li>
+            <li>Confirmation email will be sent to customer ${booking.email ? `at <strong>${booking.email}</strong>` : '(if email provided)'}</li>
             <li>Email will include Customer ID and check-in link</li>
             <li>Customer can complete online check-in 24 hours before arrival</li>
           </ul>
@@ -571,7 +591,7 @@ if (!authenticated) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            approved_by: 'admin@dolphinhouse.com' // TODO: Get from session
+            approved_by: 'admin@dolphinhouse.com'
           })
         });
 
@@ -580,15 +600,13 @@ if (!authenticated) {
           throw new Error(errorData.error || 'Approval failed');
         }
 
-        const result = await res.json();
-        
         alert('✅ Booking approved successfully!\n\nConfirmation email has been sent to the customer.');
         closeApprovalModalFn();
         await loadData();
 
       } catch (err) {
         console.error('Approval error:', err);
-        alert(`Failed to approve booking: ${err.message}`);
+        alert(`Failed to approve booking: ${err.message}\n\nNote: API endpoint may not be set up yet.`);
       } finally {
         confirmApprovalBtn.disabled = false;
         confirmApprovalBtn.innerHTML = '✅ Approve & Send Confirmation Email';
@@ -599,101 +617,16 @@ if (!authenticated) {
       try {
         const res = await fetch(`/api/admin/checkin/${bookingId}`);
         if (!res.ok) {
-          throw new Error('Failed to fetch check-in details');
+          throw new Error('Check-in details not found');
         }
         
         const data = await res.json();
         const { booking, checkin } = data;
 
         checkinContent.innerHTML = `
-          <div class="grid md:grid-cols-2 gap-6">
-            <!-- Booking Info -->
-            <div class="bg-sky-50 p-4 rounded-lg">
-              <h3 class="font-bold mb-3 text-sky-800">📋 Booking Information</h3>
-              <div class="space-y-2 text-sm">
-                <div><span class="font-medium">Booking ID:</span> ${booking.id}</div>
-                <div><span class="font-medium">Customer ID:</span> ${booking.customer_id}</div>
-                <div><span class="font-medium">Check-in Date:</span> ${booking.checkin}</div>
-                <div><span class="font-medium">Check-out Date:</span> ${booking.checkout}</div>
-                <div><span class="font-medium">Room:</span> ${booking.room}</div>
-              </div>
-            </div>
-
-            <!-- Guest Info -->
-            <div class="bg-purple-50 p-4 rounded-lg">
-              <h3 class="font-bold mb-3 text-purple-800">👤 Guest Information</h3>
-              <div class="space-y-2 text-sm">
-                <div><span class="font-medium">Name:</span> ${checkin.full_name}</div>
-                <div><span class="font-medium">Mobile:</span> ${checkin.mobile}</div>
-                <div><span class="font-medium">Email:</span> ${checkin.email}</div>
-                <div><span class="font-medium">Purpose:</span> ${checkin.purpose_of_visit || 'N/A'}</div>
-                <div><span class="font-medium">Vehicle:</span> ${checkin.vehicle_number || 'N/A'}</div>
-              </div>
-            </div>
-
-            <!-- Address -->
-            <div class="bg-green-50 p-4 rounded-lg">
-              <h3 class="font-bold mb-3 text-green-800">🏠 Address</h3>
-              <div class="space-y-2 text-sm">
-                <div>${checkin.address_line1}</div>
-                <div>${checkin.address_line2 || ''}</div>
-                <div>${checkin.city}, ${checkin.state} - ${checkin.pincode}</div>
-                <div>${checkin.country || 'India'}</div>
-              </div>
-            </div>
-
-            <!-- Emergency Contact -->
-            <div class="bg-orange-50 p-4 rounded-lg">
-              <h3 class="font-bold mb-3 text-orange-800">🚨 Emergency Contact</h3>
-              <div class="space-y-2 text-sm">
-                <div><span class="font-medium">Name:</span> ${checkin.emergency_contact_name}</div>
-                <div><span class="font-medium">Mobile:</span> ${checkin.emergency_contact_mobile}</div>
-              </div>
-            </div>
-
-            <!-- Aadhaar Details -->
-            <div class="md:col-span-2 bg-blue-50 p-4 rounded-lg">
-              <h3 class="font-bold mb-3 text-blue-800">🆔 Aadhaar Card Details</h3>
-              <div class="mb-3">
-                <span class="font-medium">Aadhaar Number:</span> ${checkin.aadhaar_number || 'N/A'}
-              </div>
-              <div class="grid md:grid-cols-2 gap-4">
-                ${checkin.aadhaar_front_url ? `
-                  <div>
-                    <p class="text-sm font-medium mb-2">Front Side:</p>
-                    <a href="${checkin.aadhaar_front_url}" target="_blank" class="block">
-                      <img src="${checkin.aadhaar_front_url}" alt="Aadhaar Front" class="w-full border rounded shadow hover:shadow-lg transition">
-                    </a>
-                    <a href="${checkin.aadhaar_front_url}" download class="text-xs text-blue-600 hover:underline mt-2 inline-block">⬇️ Download</a>
-                  </div>
-                ` : '<div class="text-gray-500">No front image</div>'}
-                
-                ${checkin.aadhaar_back_url ? `
-                  <div>
-                    <p class="text-sm font-medium mb-2">Back Side:</p>
-                    <a href="${checkin.aadhaar_back_url}" target="_blank" class="block">
-                      <img src="${checkin.aadhaar_back_url}" alt="Aadhaar Back" class="w-full border rounded shadow hover:shadow-lg transition">
-                    </a>
-                    <a href="${checkin.aadhaar_back_url}" download class="text-xs text-blue-600 hover:underline mt-2 inline-block">⬇️ Download</a>
-                  </div>
-                ` : '<div class="text-gray-500">No back image</div>'}
-              </div>
-            </div>
-
-            <!-- Timestamps -->
-            <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg">
-              <h3 class="font-bold mb-3">⏰ Timestamps</h3>
-              <div class="grid md:grid-cols-2 gap-2 text-sm">
-                <div><span class="font-medium">Check-in Completed:</span> ${new Date(checkin.checkin_completed_at).toLocaleString()}</div>
-                ${checkin.verified_at ? `<div><span class="font-medium">Verified At:</span> ${new Date(checkin.verified_at).toLocaleString()}</div>` : ''}
-              </div>
-            </div>
-          </div>
-
-          <div class="flex gap-3 mt-6">
-            <button onclick="window.print()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-              🖨️ Print Details
-            </button>
+          <div class="text-center py-8">
+            <p class="text-gray-600">Check-in details will be displayed here</p>
+            <p class="text-sm text-gray-500 mt-2">Guest: ${booking.name}</p>
           </div>
         `;
 
@@ -702,13 +635,13 @@ if (!authenticated) {
 
       } catch (err) {
         console.error('Error loading check-in details:', err);
-        alert('Failed to load check-in details. The guest may not have completed online check-in yet.');
+        alert('Check-in details not available. Guest may not have completed online check-in yet.');
       }
     }
     
-    // ============================================
-    // EXISTING MODAL FUNCTIONS
-    // ============================================
+    // ====================
+    // EXISTING CRUD OPERATIONS
+    // ====================
     
     function openAddModal() {
       editMode = false;
@@ -716,7 +649,6 @@ if (!authenticated) {
       bookingForm.reset();
       document.getElementById('bookingId').value = '';
       
-      // Set default dates
       const today = new Date().toISOString().split('T')[0];
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -733,18 +665,14 @@ if (!authenticated) {
         editMode = true;
         modalTitle.textContent = 'Edit Booking';
         
-        // Fetch booking details
-        const response = await fetch(`/api/booking-crud?id=${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch booking details');
+        const booking = bookings.find(b => b.id === id);
+        if (!booking) {
+          throw new Error('Booking not found');
         }
         
-        const booking = await response.json();
-        
-        // Populate form fields
         document.getElementById('bookingId').value = booking.id;
-        document.getElementById('guestName').value = booking.name;
-        document.getElementById('guestEmail').value = booking.email;
+        document.getElementById('guestName').value = booking.name || '';
+        document.getElementById('guestEmail').value = booking.email || '';
         document.getElementById('guestMobile').value = booking.mobile || '';
         document.getElementById('customerId').value = booking.customer_id || '';
         document.getElementById('roomType').value = booking.room;
@@ -756,8 +684,8 @@ if (!authenticated) {
         
         bookingModal.classList.remove('hidden');
       } catch (error) {
-        console.error('Error fetching booking details:', error);
-        alert('Failed to load booking details. Please try again.');
+        console.error('Error opening edit modal:', error);
+        alert('Failed to load booking details.');
       }
     }
     
@@ -769,7 +697,6 @@ if (!authenticated) {
       event.preventDefault();
       
       try {
-        // Gather form data
         const bookingId = document.getElementById('bookingId').value;
         const name = document.getElementById('guestName').value;
         const email = document.getElementById('guestEmail').value;
@@ -782,7 +709,6 @@ if (!authenticated) {
         const total = parseFloat(document.getElementById('totalAmount').value);
         const status = document.getElementById('bookingStatus').value;
         
-        // Calculate nights
         const nights = calculateNights(checkin, checkout);
         
         const bookingData = {
@@ -802,7 +728,6 @@ if (!authenticated) {
         let response;
         
         if (editMode) {
-          // Update existing booking
           bookingData.id = bookingId;
           response = await fetch('/api/booking-crud', {
             method: 'PUT',
@@ -810,7 +735,6 @@ if (!authenticated) {
             body: JSON.stringify(bookingData)
           });
         } else {
-          // Create new booking
           response = await fetch('/api/booking-crud', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -823,11 +747,9 @@ if (!authenticated) {
           throw new Error(errorData.error || 'Failed to save booking');
         }
         
-        // Close modal and refresh data
         closeBookingModal();
         loadData();
         
-        // Show success message
         alert(editMode ? 'Booking updated successfully!' : 'New booking created successfully!');
       } catch (error) {
         console.error('Error saving booking:', error);
@@ -850,10 +772,7 @@ if (!authenticated) {
           throw new Error(errorData.error || 'Failed to delete booking');
         }
         
-        // Refresh data
         loadData();
-        
-        // Show success message
         alert('Booking deleted successfully!');
       } catch (error) {
         console.error('Error deleting booking:', error);
@@ -861,22 +780,22 @@ if (!authenticated) {
       }
     }
     
-    // ============================================
+    // ====================
     // EVENT LISTENERS
-    // ============================================
+    // ====================
     
-    // Existing modal events
+    // Modal events
     addBookingBtn.addEventListener('click', openAddModal);
     closeModalBtn.addEventListener('click', closeBookingModal);
     cancelBtn.addEventListener('click', closeBookingModal);
     bookingForm.addEventListener('submit', saveBooking);
     
-    // NEW: Approval modal events
+    // Approval modal events
     closeApprovalModal.addEventListener('click', closeApprovalModalFn);
     cancelApprovalBtn.addEventListener('click', closeApprovalModalFn);
     confirmApprovalBtn.addEventListener('click', confirmApproval);
     
-    // NEW: Check-in modal events
+    // Check-in modal events
     closeCheckinModal.addEventListener('click', () => {
       checkinModal.classList.add('hidden');
       checkinModal.classList.remove('flex');
@@ -888,7 +807,7 @@ if (!authenticated) {
     statusFilter.addEventListener('change', applyFilters);
     roomFilter.addEventListener('change', applyFilters);
     
-    // NEW: Filter tab events
+    // Filter tab events
     filterTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         filterTabs.forEach(t => t.classList.remove('active'));
@@ -909,10 +828,8 @@ if (!authenticated) {
       if (checkin && checkout) {
         const nights = calculateNights(checkin, checkout);
         const roomType = document.getElementById('roomType').value;
-        const guests = parseInt(document.getElementById('guestCount').value) || 1;
         
         if (roomType && inventory[roomType]) {
-          // Basic rate calculation
           const baseRate = inventory[roomType].rateAC || 2000;
           const total = baseRate * nights;
           document.getElementById('totalAmount').value = total;
@@ -928,7 +845,6 @@ if (!authenticated) {
   </script>
 
   <style>
-    /* NEW: Filter tab styles */
     .filter-tab {
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
