@@ -10,16 +10,26 @@ if (!authenticated) {
 }
 ---
 
-<AdminLayout title="Admin — Bookings">
+<AdminLayout title="Admin – Bookings">
   <AdminHeader />
 
   <section class="max-w-7xl mx-auto p-6 space-y-8">
     <div class="flex items-center justify-between mb-4">
-      <h1 class="text-2xl font-bold">Admin — Bookings</h1>
+      <h1 class="text-2xl font-bold">Admin – Bookings</h1>
       <div class="flex gap-3">
         <button id="addBookingBtn" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-700 transition">➕ New Booking</button>
         <button id="refreshBtn" class="px-4 py-2 bg-sky-600 text-white rounded shadow hover:bg-sky-700 transition">🔄 Refresh</button>
       </div>
+    </div>
+
+    <!-- Filter Tabs (NEW) -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button class="filter-tab active" data-status="all">All Bookings</button>
+      <button class="filter-tab" data-status="pending">⏳ Pending Approval (<span id="pendingCount">0</span>)</button>
+      <button class="filter-tab" data-status="approved">✅ Approved</button>
+      <button class="filter-tab" data-status="confirmed">💚 Confirmed</button>
+      <button class="filter-tab" data-status="checked_in">🏨 Checked In</button>
+      <button class="filter-tab" data-status="cancelled">❌ Cancelled</button>
     </div>
 
     <!-- Filter + Summary -->
@@ -33,8 +43,10 @@ if (!authenticated) {
         <select id="statusFilter" class="border px-3 py-2 rounded">
           <option value="">All Statuses</option>
           <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
           <option value="confirmed">Confirmed</option>
           <option value="payment_submitted">Payment Submitted</option>
+          <option value="checked_in">Checked In</option>
           <option value="cancelled">Cancelled</option>
         </select>
       </div>
@@ -42,7 +54,6 @@ if (!authenticated) {
         <label class="text-sm font-medium text-gray-700">Room Type</label><br/>
         <select id="roomFilter" class="border px-3 py-2 rounded">
           <option value="">All Rooms</option>
-          <!-- Room options will be populated dynamically -->
         </select>
       </div>
       <div id="summary" class="text-gray-800 font-medium">
@@ -79,7 +90,7 @@ if (!authenticated) {
     </div>
   </section>
 
-  <!-- Booking Modal -->
+  <!-- Booking Add/Edit Modal (EXISTING) -->
   <div id="bookingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
@@ -114,7 +125,6 @@ if (!authenticated) {
           <div>
             <label class="block text-sm font-medium text-gray-700">Room Type</label>
             <select id="roomType" class="mt-1 block w-full border rounded-md px-3 py-2" required>
-              <!-- Room options will be populated dynamically -->
             </select>
           </div>
           
@@ -142,8 +152,10 @@ if (!authenticated) {
             <label class="block text-sm font-medium text-gray-700">Status</label>
             <select id="bookingStatus" class="mt-1 block w-full border rounded-md px-3 py-2" required>
               <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
               <option value="confirmed">Confirmed</option>
               <option value="payment_submitted">Payment Submitted</option>
+              <option value="checked_in">Checked In</option>
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
@@ -157,16 +169,62 @@ if (!authenticated) {
     </div>
   </div>
 
+  <!-- Approval Modal (NEW) -->
+  <div id="approvalModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold">✅ Approve Booking</h2>
+        <button id="closeApprovalModal" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div id="approvalContent" class="space-y-4">
+        <!-- Booking details will be loaded here -->
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button id="confirmApprovalBtn" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold">
+          ✅ Approve & Send Confirmation Email
+        </button>
+        <button id="cancelApprovalBtn" class="px-6 py-3 border rounded-lg hover:bg-gray-100 transition">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Check-in Details Modal (NEW) -->
+  <div id="checkinModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 my-8 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-2xl font-bold">🏨 Check-in Details</h2>
+        <button id="closeCheckinModal" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="checkinContent" class="space-y-4">
+        <!-- Check-in details will be loaded here -->
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <script client:load>
+  <script>
     let bookings = [];
     let inventory = {};
     let chartInstance = null;
     let editMode = false;
+    let currentBookingForApproval = null;
+    let currentStatusFilter = 'all'; // NEW: Track active status filter
     
     // Setup logout functionality
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
       try {
         const response = await fetch('/api/admin-auth', {
           method: 'DELETE'
@@ -204,14 +262,31 @@ if (!authenticated) {
     const modalTitle = document.getElementById('modalTitle');
     const bookingForm = document.getElementById('bookingForm');
     const addBookingBtn = document.getElementById('addBookingBtn');
-    const closeModal = document.getElementById('closeModal');
+    const closeModalBtn = document.getElementById('closeModal');
     const cancelBtn = document.getElementById('cancelBtn');
+
+    // NEW: Approval modal elements
+    const approvalModal = document.getElementById('approvalModal');
+    const approvalContent = document.getElementById('approvalContent');
+    const closeApprovalModal = document.getElementById('closeApprovalModal');
+    const cancelApprovalBtn = document.getElementById('cancelApprovalBtn');
+    const confirmApprovalBtn = document.getElementById('confirmApprovalBtn');
+
+    // NEW: Check-in modal elements
+    const checkinModal = document.getElementById('checkinModal');
+    const checkinContent = document.getElementById('checkinContent');
+    const closeCheckinModal = document.getElementById('closeCheckinModal');
+
+    // NEW: Filter tabs
+    const filterTabs = document.querySelectorAll('.filter-tab');
 
     function statusBadge(status) {
       const map = {
-        confirmed: "bg-green-100 text-green-800 border-green-300",
         pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
-        payment_submitted: "bg-blue-100 text-blue-800 border-blue-300",
+        approved: "bg-green-100 text-green-800 border-green-300",
+        confirmed: "bg-blue-100 text-blue-800 border-blue-300",
+        payment_submitted: "bg-purple-100 text-purple-800 border-purple-300",
+        checked_in: "bg-indigo-100 text-indigo-800 border-indigo-300",
         cancelled: "bg-red-100 text-red-800 border-red-300"
       };
       const cls = map[status.toLowerCase()] || "bg-gray-100 text-gray-700 border-gray-300";
@@ -236,6 +311,9 @@ if (!authenticated) {
         // Populate room filter dropdown
         populateRoomFilter();
         
+        // NEW: Update pending count
+        updatePendingCount();
+        
         // Apply any active filters
         applyFilters();
         renderChart();
@@ -243,6 +321,12 @@ if (!authenticated) {
         console.error('Error loading data:', error);
         alert('Failed to load data. Please try again.');
       }
+    }
+    
+    // NEW: Update pending bookings count
+    function updatePendingCount() {
+      const pendingCount = bookings.filter(b => b.status === 'pending').length;
+      document.getElementById('pendingCount').textContent = pendingCount;
     }
     
     function populateRoomFilter() {
@@ -277,6 +361,11 @@ if (!authenticated) {
       const roomValue = roomFilter.value;
       
       let filtered = bookings;
+      
+      // NEW: Apply status tab filter
+      if (currentStatusFilter !== 'all') {
+        filtered = filtered.filter(b => b.status === currentStatusFilter);
+      }
       
       // Apply date filter if selected
       if (filterDate) {
@@ -317,16 +406,33 @@ if (!authenticated) {
         table.appendChild(emptyRow);
         return;
       }
-          const ci = new Date(b.checkin);
-          const co = new Date(b.checkout);
-          return sel >= ci && sel < co && b.status !== 'cancelled';
-        });
-        }
+      
       filtered.forEach(b => { 
         const tr = document.createElement('tr');
         tr.className = "border-b hover:bg-gray-50";
+        
+        // NEW: Determine action buttons based on status
+        let actionButtons = '';
+        
+        if (b.status === 'pending') {
+          actionButtons = `
+            <button class="approve-btn px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium mr-2" data-id="${b.id}">
+              ✅ Approve
+            </button>
+          `;
+        }
+        
+        if (b.status === 'checked_in') {
+          actionButtons += `
+            <button class="view-checkin-btn px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 font-medium mr-2" data-id="${b.id}">
+              👁️ View Check-in
+            </button>
+          `;
+        }
+        
         tr.innerHTML = ` 
-          <td class="px-4 py-2 font-mono text-xs text-gray-500">${b.id}</td> <td class="px-4 py-2 font-mono text-xs text-sky-600">${b.customer_id || 'N/A'}</td>
+          <td class="px-4 py-2 font-mono text-xs text-gray-500">${b.id}</td>
+          <td class="px-4 py-2 font-mono text-xs text-sky-600">${b.customer_id || 'N/A'}</td>
           <td class="px-4 py-2">
             <div class="font-medium">${b.name || '(no name)'}</div>
             <div class="text-xs text-gray-500">${b.email || ''}</div>
@@ -336,28 +442,42 @@ if (!authenticated) {
           </td>
           <td class="px-4 py-2 capitalize">${b.room}</td>
           <td class="px-4 py-2">${b.checkin} → ${b.checkout}</td>
-          <td class="px-4 py-2 text-center">${b.nights}</td> <td class="px-4 py-2 text-center">${b.guests}</td>
+          <td class="px-4 py-2 text-center">${b.nights}</td>
+          <td class="px-4 py-2 text-center">${b.guests}</td>
           <td class="px-4 py-2 font-semibold">₹${b.total?.toLocaleString() || 'N/A'}</td>
           <td class="px-4 py-2">${statusBadge(b.status)}</td>
           <td class="px-4 py-2">
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-1">
+              ${actionButtons}
               <button class="edit-btn px-2 py-1 text-xs bg-sky-100 text-sky-700 rounded hover:bg-sky-200" data-id="${b.id}">Edit</button>
               <button class="delete-btn px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200" data-id="${b.id}">Delete</button>
             </div>
-          </td> `;
+          </td>
+        `;
         table.appendChild(tr);
         
         // Add event listeners to the buttons
         const editBtn = tr.querySelector('.edit-btn');
         const deleteBtn = tr.querySelector('.delete-btn');
+        const approveBtn = tr.querySelector('.approve-btn');
+        const viewCheckinBtn = tr.querySelector('.view-checkin-btn');
         
         editBtn.addEventListener('click', () => openEditModal(b.id));
         deleteBtn.addEventListener('click', () => deleteBooking(b.id));
+        
+        // NEW: Approve button
+        if (approveBtn) {
+          approveBtn.addEventListener('click', () => openApprovalModal(b.id));
+        }
+        
+        // NEW: View check-in button
+        if (viewCheckinBtn) {
+          viewCheckinBtn.addEventListener('click', () => viewCheckinDetails(b.id));
+        }
       });
     }
     
     function renderChart() {
-      // Chart implementation - using existing chart functionality
       if (chartInstance) {
         chartInstance.destroy();
       }
@@ -391,7 +511,205 @@ if (!authenticated) {
       });
     }
     
-    // Modal functions
+    // ============================================
+    // NEW: APPROVAL WORKFLOW FUNCTIONS
+    // ============================================
+    
+    function openApprovalModal(bookingId) {
+      const booking = bookings.find(b => b.id === bookingId);
+      if (!booking) return;
+
+      currentBookingForApproval = booking;
+      
+      approvalContent.innerHTML = `
+        <div class="bg-sky-50 p-4 rounded-lg border border-sky-200">
+          <h3 class="font-bold text-lg mb-3">Booking Details:</h3>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div><span class="font-medium">Booking ID:</span> ${booking.id}</div>
+            <div><span class="font-medium">Customer ID:</span> ${booking.customer_id || 'Will be generated'}</div>
+            <div><span class="font-medium">Guest Name:</span> ${booking.name}</div>
+            <div><span class="font-medium">Mobile:</span> ${booking.mobile}</div>
+            <div><span class="font-medium">Email:</span> ${booking.email}</div>
+            <div><span class="font-medium">Room Type:</span> ${booking.room}</div>
+            <div><span class="font-medium">Check-in:</span> ${booking.checkin}</div>
+            <div><span class="font-medium">Check-out:</span> ${booking.checkout}</div>
+            <div><span class="font-medium">Nights:</span> ${booking.nights}</div>
+            <div><span class="font-medium">Guests:</span> ${booking.guests}</div>
+            <div class="col-span-2"><span class="font-medium">Total Amount:</span> <span class="text-lg font-bold text-green-700">₹${booking.total?.toLocaleString()}</span></div>
+          </div>
+        </div>
+
+        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-4">
+          <h4 class="font-bold mb-2">⚠️ Approval Actions:</h4>
+          <ul class="text-sm space-y-1 list-disc list-inside">
+            <li>Booking status will change to <strong>"Approved"</strong></li>
+            <li>Confirmation email will be sent to customer at <strong>${booking.email}</strong></li>
+            <li>Email will include Customer ID and check-in link</li>
+            <li>Customer can complete online check-in 24 hours before arrival</li>
+          </ul>
+        </div>
+      `;
+
+      approvalModal.classList.remove('hidden');
+      approvalModal.classList.add('flex');
+    }
+    
+    function closeApprovalModalFn() {
+      approvalModal.classList.add('hidden');
+      approvalModal.classList.remove('flex');
+      currentBookingForApproval = null;
+    }
+    
+    async function confirmApproval() {
+      if (!currentBookingForApproval) return;
+
+      try {
+        confirmApprovalBtn.disabled = true;
+        confirmApprovalBtn.innerHTML = '⏳ Processing...';
+
+        const res = await fetch(`/api/bookings/${currentBookingForApproval.id}/approve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            approved_by: 'admin@dolphinhouse.com' // TODO: Get from session
+          })
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Approval failed');
+        }
+
+        const result = await res.json();
+        
+        alert('✅ Booking approved successfully!\n\nConfirmation email has been sent to the customer.');
+        closeApprovalModalFn();
+        await loadData();
+
+      } catch (err) {
+        console.error('Approval error:', err);
+        alert(`Failed to approve booking: ${err.message}`);
+      } finally {
+        confirmApprovalBtn.disabled = false;
+        confirmApprovalBtn.innerHTML = '✅ Approve & Send Confirmation Email';
+      }
+    }
+    
+    async function viewCheckinDetails(bookingId) {
+      try {
+        const res = await fetch(`/api/admin/checkin/${bookingId}`);
+        if (!res.ok) {
+          throw new Error('Failed to fetch check-in details');
+        }
+        
+        const data = await res.json();
+        const { booking, checkin } = data;
+
+        checkinContent.innerHTML = `
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Booking Info -->
+            <div class="bg-sky-50 p-4 rounded-lg">
+              <h3 class="font-bold mb-3 text-sky-800">📋 Booking Information</h3>
+              <div class="space-y-2 text-sm">
+                <div><span class="font-medium">Booking ID:</span> ${booking.id}</div>
+                <div><span class="font-medium">Customer ID:</span> ${booking.customer_id}</div>
+                <div><span class="font-medium">Check-in Date:</span> ${booking.checkin}</div>
+                <div><span class="font-medium">Check-out Date:</span> ${booking.checkout}</div>
+                <div><span class="font-medium">Room:</span> ${booking.room}</div>
+              </div>
+            </div>
+
+            <!-- Guest Info -->
+            <div class="bg-purple-50 p-4 rounded-lg">
+              <h3 class="font-bold mb-3 text-purple-800">👤 Guest Information</h3>
+              <div class="space-y-2 text-sm">
+                <div><span class="font-medium">Name:</span> ${checkin.full_name}</div>
+                <div><span class="font-medium">Mobile:</span> ${checkin.mobile}</div>
+                <div><span class="font-medium">Email:</span> ${checkin.email}</div>
+                <div><span class="font-medium">Purpose:</span> ${checkin.purpose_of_visit || 'N/A'}</div>
+                <div><span class="font-medium">Vehicle:</span> ${checkin.vehicle_number || 'N/A'}</div>
+              </div>
+            </div>
+
+            <!-- Address -->
+            <div class="bg-green-50 p-4 rounded-lg">
+              <h3 class="font-bold mb-3 text-green-800">🏠 Address</h3>
+              <div class="space-y-2 text-sm">
+                <div>${checkin.address_line1}</div>
+                <div>${checkin.address_line2 || ''}</div>
+                <div>${checkin.city}, ${checkin.state} - ${checkin.pincode}</div>
+                <div>${checkin.country || 'India'}</div>
+              </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="bg-orange-50 p-4 rounded-lg">
+              <h3 class="font-bold mb-3 text-orange-800">🚨 Emergency Contact</h3>
+              <div class="space-y-2 text-sm">
+                <div><span class="font-medium">Name:</span> ${checkin.emergency_contact_name}</div>
+                <div><span class="font-medium">Mobile:</span> ${checkin.emergency_contact_mobile}</div>
+              </div>
+            </div>
+
+            <!-- Aadhaar Details -->
+            <div class="md:col-span-2 bg-blue-50 p-4 rounded-lg">
+              <h3 class="font-bold mb-3 text-blue-800">🆔 Aadhaar Card Details</h3>
+              <div class="mb-3">
+                <span class="font-medium">Aadhaar Number:</span> ${checkin.aadhaar_number || 'N/A'}
+              </div>
+              <div class="grid md:grid-cols-2 gap-4">
+                ${checkin.aadhaar_front_url ? `
+                  <div>
+                    <p class="text-sm font-medium mb-2">Front Side:</p>
+                    <a href="${checkin.aadhaar_front_url}" target="_blank" class="block">
+                      <img src="${checkin.aadhaar_front_url}" alt="Aadhaar Front" class="w-full border rounded shadow hover:shadow-lg transition">
+                    </a>
+                    <a href="${checkin.aadhaar_front_url}" download class="text-xs text-blue-600 hover:underline mt-2 inline-block">⬇️ Download</a>
+                  </div>
+                ` : '<div class="text-gray-500">No front image</div>'}
+                
+                ${checkin.aadhaar_back_url ? `
+                  <div>
+                    <p class="text-sm font-medium mb-2">Back Side:</p>
+                    <a href="${checkin.aadhaar_back_url}" target="_blank" class="block">
+                      <img src="${checkin.aadhaar_back_url}" alt="Aadhaar Back" class="w-full border rounded shadow hover:shadow-lg transition">
+                    </a>
+                    <a href="${checkin.aadhaar_back_url}" download class="text-xs text-blue-600 hover:underline mt-2 inline-block">⬇️ Download</a>
+                  </div>
+                ` : '<div class="text-gray-500">No back image</div>'}
+              </div>
+            </div>
+
+            <!-- Timestamps -->
+            <div class="md:col-span-2 bg-gray-50 p-4 rounded-lg">
+              <h3 class="font-bold mb-3">⏰ Timestamps</h3>
+              <div class="grid md:grid-cols-2 gap-2 text-sm">
+                <div><span class="font-medium">Check-in Completed:</span> ${new Date(checkin.checkin_completed_at).toLocaleString()}</div>
+                ${checkin.verified_at ? `<div><span class="font-medium">Verified At:</span> ${new Date(checkin.verified_at).toLocaleString()}</div>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-6">
+            <button onclick="window.print()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              🖨️ Print Details
+            </button>
+          </div>
+        `;
+
+        checkinModal.classList.remove('hidden');
+        checkinModal.classList.add('flex');
+
+      } catch (err) {
+        console.error('Error loading check-in details:', err);
+        alert('Failed to load check-in details. The guest may not have completed online check-in yet.');
+      }
+    }
+    
+    // ============================================
+    // EXISTING MODAL FUNCTIONS
+    // ============================================
+    
     function openAddModal() {
       editMode = false;
       modalTitle.textContent = 'Add New Booking';
@@ -443,7 +761,7 @@ if (!authenticated) {
       }
     }
     
-    function closeModal() {
+    function closeBookingModal() {
       bookingModal.classList.add('hidden');
     }
     
@@ -506,7 +824,7 @@ if (!authenticated) {
         }
         
         // Close modal and refresh data
-        closeModal();
+        closeBookingModal();
         loadData();
         
         // Show success message
@@ -543,17 +861,44 @@ if (!authenticated) {
       }
     }
     
-    // Event listeners
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+    
+    // Existing modal events
     addBookingBtn.addEventListener('click', openAddModal);
-    closeModal.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
+    closeModalBtn.addEventListener('click', closeBookingModal);
+    cancelBtn.addEventListener('click', closeBookingModal);
     bookingForm.addEventListener('submit', saveBooking);
+    
+    // NEW: Approval modal events
+    closeApprovalModal.addEventListener('click', closeApprovalModalFn);
+    cancelApprovalBtn.addEventListener('click', closeApprovalModalFn);
+    confirmApprovalBtn.addEventListener('click', confirmApproval);
+    
+    // NEW: Check-in modal events
+    closeCheckinModal.addEventListener('click', () => {
+      checkinModal.classList.add('hidden');
+      checkinModal.classList.remove('flex');
+    });
+    
+    // Filter events
     refreshBtn.addEventListener('click', loadData);
     dateInput.addEventListener('change', applyFilters);
     statusFilter.addEventListener('change', applyFilters);
     roomFilter.addEventListener('change', applyFilters);
     
-    // Auto-calculate nights when dates change
+    // NEW: Filter tab events
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        filterTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentStatusFilter = tab.dataset.status;
+        applyFilters();
+      });
+    });
+    
+    // Auto-calculate nights and total when dates change
     const checkinInput = document.getElementById('checkinDate');
     const checkoutInput = document.getElementById('checkoutDate');
     
@@ -567,7 +912,7 @@ if (!authenticated) {
         const guests = parseInt(document.getElementById('guestCount').value) || 1;
         
         if (roomType && inventory[roomType]) {
-          // Basic rate calculation (can be enhanced with more complex pricing)
+          // Basic rate calculation
           const baseRate = inventory[roomType].rateAC || 2000;
           const total = baseRate * nights;
           document.getElementById('totalAmount').value = total;
@@ -580,3 +925,33 @@ if (!authenticated) {
 
     // Initial load
     loadData();
+  </script>
+
+  <style>
+    /* NEW: Filter tab styles */
+    .filter-tab {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      background: white;
+      transition: all 0.2s;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .filter-tab:hover {
+      background: #f3f4f6;
+    }
+    
+    .filter-tab.active {
+      background: #0284c7;
+      color: white;
+      border-color: #0284c7;
+    }
+    
+    .filter-tab.active:hover {
+      background: #0369a1;
+    }
+  </style>
+</AdminLayout>
