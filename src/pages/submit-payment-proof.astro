@@ -1,0 +1,280 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const bookingId = Astro.url.searchParams.get('booking') || 'Unknown';
+---
+
+<Layout title="Submit Payment Proof | Dolphin House">
+  <div class="min-h-screen bg-gradient-to-br from-sky-50 to-blue-50 py-12 px-4">
+    <div class="max-w-3xl mx-auto">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">💰 Submit Payment Proof</h1>
+        <p class="text-gray-600">Choose the easiest method for you</p>
+        <div class="mt-4 inline-block bg-white px-6 py-3 rounded-full shadow">
+          <span class="text-sm text-gray-600">Booking ID: </span>
+          <span class="font-bold text-sky-600" id="bookingIdDisplay">{bookingId}</span>
+        </div>
+      </div>
+
+      <!-- Info Alert -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+        <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div class="text-sm text-blue-800">
+          <strong>Important:</strong> Submit payment proof within 24 hours. Choose ONE method below.
+        </div>
+      </div>
+
+      <!-- Error Alert -->
+      <div id="errorAlert" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 hidden">
+        <div class="text-sm text-red-800" id="errorMessage"></div>
+      </div>
+
+      <!-- Success Screen -->
+      <div id="successScreen" class="hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 text-center">
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-12 h-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h2 class="text-3xl font-bold text-gray-800 mb-4">Payment Proof Submitted!</h2>
+          <p class="text-gray-600 mb-6">
+            We've received your payment proof. Our team will verify within 24 hours.
+          </p>
+          <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 mb-6">
+            <p class="text-sm text-sky-800">
+              <strong>Booking ID:</strong> <span id="successBookingId"></span>
+            </p>
+            <p class="text-sm text-sky-800 mt-1">
+              <strong>Method:</strong> <span id="successMethod"></span>
+            </p>
+          </div>
+          <a href="/" class="inline-block bg-sky-600 text-white px-8 py-3 rounded-lg hover:bg-sky-700">
+            Back to Home
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Form -->
+      <div id="mainForm">
+        <form id="paymentProofForm" class="space-y-6">
+          
+          <!-- Three Method Cards -->
+          <div class="grid md:grid-cols-2 gap-6">
+            
+            <!-- WhatsApp Card -->
+            <div id="whatsappCard" class="method-card bg-white rounded-xl p-6 cursor-pointer border-2 border-gray-200 hover:border-green-300">
+              <h3 class="text-xl font-bold mb-2">📲 WhatsApp</h3>
+              <p class="text-sm text-gray-600 mb-4">Send screenshot on WhatsApp (Easiest!)</p>
+              <button type="button" id="openWhatsappBtn" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 hidden">
+                Open WhatsApp
+              </button>
+            </div>
+
+            <!-- Upload Card -->
+            <div id="uploadCard" class="method-card bg-white rounded-xl p-6 cursor-pointer border-2 border-gray-200 hover:border-sky-300">
+              <h3 class="text-xl font-bold mb-2">📁 Upload</h3>
+              <p class="text-sm text-gray-600 mb-4">Upload screenshot from gallery</p>
+              <div id="uploadSection" class="hidden">
+                <label class="block w-full bg-sky-600 text-white py-3 rounded-lg hover:bg-sky-700 text-center cursor-pointer">
+                  <input type="file" id="fileInput" accept="image/*" class="hidden">
+                  <span id="fileLabel">Choose File</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- UPI Card -->
+          <div id="upiCard" class="method-card bg-white rounded-xl p-6 cursor-pointer border-2 border-gray-200 hover:border-purple-300">
+            <h3 class="text-xl font-bold mb-2">💳 UPI Transaction ID</h3>
+            <p class="text-sm text-gray-600 mb-4">Enter UPI details (No screenshot needed)</p>
+            
+            <div id="upiSection" class="space-y-4 hidden">
+              <div>
+                <label class="block text-sm font-medium mb-2">Transaction ID *</label>
+                <input type="text" id="upiTransactionId" placeholder="123456789012" 
+                  class="w-full px-4 py-3 border rounded-lg">
+                <p class="text-xs text-gray-500 mt-1">12-digit UTR number</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">From (Mobile/UPI) *</label>
+                <input type="text" id="upiFrom" placeholder="9876543210 or user@paytm" 
+                  class="w-full px-4 py-3 border rounded-lg">
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div id="submitSection" class="hidden">
+            <button type="submit" id="submitBtn" 
+              class="w-full bg-sky-600 text-white py-4 rounded-lg hover:bg-sky-700 font-bold">
+              Submit Payment Proof
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Help Section -->
+      <div class="mt-8 bg-white rounded-xl p-6 shadow">
+        <h3 class="font-bold text-gray-800 mb-3">Need Help?</h3>
+        <p class="text-sm text-gray-600 mb-3">
+          If you're facing any issues submitting payment proof:
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <a href="tel:+918554871073" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm font-medium">
+            📞 Call: +91-8554871073
+          </a>
+          <a href="https://wa.me/918554871073" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium">
+            💬 WhatsApp Support
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let selectedMethod = '';
+    let uploadedFile = null;
+    const bookingId = new URLSearchParams(window.location.search).get('booking') || 'Unknown';
+
+    // Elements
+    const whatsappCard = document.getElementById('whatsappCard');
+    const uploadCard = document.getElementById('uploadCard');
+    const upiCard = document.getElementById('upiCard');
+    const openWhatsappBtn = document.getElementById('openWhatsappBtn');
+    const uploadSection = document.getElementById('uploadSection');
+    const upiSection = document.getElementById('upiSection');
+    const submitSection = document.getElementById('submitSection');
+    const fileInput = document.getElementById('fileInput');
+    const fileLabel = document.getElementById('fileLabel');
+    const errorAlert = document.getElementById('errorAlert');
+    const errorMessage = document.getElementById('errorMessage');
+    const mainForm = document.getElementById('mainForm');
+    const successScreen = document.getElementById('successScreen');
+
+    // Select method
+    function selectMethod(method) {
+      selectedMethod = method;
+      
+      // Reset all cards
+      document.querySelectorAll('.method-card').forEach(card => {
+        card.classList.remove('border-green-500', 'border-sky-500', 'border-purple-500', 'shadow-lg');
+        card.classList.add('border-gray-200');
+      });
+
+      // Hide all sections
+      openWhatsappBtn.classList.add('hidden');
+      uploadSection.classList.add('hidden');
+      upiSection.classList.add('hidden');
+      submitSection.classList.add('hidden');
+      errorAlert.classList.add('hidden');
+
+      // Show selected method
+      if (method === 'whatsapp') {
+        whatsappCard.classList.add('border-green-500', 'shadow-lg');
+        openWhatsappBtn.classList.remove('hidden');
+      } else if (method === 'upload') {
+        uploadCard.classList.add('border-sky-500', 'shadow-lg');
+        uploadSection.classList.remove('hidden');
+        submitSection.classList.remove('hidden');
+      } else if (method === 'upi') {
+        upiCard.classList.add('border-purple-500', 'shadow-lg');
+        upiSection.classList.remove('hidden');
+        submitSection.classList.remove('hidden');
+      }
+    }
+
+    // Click handlers
+    whatsappCard.addEventListener('click', () => selectMethod('whatsapp'));
+    uploadCard.addEventListener('click', () => selectMethod('upload'));
+    upiCard.addEventListener('click', () => selectMethod('upi'));
+
+    // WhatsApp
+    openWhatsappBtn.addEventListener('click', () => {
+      const msg = `Hi, I want to submit payment proof for Booking ID: ${bookingId}`;
+      window.open(`https://wa.me/918554871073?text=${encodeURIComponent(msg)}`, '_blank');
+    });
+
+    // File upload
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File must be less than 5MB');
+          return;
+        }
+        uploadedFile = file;
+        fileLabel.textContent = `✓ ${file.name}`;
+      }
+    });
+
+    // Form submit
+    document.getElementById('paymentProofForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (!selectedMethod) {
+        errorMessage.textContent = 'Please select a payment method';
+        errorAlert.classList.remove('hidden');
+        return;
+      }
+
+      if (selectedMethod === 'upload' && !uploadedFile) {
+        errorMessage.textContent = 'Please upload a screenshot';
+        errorAlert.classList.remove('hidden');
+        return;
+      }
+
+      if (selectedMethod === 'upi') {
+        const txnId = document.getElementById('upiTransactionId').value.trim();
+        const from = document.getElementById('upiFrom').value.trim();
+        if (!txnId || txnId.length < 12) {
+          errorMessage.textContent = 'Transaction ID must be at least 12 characters';
+          errorAlert.classList.remove('hidden');
+          return;
+        }
+        if (!from) {
+          errorMessage.textContent = 'Please enter sender mobile or UPI ID';
+          errorAlert.classList.remove('hidden');
+          return;
+        }
+      }
+
+      // Submit
+      const formData = new FormData();
+      formData.append('booking_id', bookingId);
+      formData.append('payment_proof_method', selectedMethod);
+
+      if (selectedMethod === 'upload') {
+        formData.append('payment_screenshot', uploadedFile);
+      } else if (selectedMethod === 'upi') {
+        formData.append('upi_transaction_id', document.getElementById('upiTransactionId').value);
+        formData.append('upi_from', document.getElementById('upiFrom').value);
+      }
+
+      try {
+        const res = await fetch('/api/submit-payment-proof', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (res.ok) {
+          mainForm.classList.add('hidden');
+          successScreen.classList.remove('hidden');
+          document.getElementById('successBookingId').textContent = bookingId;
+          document.getElementById('successMethod').textContent = 
+            selectedMethod === 'whatsapp' ? 'WhatsApp' :
+            selectedMethod === 'upload' ? 'Screenshot Upload' : 'UPI Transaction ID';
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          throw new Error('Submission failed');
+        }
+      } catch (err) {
+        errorMessage.textContent = 'Failed to submit. Please try WhatsApp or call us.';
+        errorAlert.classList.remove('hidden');
+      }
+    });
+  </script>
+</Layout>
