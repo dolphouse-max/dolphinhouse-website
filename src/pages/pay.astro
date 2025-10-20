@@ -42,7 +42,7 @@ import Layout from "../layouts/Layout.astro";
         <span class="text-xs text-gray-500">We'll send a verification code via SMS</span>
       </label>
 
-      <!-- OTP Input (Hidden initially) -->
+      <!-- OTP Input -->
       <div id="otpSection" class="hidden">
         <label class="block">
           <span class="text-sm font-medium text-gray-700">Enter OTP <span class="text-red-500">*</span></span>
@@ -97,35 +97,61 @@ import Layout from "../layouts/Layout.astro";
       <p class="text-sm text-gray-600 mt-2">Scan QR code and pay the amount shown above</p>
     </div>
 
-    <!-- NEW: Payment Proof Button (replaces upload section) -->
+    <!-- INTEGRATED: Payment Proof Section -->
     <div class="mb-6 p-6 bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg border-2 border-sky-200">
-      <h3 class="text-lg font-bold text-gray-800 mb-2">📝 Submit Payment Proof</h3>
-      <p class="text-sm text-gray-600 mb-4">
-        After making payment via QR code, submit your payment proof using one of three easy methods:
-      </p>
-      <ul class="text-sm text-gray-700 mb-4 space-y-1 list-disc list-inside">
-        <li>📲 Send on WhatsApp (Easiest)</li>
-        <li>📁 Upload screenshot from gallery</li>
-        <li>💳 Enter UPI Transaction ID</li>
-      </ul>
-      <button 
-        id="submitProofBtn"
-        class="block w-full text-center bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-4 rounded-lg hover:from-green-700 hover:to-green-800 transition font-bold text-lg shadow-lg"
-      >
-        Submit Payment Proof →
-      </button>
-      <p class="text-xs text-gray-500 mt-3 text-center">Choose the method that's easiest for you</p>
+      <h3 class="text-lg font-bold text-gray-800 mb-4">📝 Submit Payment Proof <span class="text-red-500">*</span></h3>
+      
+      <div class="grid md:grid-cols-2 gap-4 mb-4">
+        <!-- WhatsApp Card -->
+        <div id="whatsappCard" class="proof-card bg-white rounded-lg p-4 cursor-pointer border-2 border-gray-300 hover:border-green-500">
+          <h4 class="font-bold mb-2">📲 WhatsApp</h4>
+          <p class="text-sm text-gray-600 mb-3">Send on WhatsApp (Easiest!)</p>
+          <button type="button" id="openWhatsappBtn" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 hidden">
+            Open WhatsApp
+          </button>
+        </div>
+
+        <!-- Upload Card -->
+        <div id="uploadCard" class="proof-card bg-white rounded-lg p-4 cursor-pointer border-2 border-gray-300 hover:border-sky-500">
+          <h4 class="font-bold mb-2">📁 Upload</h4>
+          <p class="text-sm text-gray-600 mb-3">Upload from gallery</p>
+          <div id="uploadSection" class="hidden">
+            <label class="block w-full bg-sky-600 text-white py-2 rounded hover:bg-sky-700 text-center cursor-pointer text-sm">
+              <input type="file" id="fileInput" accept="image/*" class="hidden">
+              <span id="fileLabel">Choose File</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPI Card -->
+      <div id="upiCard" class="proof-card bg-white rounded-lg p-4 cursor-pointer border-2 border-gray-300 hover:border-purple-500">
+        <h4 class="font-bold mb-2">💳 UPI Transaction ID</h4>
+        <p class="text-sm text-gray-600 mb-3">Enter UPI details (No screenshot needed)</p>
+        
+        <div id="upiSection" class="space-y-3 hidden">
+          <div>
+            <label class="block text-sm font-medium mb-1">Transaction ID *</label>
+            <input type="text" id="upiTransactionId" placeholder="123456789012" 
+              class="w-full px-3 py-2 border rounded text-sm">
+            <p class="text-xs text-gray-500 mt-1">12-digit UTR number</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">From (Mobile/UPI) *</label>
+            <input type="text" id="upiFrom" placeholder="9876543210 or user@paytm" 
+              class="w-full px-3 py-2 border rounded text-sm">
+          </div>
+        </div>
+      </div>
+
+      <div id="proofError" class="hidden text-red-600 text-sm mt-3"></div>
+      <div id="proofSuccess" class="hidden text-green-600 text-sm mt-3 font-medium">✅ Payment proof submitted!</div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="flex gap-4">
-      <button id="confirmBtn" class="flex-1 bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition font-semibold">
-        Save Details & Continue
-      </button>
-      <a href="/booking" class="flex-1 text-center border border-gray-300 px-6 py-3 rounded-lg hover:bg-gray-50 transition font-semibold">
-        Cancel
-      </a>
-    </div>
+    <!-- Confirm Button -->
+    <button id="confirmBtn" disabled class="w-full bg-gray-400 text-white px-6 py-4 rounded-lg cursor-not-allowed font-bold text-lg mb-4">
+      Submit Payment Proof First
+    </button>
 
     <p id="msg" class="text-green-600 mt-4 hidden text-center font-medium"></p>
   </section>
@@ -146,8 +172,12 @@ import Layout from "../layouts/Layout.astro";
     const summaryDiv = document.getElementById('bookingSummary');
     const chargesDiv = document.getElementById('charges');
     const guestsInput = document.getElementById('guests');
+    const confirmBtn = document.getElementById('confirmBtn');
 
     let mobileVerified = false;
+    let proofSubmitted = false;
+    let selectedProofMethod = '';
+    let uploadedFile = null;
     const extraPersonCharge = 700;
 
     // Display booking summary
@@ -185,12 +215,95 @@ import Layout from "../layouts/Layout.astro";
     guestsInput.addEventListener('input', updateCharges);
     updateCharges();
 
-    // Submit Proof Button
-    document.getElementById('submitProofBtn')?.addEventListener('click', () => {
-      window.location.href = `/submit-payment-proof?booking=${bookingId}`;
+    // ==========================================
+    // PAYMENT PROOF LOGIC
+    // ==========================================
+
+    const whatsappCard = document.getElementById('whatsappCard');
+    const uploadCard = document.getElementById('uploadCard');
+    const upiCard = document.getElementById('upiCard');
+    const openWhatsappBtn = document.getElementById('openWhatsappBtn');
+    const uploadSection = document.getElementById('uploadSection');
+    const upiSection = document.getElementById('upiSection');
+    const fileInput = document.getElementById('fileInput');
+    const fileLabel = document.getElementById('fileLabel');
+    const proofError = document.getElementById('proofError');
+    const proofSuccess = document.getElementById('proofSuccess');
+
+    function selectProofMethod(method) {
+      selectedProofMethod = method;
+      
+      // Reset all cards
+      document.querySelectorAll('.proof-card').forEach(card => {
+        card.classList.remove('border-green-500', 'border-sky-500', 'border-purple-500', 'shadow-lg', 'bg-green-50', 'bg-sky-50', 'bg-purple-50');
+        card.classList.add('border-gray-300', 'bg-white');
+      });
+
+      // Hide all sections
+      openWhatsappBtn.classList.add('hidden');
+      uploadSection.classList.add('hidden');
+      upiSection.classList.add('hidden');
+      proofError.classList.add('hidden');
+
+      // Show selected
+      if (method === 'whatsapp') {
+        whatsappCard.classList.add('border-green-500', 'shadow-lg', 'bg-green-50');
+        openWhatsappBtn.classList.remove('hidden');
+      } else if (method === 'upload') {
+        uploadCard.classList.add('border-sky-500', 'shadow-lg', 'bg-sky-50');
+        uploadSection.classList.remove('hidden');
+      } else if (method === 'upi') {
+        upiCard.classList.add('border-purple-500', 'shadow-lg', 'bg-purple-50');
+        upiSection.classList.remove('hidden');
+      }
+    }
+
+    whatsappCard.addEventListener('click', () => selectProofMethod('whatsapp'));
+    uploadCard.addEventListener('click', () => selectProofMethod('upload'));
+    upiCard.addEventListener('click', () => selectProofMethod('upi'));
+
+    // WhatsApp
+    openWhatsappBtn.addEventListener('click', () => {
+      const msg = `Hi, I want to submit payment proof for Booking ID: ${bookingId}`;
+      window.open(`https://wa.me/918554871073?text=${encodeURIComponent(msg)}`, '_blank');
+      
+      // Mark as submitted (user will send on WhatsApp)
+      proofSubmitted = true;
+      proofSuccess.classList.remove('hidden');
+      proofSuccess.textContent = '✅ Please send screenshot on WhatsApp. Then click Confirm Booking below.';
+      enableConfirmButton();
     });
 
-    // OTP Variables
+    // File upload
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          proofError.textContent = 'File must be less than 5MB';
+          proofError.classList.remove('hidden');
+          fileInput.value = '';
+          return;
+        }
+        uploadedFile = file;
+        fileLabel.textContent = `✓ ${file.name}`;
+        proofSubmitted = true;
+        proofSuccess.classList.remove('hidden');
+        enableConfirmButton();
+      }
+    });
+
+    // Enable confirm button
+    function enableConfirmButton() {
+      confirmBtn.disabled = false;
+      confirmBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+      confirmBtn.classList.add('bg-sky-600', 'hover:bg-sky-700', 'cursor-pointer');
+      confirmBtn.textContent = 'Confirm Booking';
+    }
+
+    // ==========================================
+    // OTP LOGIC
+    // ==========================================
+
     const mobileInput = document.getElementById('mobile');
     const sendOtpBtn = document.getElementById('sendOtpBtn');
     const otpSection = document.getElementById('otpSection');
@@ -205,7 +318,6 @@ import Layout from "../layouts/Layout.astro";
       otpStatus.classList.remove('hidden');
     }
 
-    // Send OTP
     sendOtpBtn?.addEventListener('click', async () => {
       const mobile = mobileInput.value.trim();
 
@@ -227,7 +339,7 @@ import Layout from "../layouts/Layout.astro";
         const data = await res.json();
 
         if (data.success) {
-          showOtpStatus('✅ OTP sent successfully! Check your SMS.', 'success');
+          showOtpStatus('✅ OTP sent successfully!', 'success');
           otpSection.classList.remove('hidden');
           mobileInput.disabled = true;
           sendOtpBtn.textContent = 'OTP Sent';
@@ -238,13 +350,12 @@ import Layout from "../layouts/Layout.astro";
           sendOtpBtn.textContent = 'Send OTP';
         }
       } catch (err) {
-        showOtpStatus('❌ Network error. Please try again.', 'error');
+        showOtpStatus('❌ Network error', 'error');
         sendOtpBtn.disabled = false;
         sendOtpBtn.textContent = 'Send OTP';
       }
     });
 
-    // Verify OTP
     verifyOtpBtn?.addEventListener('click', async () => {
       const mobile = mobileInput.value.trim();
       const otp = otpInput.value.trim();
@@ -267,7 +378,7 @@ import Layout from "../layouts/Layout.astro";
         const data = await res.json();
 
         if (data.success) {
-          showOtpStatus('✅ Mobile verified successfully!', 'success');
+          showOtpStatus('✅ Mobile verified!', 'success');
           mobileVerified = true;
           verifyOtpBtn.textContent = 'Verified ✓';
           verifyOtpBtn.classList.remove('bg-sky-600');
@@ -281,13 +392,12 @@ import Layout from "../layouts/Layout.astro";
           verifyOtpBtn.textContent = 'Verify';
         }
       } catch (err) {
-        showOtpStatus('❌ Network error. Please try again.', 'error');
+        showOtpStatus('❌ Network error', 'error');
         verifyOtpBtn.disabled = false;
         verifyOtpBtn.textContent = 'Verify';
       }
     });
 
-    // Resend OTP
     resendOtpBtn?.addEventListener('click', () => {
       mobileInput.disabled = false;
       sendOtpBtn.disabled = false;
@@ -297,25 +407,55 @@ import Layout from "../layouts/Layout.astro";
       sendOtpBtn.click();
     });
 
-    // Confirm booking - saves details, then redirects to payment proof
-    document.getElementById('confirmBtn')?.addEventListener('click', async () => {
+    // ==========================================
+    // CONFIRM BOOKING
+    // ==========================================
+
+    confirmBtn?.addEventListener('click', async () => {
       const name = document.getElementById('name').value.trim();
       const mobile = mobileInput.value.trim();
       const email = document.getElementById('email').value.trim();
 
+      // Validations
       if (!name) {
         alert('Please enter your full name');
         return;
       }
 
       if (!mobile || !/^[0-9]{10}$/.test(mobile)) {
-        alert('Please enter a valid 10-digit mobile number');
+        alert('Please enter a valid mobile number');
         return;
       }
 
       if (!mobileVerified) {
-        alert('Please verify your mobile number with OTP first');
+        alert('Please verify your mobile with OTP first');
         return;
+      }
+
+      if (!proofSubmitted) {
+        alert('Please submit payment proof first');
+        return;
+      }
+
+      // Validate proof method
+      if (selectedProofMethod === 'upload' && !uploadedFile) {
+        alert('Please upload payment screenshot');
+        return;
+      }
+
+      if (selectedProofMethod === 'upi') {
+        const txnId = document.getElementById('upiTransactionId').value.trim();
+        const from = document.getElementById('upiFrom').value.trim();
+        
+        if (!txnId || txnId.length < 12) {
+          alert('Transaction ID must be at least 12 characters');
+          return;
+        }
+        
+        if (!from) {
+          alert('Please enter sender mobile or UPI ID');
+          return;
+        }
       }
 
       const currentGuests = parseInt(guestsInput.value);
@@ -324,7 +464,32 @@ import Layout from "../layouts/Layout.astro";
       const extraCharges = extras * extraPersonCharge * nights;
       const finalTotal = baseTotal + extraCharges;
 
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Processing...';
+
       try {
+        // Submit payment proof
+        const formData = new FormData();
+        formData.append('booking_id', bookingId);
+        formData.append('payment_proof_method', selectedProofMethod);
+
+        if (selectedProofMethod === 'upload') {
+          formData.append('payment_screenshot', uploadedFile);
+        } else if (selectedProofMethod === 'upi') {
+          formData.append('upi_transaction_id', document.getElementById('upiTransactionId').value);
+          formData.append('upi_from', document.getElementById('upiFrom').value);
+        }
+
+        const proofRes = await fetch('/api/submit-payment-proof', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!proofRes.ok) {
+          throw new Error('Failed to submit payment proof');
+        }
+
+        // Update booking
         const updateRes = await fetch('/api/bookings', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -335,7 +500,7 @@ import Layout from "../layouts/Layout.astro";
             mobile,
             guests: currentGuests,
             total: finalTotal,
-            status: 'pending'
+            status: 'payment_submitted'
           })
         });
 
@@ -343,21 +508,32 @@ import Layout from "../layouts/Layout.astro";
           throw new Error('Failed to update booking');
         }
 
-        // Redirect to payment proof page
-        window.location.href = `/submit-payment-proof?booking=${bookingId}`;
+        const msg = document.getElementById('msg');
+        msg.innerHTML = `✅ Booking confirmed! Your Customer ID: <strong class="font-mono text-xl">${customerId}</strong><br>Redirecting...`;
+        msg.classList.remove('hidden');
+
+        setTimeout(() => {
+          window.location.href = `/thank-you?customerId=${customerId}&name=${encodeURIComponent(name)}`;
+        }, 2000);
 
       } catch (err) {
-        console.error('Booking update error:', err);
-        alert('Failed to save details. Please try again or contact us at +91-8554871073');
+        console.error('Booking error:', err);
+        alert('Failed to confirm booking. Please try again or contact us.');
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm Booking';
       }
     });
 
     // Validate booking ID
     if (!bookingId || !customerId) {
-      summaryDiv.innerHTML = '<p class="text-red-600">❌ Invalid booking. Please start from the booking page.</p>';
-      document.getElementById('guestForm')?.remove();
-      document.getElementById('confirmBtn')?.remove();
+      summaryDiv.innerHTML = '<p class="text-red-600">❌ Invalid booking.</p>';
     }
   </script>
+
+  <style>
+    .proof-card {
+      transition: all 0.3s ease;
+    }
+  </style>
 
 </Layout>
