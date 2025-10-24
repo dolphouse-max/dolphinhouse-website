@@ -1,7 +1,11 @@
 // src/pages/api/pre-checkin.js
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
 
+// REMOVED: Incompatible imports for Node.js modules 'node:fs' and 'node:path'
+
+/**
+ * Ensures the precheckin table has all necessary columns for the latest version.
+ * @param {D1Database} db 
+ */
 async function ensureColumns(db) {
   const info = await db.prepare('PRAGMA table_info(precheckin)').all();
   const cols = info.results?.map((r) => r.name) || [];
@@ -20,34 +24,39 @@ async function ensureColumns(db) {
   }
 }
 
+/**
+ * Saves a file to the configured R2 bucket.
+ * This function is now the ONLY file saving method.
+ * @param {R2Bucket} bucket 
+ * @param {string} key 
+ * @param {File} file 
+ * @returns {Promise<string>} The public URL (proxy route) for the file.
+ */
 async function saveFileToR2(bucket, key, file) {
   const arrayBuffer = await file.arrayBuffer();
+  // Attempt to use the file's Content-Type, default to octet-stream
   const contentType = file.type || 'application/octet-stream';
   await bucket.put(key, arrayBuffer, { httpMetadata: { contentType } });
-  // Serve via proxy route to avoid needing a public R2 domain
+  // Serve via proxy route /api/uploads/ to avoid needing a public R2 domain
   return `/api/uploads/${key}`;
-}
-
-async function saveFileToFS(baseDir, bookingId, file, suffix) {
-  const arrayBuffer = await file.arrayBuffer();
-  const buf = Buffer.from(arrayBuffer);
-  const safeSuffix = suffix.replace(/[^a-zA-Z0-9_-]/g, '_');
-  const filename = `${safeSuffix}-${Date.now()}`;
-  const ext = (file.name && path.extname(file.name)) || '';
-  const fullName = filename + ext;
-  const filePath = path.join(baseDir, bookingId, fullName);
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-  await fs.writeFile(filePath, buf);
-  return `/uploads/precheckin/${bookingId}/${fullName}`;
 }
 
 export async function POST({ locals, request }) {
   const db = locals.runtime.env.DB;
-  const r2Bucket = locals.runtime.env.ID_BUCKET; // Configure this binding in wrangler
+  const r2Bucket = locals.runtime.env.ID_BUCKET; 
+  
+  // CRITICAL CHECK: R2 bucket must be bound for this file saving logic to work
+  if (!r2Bucket) {
+    return new Response(JSON.stringify({ error: 'R2 bucket binding (ID_BUCKET) is missing. Cannot save files.' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
 
   try {
     const formData = await request.formData();
 
+    // --- Data Extraction (Unchanged) ---
     const bookingId = (formData.get('bookingId') || '').toString().trim();
     const guestName = (formData.get('guestName') || '').toString().trim();
     const phoneE164 = (formData.get('phone') || '').toString().trim();
@@ -76,8 +85,9 @@ export async function POST({ locals, request }) {
     if (!adults || !phoneE164) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
     }
+    // --- End Data Extraction ---
 
-    // Ensure table exists
+    // Ensure table exists (Unchanged)
     await db.prepare(`
       CREATE TABLE IF NOT EXISTS precheckin (
         id TEXT PRIMARY KEY,
@@ -94,7 +104,11 @@ export async function POST({ locals, request }) {
         id_number TEXT,
         special_requests TEXT,
         whatsapp_opt_in INTEGER,
-        created_at TEXT
+        created_at TEXT,
+        car_reg_number TEXT,
+        id_front_url TEXT,
+        id_back_url TEXT,
+        id_image_url TEXT
       )
     `).run();
 
@@ -104,15 +118,18 @@ export async function POST({ locals, request }) {
     let idBackUrl = null;
     let idImageUrl = null;
 
-    // Save helper chooses R2 if available, else filesystem
-    const baseDir = path.join(process.cwd(), 'public', 'uploads', 'precheckin');
+    // --- File Saving Logic (CRITICAL CHANGE) ---
     const saver = async (file, suffix) => {
-      if (!file) return null;
-      const key = `precheckin/${bookingId}/${suffix}-${Date.now()}${(file.name && path.extname(file.name)) || ''}`;
-      if (r2Bucket) {
-        return await saveFileToR2(r2Bucket, key, file);
-      }
-      return await saveFileToFS(baseDir, bookingId, file, suffix);
+      if (!(file instanceof File) || file.size === 0) return null;
+
+      // Extract extension without using node:path
+      const fileName = file.name || '';
+      const ext = fileName.lastIndexOf('.') > 0 ? fileName.substring(fileName.lastIndexOf('.')) : '';
+      
+      // Construct the R2 key (path)
+      const key = `precheckin/${bookingId}/${suffix}-${Date.now()}${ext}`;
+      
+      return await saveFileToR2(r2Bucket, key, file);
     };
 
     if (idType === 'Aadhaar') {
@@ -121,10 +138,12 @@ export async function POST({ locals, request }) {
     } else if (idType) {
       idImageUrl = await saver(formData.get('idImage'), 'id-image');
     }
+    // --- End File Saving Logic ---
 
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
 
+    // --- DB Insertion (Slightly cleaner due to column additions) ---
     await db.prepare(`
       INSERT INTO precheckin (
         id, booking_id, guest_name, phone_e164, email,
@@ -154,12 +173,14 @@ export async function POST({ locals, request }) {
       idImageUrl
     ).run();
 
+    // The successful completion of this logic allows any subsequent email logic to run.
     return new Response(JSON.stringify({ success: true, id, idFrontUrl, idBackUrl, idImageUrl }), {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (err) {
     console.error('Pre-checkin POST error:', err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    // Return a 500 error that includes the actual error message
+    return new Response(JSON.stringify({ error: err.message || 'Internal Server Error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
