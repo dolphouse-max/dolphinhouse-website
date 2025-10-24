@@ -94,6 +94,18 @@ export async function POST({ request, locals }) {
       customer: booking.name
     });
 
+    // Fire-and-forget: send Payment Received confirmation via Vilpower
+    try {
+      const origin = new URL(request.url).origin;
+      await fetch(`${origin}/api/notify-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ booking_id: bookingId, type: 'received' })
+      });
+    } catch (notifyErr) {
+      console.warn('notify-payment failed:', notifyErr?.message || notifyErr);
+    }
+
     return new Response(JSON.stringify({ 
       success: true,
       message: 'Payment proof submitted successfully',

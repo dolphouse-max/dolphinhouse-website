@@ -162,7 +162,8 @@ import Layout from "../layouts/Layout.astro";
     const customerId = params.get('customerId');
     const room = params.get('room');
     const roomLabel = params.get('roomLabel');
-    const acType = params.get('acType');
+    const acType = params.get('acType') || '';
+
     const checkin = params.get('checkin');
     const checkout = params.get('checkout');
     const guests = parseInt(params.get('guests') || '2');
@@ -188,7 +189,7 @@ import Layout from "../layouts/Layout.astro";
           <span class="font-mono">${customerId || 'N/A'}</span>
         </div>
         <div class="border-t pt-2">
-          <div class="flex justify-between"><span class="font-medium">Room:</span><span>${roomLabel} (${acType.toUpperCase()})</span></div>
+          <div class="flex justify-between"><span class="font-medium">Room:</span><span>${roomLabel}${acType ? ` (${acType.toUpperCase()})` : ''}</span></div>
           <div class="flex justify-between"><span class="font-medium">Check-in:</span><span>${checkin}</span></div>
           <div class="flex justify-between"><span class="font-medium">Check-out:</span><span>${checkout}</span></div>
           <div class="flex justify-between"><span class="font-medium">Nights:</span><span>${nights}</span></div>
@@ -198,7 +199,7 @@ import Layout from "../layouts/Layout.astro";
 
     function updateCharges() {
       const currentGuests = parseInt(guestsInput.value);
-      const baseGuests = room.includes('family') ? 4 : 2;
+      const baseGuests = (room && room.includes('family')) ? 4 : 2;
       const extras = Math.max(0, currentGuests - baseGuests);
       const extraCharges = extras * extraPersonCharge * nights;
       const finalTotal = baseTotal + extraCharges;

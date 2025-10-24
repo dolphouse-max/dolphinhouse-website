@@ -249,6 +249,26 @@ if (!authenticated) {
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
+    // Send payment notification via Vilpower templates
+    async function sendPaymentNotification(bookingId, type) {
+      try {
+        const res = await fetch('/api/notify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ booking_id: bookingId, type })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          alert(type === 'received' ? 'Payment Received SMS sent.' : 'Payment Pending SMS sent.');
+        } else {
+          alert('Failed to send SMS: ' + (data.error || res.statusText));
+        }
+      } catch (err) {
+        console.error('notify-payment error:', err);
+        alert('Error sending SMS: ' + err.message);
+      }
+    }
+
     const table = document.getElementById('bookingTable');
     const dateInput = document.getElementById('filterDate');
     const statusFilter = document.getElementById('statusFilter');
@@ -444,6 +464,24 @@ if (!authenticated) {
             </button>
           `;
         }
+
+        // Payment SMS actions (vilpower)
+        if (b.mobile) {
+          if (["pending", "payment_pending", "approved"].includes(b.status)) {
+            actionButtons += `
+              <button class="sms-pending-btn px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200" data-id="${b.id}">
+                📨 Pending SMS
+              </button>
+            `;
+          }
+          if (["payment_submitted", "confirmed"].includes(b.status)) {
+            actionButtons += `
+              <button class="sms-received-btn px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200" data-id="${b.id}">
+                ✅ Received SMS
+              </button>
+            `;
+          }
+        }
         
         tr.innerHTML = ` 
           <td class="px-4 py-2 font-mono text-xs text-gray-500">${b.id.substring(0, 8)}...</td>
@@ -477,8 +515,10 @@ if (!authenticated) {
         // Add event listeners to the buttons
         const editBtn = tr.querySelector('.edit-btn');
         const deleteBtn = tr.querySelector('.delete-btn');
-        const approveBtn = tr.querySelector('.approve-btn');
         const viewCheckinBtn = tr.querySelector('.view-checkin-btn');
+        const approveBtn = tr.querySelector('.approve-btn');
+        const smsPendingBtn = tr.querySelector('.sms-pending-btn');
+        const smsReceivedBtn = tr.querySelector('.sms-received-btn');
         
         editBtn.addEventListener('click', () => openEditModal(b.id));
         deleteBtn.addEventListener('click', () => deleteBooking(b.id));
@@ -489,6 +529,13 @@ if (!authenticated) {
         
         if (viewCheckinBtn) {
           viewCheckinBtn.addEventListener('click', () => viewCheckinDetails(b.id));
+        }
+
+        if (smsPendingBtn) {
+          smsPendingBtn.addEventListener('click', () => sendPaymentNotification(b.id, 'pending'));
+        }
+        if (smsReceivedBtn) {
+          smsReceivedBtn.addEventListener('click', () => sendPaymentNotification(b.id, 'received'));
         }
       });
     }
