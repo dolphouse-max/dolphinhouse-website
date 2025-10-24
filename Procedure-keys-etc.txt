@@ -1,6 +1,9 @@
 Username: admin Password: dolphin2023
 
 ========================================
+Cloudflare API Token:  DolphinHouse - WorkersAI + D1 (ingest)
+
+=========================================
 
 git add src/pages/booking.astro 
 git commit -m "Phase 1: html correction"
@@ -182,3 +185,59 @@ export async function POST({ locals, request }) {
   }
 }
 
+```
+=========================================================================
+
+That's a fantastic advantage of using GitHub for your website! The entire point of a service like GitHub is to serve as an off-site backup.
+
+If your laptop completely fails, you can recover and resume work on a new computer (or any computer) in a few simple steps.
+
+The Recovery Process (on your new computer)
+Since your website is on GitHub, it's safe. All you need to do is clone the repository onto your new machine.
+
+Prerequisites:
+
+A new computer (or a working one).
+
+Internet access.
+
+Your GitHub login credentials (username and password/Personal Access Token).
+
+Git installed on the new computer.
+
+Steps to Recover Your Website:
+
+Install Git: Download and install Git for your new computer's operating system (Windows, Mac, or Linux).
+
+Log in to GitHub: Open your web browser and log in to your GitHub account to find the repository for your "Dolphin House" website.
+
+Get the Clone URL:
+
+Navigate to your website's repository page on GitHub.
+
+Click the green < > Code button.
+
+Copy the HTTPS URL (e.g., https://github.com/your-username/dolphin-house.git).
+
+Clone the Repository:
+
+Open your terminal (or Command Prompt/Git Bash) on the new computer.
+
+Navigate to the folder where you want to store your website files.
+
+Run the git clone command using the URL you copied:
+
+Bash
+
+git clone https://github.com/your-username/dolphin-house.git
+This will download the entire website project—including all the code, history, and the hidden .git folder—to a new folder named dolphin-house on your new computer.
+
+Re-deploy (if necessary):
+
+For a GitHub Pages site, your website is likely still live and working at its public URL (e.g., your-username.github.io/dolphin-house/). The failure of your laptop doesn't affect the live site.
+
+If you used a different service (like a custom GitHub Actions workflow), you may need to install any necessary tools (like a static site generator or build tools) and then run a new build/deployment command, though simply cloning often restores everything you need to continue development.
+
+You are now back up and running. The cloned folder is your new local copy, and you can make changes, commit them, and push them back to GitHub just as you did before.
+
+======================================================================
