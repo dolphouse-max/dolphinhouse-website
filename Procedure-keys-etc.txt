@@ -3,8 +3,11 @@ Username: admin Password: dolphin2023
 ========================================
 Cloudflare API Token:  DolphinHouse - WorkersAI + D1 (ingest)
 ==========================================
-git add -A ; git commit -m "Deploy: finalize updates" ; git push -u origin $(git rev-parse --abbrev-ref HEAD)
+npm run build ; npx wrangler pages deploy dist
+This builds your site and publishes it to Cloudflare Pages without needing a main branch. After it finishes, hard refresh your site to avoid cached
 =========================================
+git add -A ; git commit -m "Deploy: finalize updates" ; git push
+==========================================
 
 git add src/pages/booking.astro 
 git commit -m "Phase 1: html correction"
