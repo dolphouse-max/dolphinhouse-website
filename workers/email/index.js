@@ -62,77 +62,43 @@ export default {
       }
 
       // Forward inbound email to backup mailbox
--      try {
--        const fwdPayload = {
--          personalizations: [{ to: [{ email: 'dolphouse@gmail.com' }] }],
--          from: { email: to },
--          subject: `[FWD] ${subject}`,
--          content: [{ type: 'text/plain', value: bodyText }]
--        };
--        const fwdResp = await fetch('https://api.mailchannels.net/tx/v1/send', {
--          method: 'POST',
--          headers: { 'content-type': 'application/json' },
--          body: JSON.stringify(fwdPayload)
--        });
--        if (!fwdResp.ok) {
--          console.error('MailChannels forward failed:', await fwdResp.text());
--        }
--        // Log forward as outbound copy
--        await env.DB.prepare(`
--          INSERT INTO emails (id, direction, from_addr, to_addr, subject, body, message_id, in_reply_to, thread_key, created_at)
--          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
--        `).bind(
--          crypto.randomUUID(),
--          'outbound',
--          to,
--          'dolphouse@gmail.com',
--          `[FWD] ${subject}`,
--          bodyText,
--          null,
--          messageId || null,
--          threadKey,
--          new Date().toISOString()
--        ).run();
--      } catch (e) {
--        console.warn('forward log warning:', e?.message || e);
--      }
-+      try {
-+        const backup = env.BACKUP_EMAIL;
-+        if (backup) {
-+          const fwdPayload = {
-+            personalizations: [{ to: [{ email: backup }] }],
-+            from: { email: to },
-+            subject: `[FWD] ${subject}`,
-+            content: [{ type: 'text/plain', value: bodyText }]
-+          };
-+          const fwdResp = await fetch('https://api.mailchannels.net/tx/v1/send', {
-+            method: 'POST',
-+            headers: { 'content-type': 'application/json' },
-+            body: JSON.stringify(fwdPayload)
-+          });
-+          if (!fwdResp.ok) {
-+            console.error('MailChannels forward failed:', await fwdResp.text());
-+          }
-+          // Log forward as outbound copy
-+          await env.DB.prepare(`
-+            INSERT INTO emails (id, direction, from_addr, to_addr, subject, body, message_id, in_reply_to, thread_key, created_at)
-+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-+          `).bind(
-+            crypto.randomUUID(),
-+            'outbound',
-+            to,
-+            backup,
-+            `[FWD] ${subject}`,
-+            bodyText,
-+            null,
-+            messageId || null,
-+            threadKey,
-+            new Date().toISOString()
-+          ).run();
-+        }
-+      } catch (e) {
-+        console.warn('forward log warning:', e?.message || e);
-+      }
+      try {
+        const backup = env.BACKUP_EMAIL;
+        if (backup) {
+          const fwdPayload = {
+            personalizations: [{ to: [{ email: backup }] }],
+            from: { email: to },
+            subject: `[FWD] ${subject}`,
+            content: [{ type: 'text/plain', value: bodyText }]
+          };
+          const fwdResp = await fetch('https://api.mailchannels.net/tx/v1/send', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(fwdPayload)
+          });
+          if (!fwdResp.ok) {
+            console.error('MailChannels forward failed:', await fwdResp.text());
+          }
+          // Log forward as outbound copy
+          await env.DB.prepare(`
+            INSERT INTO emails (id, direction, from_addr, to_addr, subject, body, message_id, in_reply_to, thread_key, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).bind(
+            crypto.randomUUID(),
+            'outbound',
+            to,
+            backup,
+            `[FWD] ${subject}`,
+            bodyText,
+            null,
+            messageId || null,
+            threadKey,
+            new Date().toISOString()
+          ).run();
+        }
+      } catch (e) {
+        console.warn('forward log warning:', e?.message || e);
+      }
 
       // Fetch context from D1 knowledge base (simple LIKE match)
       let kbSnippet = '';

@@ -19,4 +19,4 @@ catch_all = "contact@dolphinhouse-alibaug.com"
 # routes = ["sparkling-feather-92be.example.workers.dev"]
 
 [vars]
-BACKUP_EMAIL = "dolphouse@gmail.com"
+BACKUP_EMAIL = "contact@dolphinhouse-alibaug.com"

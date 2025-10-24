@@ -2,7 +2,8 @@ Username: admin Password: dolphin2023
 
 ========================================
 Cloudflare API Token:  DolphinHouse - WorkersAI + D1 (ingest)
-
+==========================================
+git add -A ; git commit -m "Deploy: finalize updates" ; git push -u origin $(git rev-parse --abbrev-ref HEAD)
 =========================================
 
 git add src/pages/booking.astro 
