@@ -1,0 +1,93 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const db = Astro.locals.runtime.env.DB;
+
+// Discover available columns to avoid errors if migrations haven't run
+const info = await db.prepare('PRAGMA table_info(precheckin)').all();
+const available = new Set((info.results || []).map((r) => r.name));
+
+const baseCols = [
+  'id',
+  'booking_id',
+  'guest_name',
+  'phone_e164',
+  'email',
+  'checkin_date',
+  'checkout_date',
+  'adults',
+  'children',
+  'arrival_time',
+  'special_requests',
+  'whatsapp_opt_in',
+  'created_at'
+];
+const optionalCols = [
+  'car_reg_number',
+  'id_type',
+  'id_number',
+  'id_front_url',
+  'id_back_url',
+  'id_image_url'
+];
+const selectCols = [...baseCols, ...optionalCols.filter((c) => available.has(c))];
+const selectSql = `SELECT ${selectCols.join(', ')} FROM precheckin ORDER BY created_at DESC LIMIT 200`;
+const res = await db.prepare(selectSql).all();
+const rows = res.results || [];
+---
+<AdminLayout title="Pre-checkins">
+  <section>
+    <h1>Pre-checkin Submissions</h1>
+    <p>Recent submissions with car registration and ID images.</p>
+    <div style="overflow:auto;">
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Booking</th>
+            <th>Guest</th>
+            <th>Phone</th>
+            <th>Dates</th>
+            <th>Adults/Children</th>
+            {available.has('car_reg_number') && <th>Car Reg</th>}
+            {available.has('id_type') && <th>ID Type</th>}
+            {available.has('id_number') && <th>ID Number</th>}
+            {available.has('id_front_url') && <th>ID Front</th>}
+            {available.has('id_back_url') && <th>ID Back</th>}
+            {available.has('id_image_url') && <th>ID Image</th>}
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <td>{r.booking_id}</td>
+              <td>{r.guest_name}</td>
+              <td>{r.phone_e164}</td>
+              <td>{r.checkin_date} → {r.checkout_date}</td>
+              <td>{r.adults}/{r.children}</td>
+              {available.has('car_reg_number') && <td>{r.car_reg_number}</td>}
+              {available.has('id_type') && <td>{r.id_type}</td>}
+              {available.has('id_number') && <td>{r.id_number}</td>}
+              {available.has('id_front_url') && (
+                <td>
+                  {r.id_front_url ? <a href={r.id_front_url} target="_blank">View</a> : ''}
+                </td>
+              )}
+              {available.has('id_back_url') && (
+                <td>
+                  {r.id_back_url ? <a href={r.id_back_url} target="_blank">View</a> : ''}
+                </td>
+              )}
+              {available.has('id_image_url') && (
+                <td>
+                  {r.id_image_url ? <a href={r.id_image_url} target="_blank">View</a> : ''}
+                </td>
+              )}
+              <td>{r.created_at}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</AdminLayout>

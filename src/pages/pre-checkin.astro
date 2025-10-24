@@ -1,0 +1,207 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Pre Check-in | Dolphin House">
+  <section class="max-w-3xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-semibold mb-2">Pre check-in</h1>
+    <p class="text-gray-600 mb-8">Please share your booking and guest details so we can speed up your check‑in. After submission, we’ll review and confirm shortly.</p>
+
+    <form id="precheckin-form" class="space-y-6" enctype="multipart/form-data">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium mb-1" for="bookingId">Customer ID</label>
+          <input id="bookingId" name="bookingId" type="text" required class="w-full border rounded px-3 py-2" placeholder="Enter your ID (e.g., DH-2025-00123)" />
+          <p class="text-xs text-gray-500 mt-1">Enter manually from your confirmation message. No auto-fill.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" for="guestName">Guest Name</label>
+          <input id="guestName" name="guestName" type="text" required class="w-full border rounded px-3 py-2" placeholder="Full name" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium mb-1" for="phone">Phone (WhatsApp)</label>
+          <input id="phone" name="phone" type="tel" required class="w-full border rounded px-3 py-2" placeholder="+91XXXXXXXXXX" />
+          <p class="text-xs text-gray-500 mt-1">Use international format. Example: +91XXXXXXXXXX</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" for="email">Email</label>
+          <input id="email" name="email" type="email" class="w-full border rounded px-3 py-2" placeholder="you@example.com" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium mb-1" for="checkinDate">Check‑in Date</label>
+          <input id="checkinDate" name="checkinDate" type="date" required class="w-full border rounded px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" for="checkoutDate">Check‑out Date</label>
+          <input id="checkoutDate" name="checkoutDate" type="date" required class="w-full border rounded px-3 py-2" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label class="block text-sm font-medium mb-1" for="adults">Adults</label>
+          <input id="adults" name="adults" type="number" min="1" required class="w-full border rounded px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" for="children">Children</label>
+          <input id="children" name="children" type="number" min="0" class="w-full border rounded px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" for="arrivalTime">Approx. Arrival Time</label>
+          <input id="arrivalTime" name="arrivalTime" type="time" class="w-full border rounded px-3 py-2" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium mb-1" for="carRegNumber">Car Registration Number</label>
+          <input id="carRegNumber" name="carRegNumber" type="text" class="w-full border rounded px-3 py-2" placeholder="e.g., MH 01 AB 1234" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium mb-1" for="idType">Govt ID Type</label>
+          <select id="idType" name="idType" class="w-full border rounded px-3 py-2">
+            <option value="">Select</option>
+            <option value="Aadhaar">Aadhaar</option>
+            <option value="Passport">Passport</option>
+            <option value="Driving Licence">Driving Licence</option>
+            <option value="Voter ID">Voter ID</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1" for="idNumber">Govt ID Number</label>
+          <input id="idNumber" name="idNumber" type="text" class="w-full border rounded px-3 py-2" />
+        </div>
+      </div>
+
+      <div id="idUploadSection" class="space-y-4">
+        <p class="text-sm text-gray-700">Please attach your government ID:</p>
+        <div id="aadhaarUpload" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
+          <div>
+            <label class="block text-sm font-medium mb-1" for="idFront">Aadhaar Front</label>
+            <input id="idFront" name="idFront" type="file" accept="image/*" class="w-full border rounded px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="idBack">Aadhaar Back</label>
+            <input id="idBack" name="idBack" type="file" accept="image/*" class="w-full border rounded px-3 py-2" />
+          </div>
+        </div>
+        <div id="singleIdUpload" class="grid grid-cols-1 gap-6 hidden">
+          <div>
+            <label class="block text-sm font-medium mb-1" for="idImage">ID Image</label>
+            <input id="idImage" name="idImage" type="file" accept="image/*" class="w-full border rounded px-3 py-2" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1" for="specialRequests">Special Requests</label>
+        <textarea id="specialRequests" name="specialRequests" rows="4" class="w-full border rounded px-3 py-2" placeholder="Any preferences or requests"></textarea>
+      </div>
+
+      <div class="flex items-start gap-2">
+        <input id="whatsappOptIn" name="whatsappOptIn" type="checkbox" class="mt-1" />
+        <label for="whatsappOptIn" class="text-sm text-gray-700">I agree to receive booking updates on WhatsApp and SMS at the provided number.</label>
+      </div>
+
+      <div class="pt-4">
+        <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded hover:bg-blue-700">Submit Pre check‑in</button>
+      </div>
+
+      <p id="status" class="mt-4 text-sm"></p>
+    </form>
+  </section>
+
+  <script>
+    const form = document.getElementById('precheckin-form');
+    const statusEl = document.getElementById('status');
+    const idTypeEl = document.getElementById('idType');
+    const aadhaarUploadEl = document.getElementById('aadhaarUpload');
+    const singleIdUploadEl = document.getElementById('singleIdUpload');
+
+    function validateE164(num) {
+      return /^\+[1-9]\d{7,14}$/.test(num.trim());
+    }
+
+    function updateIdUploadVisibility() {
+      const type = idTypeEl.value;
+      if (type === 'Aadhaar') {
+        aadhaarUploadEl.classList.remove('hidden');
+        singleIdUploadEl.classList.add('hidden');
+      } else if (type) {
+        aadhaarUploadEl.classList.add('hidden');
+        singleIdUploadEl.classList.remove('hidden');
+      } else {
+        aadhaarUploadEl.classList.add('hidden');
+        singleIdUploadEl.classList.add('hidden');
+      }
+    }
+
+    idTypeEl.addEventListener('change', updateIdUploadVisibility);
+    updateIdUploadVisibility();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.textContent = '';
+
+      const formData = new FormData(form);
+
+      const phone = (formData.get('phone') || '').toString();
+      if (!validateE164(phone)) {
+        statusEl.textContent = 'Please enter phone in international format, e.g., +91XXXXXXXXXX';
+        statusEl.className = 'mt-4 text-sm text-red-600';
+        return;
+      }
+
+      const required = ['bookingId', 'guestName', 'checkinDate', 'checkoutDate', 'adults'];
+      for (const key of required) {
+        const val = formData.get(key);
+        if (!val) {
+          statusEl.textContent = 'Please fill all required fields.';
+          statusEl.className = 'mt-4 text-sm text-red-600';
+          return;
+        }
+      }
+
+      const idType = formData.get('idType');
+      if (idType === 'Aadhaar') {
+        if (!formData.get('idFront') || !formData.get('idBack')) {
+          statusEl.textContent = 'Please upload both front and back of Aadhaar.';
+          statusEl.className = 'mt-4 text-sm text-red-600';
+          return;
+        }
+      } else if (idType) {
+        if (!formData.get('idImage')) {
+          statusEl.textContent = 'Please upload your ID image.';
+          statusEl.className = 'mt-4 text-sm text-red-600';
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch('/api/pre-checkin', {
+          method: 'POST',
+          body: formData,
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || 'Submission failed');
+        statusEl.textContent = 'Thanks! Your pre check‑in details have been submitted. We will review and confirm shortly.';
+        statusEl.className = 'mt-4 text-sm text-green-600';
+        form.reset();
+        updateIdUploadVisibility();
+      } catch (err) {
+        statusEl.textContent = 'Could not submit at the moment. Please try again or contact support.';
+        statusEl.className = 'mt-4 text-sm text-red-600';
+      }
+    });
+  </script>
+</Layout>

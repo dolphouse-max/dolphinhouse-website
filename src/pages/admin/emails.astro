@@ -1,0 +1,153 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const db = Astro.locals.runtime.env.DB;
+
+// Ensure table exists (safe no-op if already present)
+try {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS emails (
+      id TEXT PRIMARY KEY,
+      direction TEXT,
+      from_addr TEXT,
+      to_addr TEXT,
+      subject TEXT,
+      body TEXT,
+      message_id TEXT,
+      in_reply_to TEXT,
+      thread_key TEXT,
+      created_at TEXT
+    )
+  `).run();
+} catch {}
+
+// Query params for filters & pagination
+const url = Astro.url;
+const qp = url.searchParams;
+const sender = qp.get('sender') || '';
+const subject = qp.get('subject') || '';
+const start = qp.get('start') || '';
+const end = qp.get('end') || '';
+const page = Math.max(1, parseInt(qp.get('page') || '1'));
+const pageSize = Math.min(100, Math.max(5, parseInt(qp.get('pageSize') || '20')));
+
+let whereClauses = ['1=1'];
+const binds = [];
+if (sender) { whereClauses.push('from_addr LIKE ?'); binds.push(`%${sender}%`); }
+if (subject) { whereClauses.push('subject LIKE ?'); binds.push(`%${subject}%`); }
+if (start) { whereClauses.push('last_at >= ?'); binds.push(start); }
+if (end) { whereClauses.push('last_at <= ?'); binds.push(end); }
+const whereSql = whereClauses.join(' AND ');
+
+const baseCte = `
+WITH latest AS (
+  SELECT thread_key, MAX(created_at) AS last_at
+  FROM emails
+  WHERE thread_key IS NOT NULL AND thread_key != ''
+  GROUP BY thread_key
+),
+last_rows AS (
+  SELECT
+    e.thread_key,
+    e.subject,
+    e.from_addr,
+    e.to_addr,
+    SUBSTR(e.body, 1, 200) AS snippet,
+    l.last_at
+  FROM emails e
+  JOIN latest l
+    ON e.thread_key = l.thread_key AND e.created_at = l.last_at
+)
+`;
+
+const countRes = await db.prepare(`${baseCte} SELECT COUNT(*) AS cnt FROM last_rows WHERE ${whereSql}`)
+  .bind(...binds)
+  .all();
+const total = countRes.results?.[0]?.cnt || 0;
+const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+const listRes = await db.prepare(`${baseCte} SELECT thread_key, subject, from_addr, to_addr, snippet, last_at FROM last_rows WHERE ${whereSql} ORDER BY last_at DESC LIMIT ? OFFSET ?`)
+  .bind(...binds, pageSize, (page - 1) * pageSize)
+  .all();
+const threads = listRes.results || [];
+
+// Build pagination links preserving filters
+const qsBase = new URLSearchParams();
+if (sender) qsBase.set('sender', sender);
+if (subject) qsBase.set('subject', subject);
+if (start) qsBase.set('start', start);
+if (end) qsBase.set('end', end);
+if (pageSize !== 20) qsBase.set('pageSize', String(pageSize));
+const prevQs = new URLSearchParams(qsBase);
+prevQs.set('page', String(Math.max(1, page - 1)));
+const nextQs = new URLSearchParams(qsBase);
+nextQs.set('page', String(Math.min(totalPages, page + 1)));
+---
+<AdminLayout title="Emails">
+  <section>
+    <h1>Email Threads</h1>
+    <p>Grouped by latest activity. Use filters below to narrow results.</p>
+
+    <!-- Filters -->
+    <form action="/admin/emails" method="get" style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap; margin:12px 0;">
+      <div>
+        <label for="sender" style="display:block; font-size:12px; color:#555;">Sender</label>
+        <input id="sender" name="sender" value={sender} placeholder="guest@example.com" style="padding:6px; border:1px solid #ccc; border-radius:4px;" />
+      </div>
+      <div>
+        <label for="subject" style="display:block; font-size:12px; color:#555;">Subject</label>
+        <input id="subject" name="subject" value={subject} placeholder="Booking inquiry" style="padding:6px; border:1px solid #ccc; border-radius:4px;" />
+      </div>
+      <div>
+        <label for="start" style="display:block; font-size:12px; color:#555;">Start date</label>
+        <input id="start" name="start" type="date" value={start} style="padding:6px; border:1px solid #ccc; border-radius:4px;" />
+      </div>
+      <div>
+        <label for="end" style="display:block; font-size:12px; color:#555;">End date</label>
+        <input id="end" name="end" type="date" value={end} style="padding:6px; border:1px solid #ccc; border-radius:4px;" />
+      </div>
+      <div>
+        <label for="pageSize" style="display:block; font-size:12px; color:#555;">Page size</label>
+        <input id="pageSize" name="pageSize" type="number" min="5" max="100" value={pageSize} style="padding:6px; width:80px; border:1px solid #ccc; border-radius:4px;" />
+      </div>
+      <button type="submit" style="padding:8px 12px; border:1px solid #ccc; border-radius:4px;">Apply</button>
+      <a href="/admin/emails" style="padding:8px 12px; border:1px solid #ccc; border-radius:4px;">Clear</a>
+    </form>
+
+    <div style="margin:8px 0; font-size:13px; color:#555;">{total} thread(s) • Page {page} of {totalPages}</div>
+
+    <div style="overflow:auto;">
+      <table style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Last At</th>
+            <th>Thread</th>
+            <th>Last From</th>
+            <th>Last To</th>
+            <th>Subject</th>
+            <th>Snippet</th>
+          </tr>
+        </thead>
+        <tbody>
+          {threads.map((t) => (
+            <tr>
+              <td>{t.last_at}</td>
+              <td>
+                <a href={`/admin/emails/${encodeURIComponent(t.thread_key)}`}>{t.thread_key}</a>
+              </td>
+              <td>{t.from_addr}</td>
+              <td>{t.to_addr}</td>
+              <td>{t.subject}</td>
+              <td>{t.snippet}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div style="display:flex; gap:8px; align-items:center; margin-top:12px;">
+      <a href={`/admin/emails?${prevQs.toString()}`} style={`padding:6px 10px; border:1px solid #ccc; border-radius:4px; ${page <= 1 ? 'pointer-events:none;opacity:0.5;' : ''}`}>◀ Prev</a>
+    </div>
+  </section>
+</AdminLayout>

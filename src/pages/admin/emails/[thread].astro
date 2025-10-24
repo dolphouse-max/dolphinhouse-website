@@ -1,0 +1,56 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+const db = Astro.locals.runtime.env.DB;
+const thread = Astro.params.thread;
+
+// Ensure table exists (safe no-op if already present)
+try {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS emails (
+      id TEXT PRIMARY KEY,
+      direction TEXT,
+      from_addr TEXT,
+      to_addr TEXT,
+      subject TEXT,
+      body TEXT,
+      message_id TEXT,
+      in_reply_to TEXT,
+      thread_key TEXT,
+      created_at TEXT
+    )
+  `).run();
+} catch {}
+
+const res = await db.prepare(
+  'SELECT id, direction, from_addr, to_addr, subject, body, message_id, in_reply_to, thread_key, created_at FROM emails WHERE thread_key = ? ORDER BY created_at ASC'
+).bind(thread).all();
+const rows = res.results || [];
+---
+<AdminLayout title={`Thread: ${thread}`}>
+  <section>
+    <a href="/admin/emails" style="display:inline-block;margin-bottom:12px;">← Back to emails</a>
+    <h1>Thread: {thread}</h1>
+    {rows.length === 0 ? (
+      <p>No messages in this thread yet.</p>
+    ) : (
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        {rows.map((r) => (
+          <article style="border:1px solid #ddd; border-radius:8px; padding:12px;">
+            <div style="font-size:12px; color:#666;">{r.created_at}</div>
+            <div style="margin:6px 0;">
+              <strong>{r.direction === 'inbound' ? 'Guest → Hotel' : 'Hotel → Guest'}</strong>
+            </div>
+            <div style="margin:6px 0;">
+              <span style="font-weight:500;">From:</span> {r.from_addr} &nbsp; <span style="font-weight:500;">To:</span> {r.to_addr}
+            </div>
+            <div style="margin:6px 0;">
+              <span style="font-weight:500;">Subject:</span> {r.subject}
+            </div>
+            <pre style="white-space:pre-wrap;word-wrap:break-word;background:#f8f9fa;border:1px solid #eee;border-radius:6px;padding:10px;margin-top:8px;">{r.body}</pre>
+          </article>
+        ))}
+      </div>
+    )}
+  </section>
+</AdminLayout>

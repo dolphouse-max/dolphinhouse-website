@@ -4,6 +4,7 @@ import Footer from "../components/Footer.astro";
 import "../styles/global.css";
 import ChatWidget from '../components/ChatWidget.astro';
 const { title = "Dolphin House Beach Resort" } = Astro.props;
+const GA_ID = import.meta.env.PUBLIC_GA_ID;
 ---
 <!doctype html>
 <html lang="en">
@@ -34,6 +35,18 @@ const { title = "Dolphin House Beach Resort" } = Astro.props;
 <meta property="og:image:type" content="image/webp" />
 
     <link rel="icon" href="/uploader/logo-512.webp" />
+
+    {GA_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+        <script is:inline>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);} 
+          gtag('js', new Date());
+          gtag('config', "${GA_ID}");
+        </script>
+      </>
+    )}
   </head>
   <body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
     <Header />
