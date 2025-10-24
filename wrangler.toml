@@ -1,15 +1,9 @@
 name = "dolphinhouse-website"
-main = "./dist/_worker.js"
 compatibility_date = "2024-10-01"
-pages_build_output_dir = "./dist"
 
-[site]
-bucket = "./dist"
-
-[build]
-command = "npm run build"
-
+# All configuration for D1 should be moved to the Pages Dashboard for a cleaner deploy
+# However, leaving it here is often acceptable if the build fails without it.
 [[d1_databases]]
-binding = "DB"                     # ← must match what you use in code
+binding = "DB"
 database_name = "dolphinhouse"
 database_id = "906d5bbf-24bf-4bac-8237-9fc8e197d382"
