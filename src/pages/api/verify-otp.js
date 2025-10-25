@@ -15,9 +15,22 @@ export async function POST({ locals, request }) {
 
     console.log('🔍 Verifying OTP for:', mobile);
 
+    // KV fallback for local/dev when OTP_STORE binding is missing
+    const KV = locals.runtime.env?.OTP_STORE;
+    const memoryStore = (() => {
+      const k = '__otpStore';
+      globalThis[k] = globalThis[k] || new Map();
+      return {
+        async put(key, value, _opts) { globalThis[k].set(key, value); },
+        async get(key) { return globalThis[k].get(key) || null; },
+        async delete(key) { globalThis[k].delete(key); }
+      };
+    })();
+    const otpStore = KV || memoryStore;
+
     // Get stored OTP
     const otpKey = `otp:${mobile}`;
-    const storedOtp = await locals.runtime.env.OTP_STORE.get(otpKey);
+    const storedOtp = await otpStore.get(otpKey);
     
     if (!storedOtp) {
       console.log('❌ OTP not found or expired');
@@ -35,11 +48,11 @@ export async function POST({ locals, request }) {
     // Verify OTP
     if (storedOtp === otp) {
       // Delete used OTP
-      await locals.runtime.env.OTP_STORE.delete(otpKey);
+      await otpStore.delete(otpKey);
       
       // Mark mobile as verified (store for 30 minutes)
       const verifiedKey = `verified:${mobile}`;
-      await locals.runtime.env.OTP_STORE.put(verifiedKey, 'true', {
+      await otpStore.put(verifiedKey, 'true', {
         expirationTtl: 1800 // 30 minutes
       });
       

@@ -1,7 +1,21 @@
-name = "dolphinhouse-website"
-compatibility_date = "2024-10-01"
+name = "dolphinhouse-emailbot"
+main = "workers/email/index.js"
+compatibility_date = "2025-10-25"
+
+workers_dev = true
 
 [[d1_databases]]
 binding = "DB"
 database_name = "dolphinhouse"
 database_id = "906d5bbf-24bf-4bac-8237-9fc8e197d382"
+
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "dolphinhouse-rag" 
+
+[ai]
+binding = "AI"
+
+[vars]
+EMAIL_FROM = "contact@dolphinhouse-alibaug.com"
+USE_CLOUDFLARE_REPLY = "0"   # set to "1" to use message.reply(...)

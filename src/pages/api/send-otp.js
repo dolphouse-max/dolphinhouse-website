@@ -10,6 +10,19 @@ export async function POST({ locals, request }) {
   const MSG91_AUTH_KEY = locals.runtime.env.MSG91_AUTH_KEY;
   const MSG91_TEMPLATE_ID = locals.runtime.env.MSG91_TEMPLATE_ID;
   
+  // KV fallback for local/dev when OTP_STORE binding is missing
+  const KV = locals.runtime.env?.OTP_STORE;
+  const memoryStore = (() => {
+    const k = '__otpStore';
+    globalThis[k] = globalThis[k] || new Map();
+    return {
+      async put(key, value, _opts) { globalThis[k].set(key, value); },
+      async get(key) { return globalThis[k].get(key) || null; },
+      async delete(key) { globalThis[k].delete(key); }
+    };
+  })();
+  const otpStore = KV || memoryStore;
+  
   try {
     const { mobile } = await request.json();
     
@@ -34,7 +47,7 @@ export async function POST({ locals, request }) {
     const otpKey = `otp:${mobile}`;
     
     try {
-      await locals.runtime.env.OTP_STORE.put(otpKey, otp, {
+      await otpStore.put(otpKey, otp, {
         expirationTtl: 300 // 5 minutes
       });
       console.log('✅ OTP stored in KV');
