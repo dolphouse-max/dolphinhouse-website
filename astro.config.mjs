@@ -7,4 +7,8 @@ export default defineConfig({
   output: "server",
   adapter: cloudflare({
   }),
+  build: {
+    // Inline per-page stylesheets to reduce render-blocking CSS requests
+    inlineStylesheets: 'always'
+  }
 });
