@@ -1,0 +1,14 @@
+# 301 redirects from old .html paths to new extensionless paths on new domain
+# Edit destinations as needed; one rule per page.
+
+/mumbai-to-alibaug.html / 301
+/mumbai-to-alibaug-ferry.html / 301
+/hotels-in-alibaug-with-swimming-pool / booking 301
+/weekend-getaways-from-mumbai.html /rooms 301
+/beach-house-in-alibaug.html / contact 301
+/faq.html / about 301
+/alibaug-beach.html / attractions 301
+/beach-resorts-in-maharashtra.html / gallery 301
+/terms-and-conditions.html / terms 301
+/booking-policy.html / booking-policy 301
+/disclaimer.html / disclaimer 301
