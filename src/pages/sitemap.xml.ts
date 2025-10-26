@@ -4,7 +4,7 @@ export const GET = async ({ locals }) => {
   };
 
   // Prefer SITE_URL from environment; fallback to a placeholder that you should update.
-  const base = (locals?.runtime?.env?.SITE_URL || 'https://www.dolphinhouse-alibaug.com').replace(/\/$/, '');
+  const base = (locals?.runtime?.env?.SITE_URL || 'https://dolphinhouse-alibaug.com').replace(/\/$/, '');
   const now = new Date().toISOString();
 
   const paths = [
