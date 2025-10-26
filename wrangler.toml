@@ -1,28 +1,34 @@
-name = "dolphinhouse-emailbot"
-main = "workers/email/index.js"
-compatibility_date = "2025-10-25"
+# Cloudflare Pages configuration for this Astro project
+# Do not include Worker-only keys like `main` or `workers_dev` here.
 
-workers_dev = true
-
-# Cloudflare Pages build output directory for Astro
+# Pages: build output directory
 pages_build_output_dir = "./dist"
 
+# Runtime compatibility for Pages Functions
+compatibility_date = "2025-10-25"
+
+# Bindings available to Pages Functions
+
+# D1 database binding
 [[d1_databases]]
 binding = "DB"
 database_name = "dolphinhouse"
 database_id = "906d5bbf-24bf-4bac-8237-9fc8e197d382"
 
+# Vectorize indexes (if used by Pages Functions)
 [[vectorize]]
 binding = "VECTORIZE"
-index_name = "dolphinhouse-rag" 
-
-[ai]
-binding = "AI"
-
-[vars]
-EMAIL_FROM = "contact@dolphinhouse-alibaug.com"
-USE_CLOUDFLARE_REPLY = "0"   # set to "1" to use message.reply(...)
+index_name = "dolphinhouse-rag"
 
 [[vectorize]]
 binding = "VECTORIZE_NEW"
 index_name = "dolphinhouse-rag-384"
+
+# Cloudflare AI binding
+[ai]
+binding = "AI"
+
+# Global vars used by Pages Functions
+[vars]
+EMAIL_FROM = "contact@dolphinhouse-alibaug.com"
+USE_CLOUDFLARE_REPLY = "0"   # set to "1" to use message.reply(...)
