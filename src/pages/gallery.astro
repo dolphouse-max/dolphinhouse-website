@@ -16,11 +16,11 @@ const sections: Section[] = (galleryData as any)?.sections || [];
   </section>
 
   {sections?.length ? (
-    sections.map((section) => (
+    sections.map((section, sIndex) => (
       <section class="mb-10">
         <h2 class="text-2xl font-semibold mb-4">{section.title}</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {section.images.map((img) => (
+          {section.images.map((img, iIndex) => (
             <figure class="rounded-lg overflow-hidden bg-white shadow-sm">
               <img
                 src={"/cdn-cgi/image/width=230,format=webp" + img.src}
@@ -29,7 +29,8 @@ const sections: Section[] = (galleryData as any)?.sections || [];
                          "/cdn-cgi/image/width=960,format=webp" + img.src + " 960w"}
                 sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
                 alt={img.alt}
-                loading="lazy"
+                loading={sIndex === 0 && iIndex === 0 ? "eager" : "lazy"}
+                fetchpriority={sIndex === 0 && iIndex === 0 ? "high" : "auto"}
                 decoding="async"
                 class="w-full h-full object-cover aspect-[4/3]"
               />
