@@ -23,9 +23,14 @@ const sections: Section[] = (galleryData as any)?.sections || [];
           {section.images.map((img) => (
             <figure class="rounded-lg overflow-hidden bg-white shadow-sm">
               <img
-                src={img.src}
+                src={"/cdn-cgi/image/width=230,format=webp" + img.src}
+                srcset={"/cdn-cgi/image/width=230,format=webp" + img.src + " 230w, " + 
+                         "/cdn-cgi/image/width=480,format=webp" + img.src + " 480w, " + 
+                         "/cdn-cgi/image/width=960,format=webp" + img.src + " 960w"}
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
                 alt={img.alt}
                 loading="lazy"
+                decoding="async"
                 class="w-full h-full object-cover aspect-[4/3]"
               />
               <figcaption class="text-sm text-gray-600 px-3 py-2">{img.alt}</figcaption>
