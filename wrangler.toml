@@ -1,6 +1,9 @@
 # Cloudflare Pages configuration for this Astro project
 # Do not include Worker-only keys like `main` or `workers_dev` here.
 
+# Project name for Cloudflare Pages
+name = "dolphinhouse-website"
+
 # Pages: build output directory
 pages_build_output_dir = "./dist"
 
