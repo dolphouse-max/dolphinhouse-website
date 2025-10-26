@@ -3,7 +3,7 @@ export const GET = async ({ locals }) => {
     'Content-Type': 'text/plain; charset=utf-8'
   };
 
-  const base = (locals?.runtime?.env?.SITE_URL || 'https://example.com').replace(/\/$/, '');
+  const base = (locals?.runtime?.env?.SITE_URL || 'https://dolphinhouse-alibaug.com').replace(/\/$/, '');
 
   const body = [
     'User-agent: *',
