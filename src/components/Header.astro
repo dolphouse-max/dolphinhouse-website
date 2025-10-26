@@ -18,8 +18,8 @@
     </nav>
 
     <div class="md:hidden">
-      <button id="menu-btn" class="p-2 rounded-lg hover:bg-gray-100">
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <button id="menu-btn" class="p-2 rounded-lg hover:bg-gray-100" aria-label="Open menu" aria-controls="mobile-menu" aria-expanded="false">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" role="img" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"/>
         </svg>
       </button>
@@ -41,5 +41,10 @@
 <script>
   const btn = document.getElementById('menu-btn');
   const menu = document.getElementById('mobile-menu');
-  btn?.addEventListener('click', () => menu.classList.toggle('hidden'));
+  btn?.addEventListener('click', () => {
+  const isHidden = menu.classList.toggle('hidden');
+  const expanded = !isHidden;
+  btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+  btn.setAttribute('aria-label', expanded ? 'Close menu' : 'Open menu');
+});
 </script>

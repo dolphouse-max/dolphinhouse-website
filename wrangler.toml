@@ -4,6 +4,9 @@ compatibility_date = "2025-10-25"
 
 workers_dev = true
 
+# Cloudflare Pages build output directory for Astro
+pages_build_output_dir = "./dist"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "dolphinhouse"

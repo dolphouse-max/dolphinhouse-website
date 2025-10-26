@@ -13,11 +13,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           Sign in with Google to access the admin dashboard
         </p>
       </div>
-      -      <div id="g_id_onload"
-      -           data-client_id="{Astro.locals?.runtime?.env?.GOOGLE_CLIENT_ID || ''}"
-      -            data-auto_prompt="false"></div>
-      +      <!-- Google onload container removed; using programmatic initialization -->
-      
+      <!-- Google onload container removed; using programmatic initialization -->
       <div id="googleButton" class="flex justify-center"></div>
       <div id="errorMessage" class="hidden p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"></div>
       <p class="text-center text-xs text-gray-500">Only <span class="font-mono">gjpatil@gmail.com</span> is allowed.</p>
@@ -26,53 +22,49 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 </AdminLayout>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
--<script>
-+<script>
-+  const CLIENT_ID = "{Astro.locals?.runtime?.env?.GOOGLE_CLIENT_ID || ''}";
-   function renderButton() {
-     const statusEl = document.getElementById('errorMessage');
-     if (!window.google || !google.accounts || !google.accounts.id) return;
--    const clientId = document.getElementById('g_id_onload')?.getAttribute('data-client_id');
--    if (!clientId) {
-+    const clientId = CLIENT_ID;
-+    if (!clientId) {
-       statusEl.textContent = 'GOOGLE_CLIENT_ID is not set. Configure it in environment variables.';
-       statusEl.classList.remove('hidden');
-       return;
-     }
-     google.accounts.id.initialize({
-       client_id: clientId,
-       callback: onGoogleSignIn,
-     });
-     google.accounts.id.renderButton(
-       document.getElementById('googleButton'),
-       { theme: 'outline', size: 'large' }
-     );
-   }
+<script>
+  const CLIENT_ID = "{Astro.locals?.runtime?.env?.GOOGLE_CLIENT_ID || ''}";
+  function renderButton() {
+    const statusEl = document.getElementById('errorMessage');
+    if (!window.google || !google.accounts || !google.accounts.id) return;
+    const clientId = CLIENT_ID;
+    if (!clientId) {
+      statusEl.textContent = 'GOOGLE_CLIENT_ID is not set. Configure it in environment variables.';
+      statusEl.classList.remove('hidden');
+      return;
+    }
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: onGoogleSignIn,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('googleButton'),
+      { theme: 'outline', size: 'large' }
+    );
+  }
 
-  -  async function onGoogleSignIn(response) {
-  +  window.onGoogleSignIn = async function(response) {
-       const statusEl = document.getElementById('errorMessage');
-       try {
-         const idToken = response?.credential;
-         if (!idToken) throw new Error('No Google credential received');
-         const res = await fetch('/api/admin-auth', {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ id_token: idToken })
-         });
-         const data = await res.json().catch(() => ({}));
-         if (res.ok && data.success) {
-           window.location.href = '/admin';
-         } else {
-           statusEl.textContent = data.error || 'Login failed';
-           statusEl.classList.remove('hidden');
-         }
-       } catch (err) {
-         statusEl.textContent = err.message;
-         statusEl.classList.remove('hidden');
-       }
-     }
+  window.onGoogleSignIn = async function(response) {
+    const statusEl = document.getElementById('errorMessage');
+    try {
+      const idToken = response?.credential;
+      if (!idToken) throw new Error('No Google credential received');
+      const res = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_token: idToken })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        window.location.href = '/admin';
+      } else {
+        statusEl.textContent = data.error || 'Login failed';
+        statusEl.classList.remove('hidden');
+      }
+    } catch (err) {
+      statusEl.textContent = err.message;
+      statusEl.classList.remove('hidden');
+    }
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     if (window.google) renderButton();
