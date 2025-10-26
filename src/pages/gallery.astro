@@ -2,32 +2,11 @@
 import Layout from "../layouts/Layout.astro";
 // Load structured gallery data with categories and captions
 import galleryData from "../../data/gallery.json";
-import fs from 'node:fs';
 
 type ImageItem = { src: string; alt: string };
 type Section = { title: string; images: ImageItem[] };
 
 const sections: Section[] = (galleryData as any)?.sections || [];
-
-// Fallback: if JSON is empty, auto-list images in public/gallery
-let fallbackImages: ImageItem[] = [];
-if (!sections?.length) {
-  try {
-    const dirUrl = new URL('../../public/gallery/', import.meta.url);
-    const files = fs.readdirSync(dirUrl);
-    fallbackImages = files
-      .filter((f) => /\.(png|jpe?g|webp|avif)$/i.test(f))
-      .map((f) => ({
-        src: `/gallery/${f}`,
-        alt: f
-          .replace(/\.[^.]+$/, '')
-          .replace(/[-_]+/g, ' ')
-          .replace(/\b\w/g, (c) => c.toUpperCase()),
-      }));
-  } catch (e) {
-    fallbackImages = [];
-  }
-}
 ---
 
 <Layout title="Photo Gallery | Dolphin House Alibaug" description="View photos of Dolphin House Beach Resort Alibaug - rooms, swimming pool, restaurant, hotel exterior & facilities. See what awaits you at our beachside resort.">
@@ -56,24 +35,6 @@ if (!sections?.length) {
       </section>
     ))
   ) : (
-    <>
-      {fallbackImages.length === 0 ? (
-        <p class="text-gray-500">No images found yet. Add files to <code class="px-1 py-0.5 bg-gray-100 rounded">public/gallery</code> or populate <code class="px-1 py-0.5 bg-gray-100 rounded">data/gallery.json</code> and redeploy.</p>
-      ) : (
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {fallbackImages.map((img) => (
-            <figure class="rounded-lg overflow-hidden bg-white shadow-sm">
-              <img
-                src={img.src}
-                alt={img.alt}
-                loading="lazy"
-                class="w-full h-full object-cover aspect-[4/3]"
-              />
-              <figcaption class="text-sm text-gray-600 px-3 py-2">{img.alt}</figcaption>
-            </figure>
-          ))}
-        </div>
-      )}
-    </>
+    <p class="text-gray-500">No images found yet. Populate <code class="px-1 py-0.5 bg-gray-100 rounded">data/gallery.json</code> and redeploy.</p>
   )}
 </Layout>
