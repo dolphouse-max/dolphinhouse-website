@@ -4,7 +4,8 @@ import AdminHeader from '../../components/AdminHeader.astro';
 import { isAuthenticated } from '../../middleware/auth.js';
 
 // Check if user is authenticated
-const authenticated = isAuthenticated(Astro);
+-const authenticated = isAuthenticated(Astro);
++const authenticated = await isAuthenticated(Astro);
 if (!authenticated) {
   return Astro.redirect('/admin/login');
 }

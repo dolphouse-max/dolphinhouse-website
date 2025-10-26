@@ -19,3 +19,7 @@ binding = "AI"
 [vars]
 EMAIL_FROM = "contact@dolphinhouse-alibaug.com"
 USE_CLOUDFLARE_REPLY = "0"   # set to "1" to use message.reply(...)
+
+[[vectorize]]
+binding = "VECTORIZE_NEW"
+index_name = "dolphinhouse-rag-384"

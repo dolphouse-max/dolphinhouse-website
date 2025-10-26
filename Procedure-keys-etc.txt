@@ -5,6 +5,8 @@ SELECT id, text FROM knowledge_chunks;
 ==============================================================================
 
 D1_Vectorize_Admin_Final API token  : SuKo7VqcIYxF6oN8_X0-KVgXXRfxhyB_gOY_J8lU
+
+email bot Vectorize secret  dh-reindex-2025-key
 ========================================
 $env:CLOUDFLARE_API_TOKEN="SuKo7VqcIYxF6oN8_X0-KVgXXRfxhyB_gOY_J8lU"
 $env:CLOUDFLARE_ACCOUNT_ID = "e8e9c4e8cbb5cd7137842f51149f8b10"

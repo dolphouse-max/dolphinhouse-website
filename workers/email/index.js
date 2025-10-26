@@ -1,7 +1,8 @@
-// workers/email/index.js
+// workers/email/index.js (TEST MODE — no external email sending)
+// Fixed: avoids ORDER BY created_at on knowledge_chunks when column doesn't exist.
+
 import { EmailMessage } from "cloudflare:email";
 
-/* Helpers */
 function extractAddress(from) {
   if (!from) return null;
   const s = String(from);
@@ -9,29 +10,12 @@ function extractAddress(from) {
   return (m && m[1]) || s.trim();
 }
 
-function buildRawMime({ from, to, subject, text, inReplyTo, messageId }) {
-  const headers = [
-    `From: ${from}`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    `MIME-Version: 1.0`,
-    `Content-Type: text/plain; charset=UTF-8`,
-  ];
-  if (messageId) headers.push(`Message-ID: ${messageId}`);
-  if (inReplyTo) headers.push(`In-Reply-To: ${inReplyTo}`);
-  return headers.join("\r\n") + "\r\n\r\n" + text;
-}
-
 async function safeReadRaw(message) {
   try {
     if (typeof message.raw === "string") return message.raw;
     return await new Response(message.raw).text();
   } catch {
-    try {
-      return Array.from(message.headers.entries()).map(([k, v]) => `${k}: ${v}`).join("\n");
-    } catch {
-      return "";
-    }
+    return "";
   }
 }
 
@@ -47,34 +31,24 @@ function safeExtractEmbedding(resp) {
 
 function safeExtractChatText(aiRes) {
   if (!aiRes) return null;
-  return (
-    aiRes?.response ||
-    aiRes?.text ||
-    aiRes?.output?.[0]?.content?.[0]?.text ||
-    aiRes?.choices?.[0]?.message?.content ||
-    (typeof aiRes?.choices?.[0] === "string" ? aiRes.choices[0] : null) ||
-    null
-  );
+  return aiRes?.response || aiRes?.text || aiRes?.output?.[0]?.content?.[0]?.text || null;
 }
 
-/* Main */
 export default {
   async email(message, env, ctx) {
     const FROM_ADDR = env.EMAIL_FROM || "contact@dolphinhouse-alibaug.com";
-    const USE_CLOUDFLARE_REPLY = env.USE_CLOUDFLARE_REPLY === "1";
-    const MAILCHANNELS_ENABLED = !USE_CLOUDFLARE_REPLY;
-    const MAILCHANNELS_API_KEY = env.MAILCHANNELS_API_KEY || null;
 
     try {
       const fromAddr = extractAddress(message.from || message.headers?.get("From")) || null;
       const toAddr = extractAddress(message.to || message.headers?.get("To")) || FROM_ADDR;
       const subject = message.subject || message.headers?.get("subject") || "(no subject)";
-      const inboundMessageId = (() => { try { return message.headers?.get("Message-ID") || null } catch { return null } })();
-      const inboundInReplyTo = (() => { try { return message.headers?.get("In-Reply-To") || null } catch { return null } })();
-      const raw = await safeReadRaw(message);
-      const bodyText = (raw || "").toString();
+      const messageId = (() => { try { return message.headers?.get("Message-ID") || null } catch { return null } })();
+      const inReplyTo = (() => { try { return message.headers?.get("In-Reply-To") || null } catch { return null } })();
 
-      // CREATE TABLE (ensure consistent schema)
+      const raw = await safeReadRaw(message);
+      const bodyText = String(raw || "").slice(0, 2000);
+
+      // Ensure emails table exists (same schema)
       try {
         await env.DB.prepare(`
           CREATE TABLE IF NOT EXISTS emails (
@@ -94,7 +68,7 @@ export default {
         console.warn("D1 create table warning:", e?.message || e);
       }
 
-      // Log inbound (10 columns)
+      // Log inbound
       const threadKey = subject.trim().replace(/^((re|fwd):\s*)+/i, "").toLowerCase();
       const now = new Date().toISOString();
       try {
@@ -110,8 +84,8 @@ export default {
           toAddr,
           subject,
           bodyText,
-          inboundMessageId,
-          inboundInReplyTo || null,
+          messageId,
+          inReplyTo || null,
           threadKey,
           now
         ).run();
@@ -119,157 +93,84 @@ export default {
         console.warn("D1 inbound log warning:", e?.message || e);
       }
 
-      // ----- RAG: embedding -> vectorize -> hydrate -----
+      // RAG / embedding -> Vectorize (safe)
       let kbSnippet = "";
       try {
-        if (env.AI && env.VECTORIZE && env.DB) {
-          const qText = `${subject}\n\n${bodyText.substring(0, 800)}`;
-          const embResp = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: qText });
+        const qText = `${subject}\n\n${bodyText.substring(0, 800)}`;
+        const embResp = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: qText });
 
-          // debug logs of embedding response
-          try {
-            console.log("DEBUG embResp keys:", Object.keys(embResp || {}));
-            console.log("DEBUG embResp.data0:", JSON.stringify(embResp?.data?.[0] ?? null));
-          } catch (e) {}
+        try {
+          console.log("DEBUG embResp keys:", Object.keys(embResp || {}));
+          console.log("DEBUG embResp.data0:", JSON.stringify(embResp?.data?.[0] ?? null));
+        } catch {}
 
-          const vectorEmbedding = safeExtractEmbedding(embResp);
-          console.log("DEBUG extracted embedding length:", Array.isArray(vectorEmbedding) ? vectorEmbedding.length : "not-array");
+        const vectorEmbedding = safeExtractEmbedding(embResp);
+        console.log("DEBUG extracted embedding length:", Array.isArray(vectorEmbedding) ? vectorEmbedding.length : "not-array");
 
-          if (!Array.isArray(vectorEmbedding) || vectorEmbedding.length === 0) {
-            console.warn("RAG: empty embedding, falling back to LIKE");
-            throw new Error("empty_embedding");
-          }
+        if (!Array.isArray(vectorEmbedding) || vectorEmbedding.length === 0) {
+          console.warn("RAG: empty embedding, using D1 LIKE fallback");
+          throw new Error("empty_embedding");
+        }
 
-          // === CHANGE: accept 384-dim embeddings ===
-          // We saw your model returning 384 dims. Use this variable to match your index:
-          const EXPECTED_DIMS = 384; // <--- set to 384 so we attempt Vectorize with 384-dim vectors
+        const EXPECTED_DIMS = 768;
+        if (vectorEmbedding.length !== EXPECTED_DIMS) {
+          console.warn(`RAG: embedding dims ${vectorEmbedding.length} != ${EXPECTED_DIMS}; skipping Vectorize`);
+          throw new Error("dim_mismatch");
+        }
 
-          if (vectorEmbedding.length !== EXPECTED_DIMS) {
-            console.warn(`RAG: embedding has ${vectorEmbedding.length} dims (expected ${EXPECTED_DIMS}), will attempt Vectorize but may fail`);
-            // we'll still attempt Vectorize; if it fails it will be handled below
-          }
+        // Query Vectorize (only if dims match)
+        let vecRes = null;
+        try {
+          vecRes = await env.VECTORIZE.query({ vector: vectorEmbedding, topK: 3 });
+        } catch (e) {
+          try { vecRes = await env.VECTORIZE.query(vectorEmbedding, { topK: 3 }); }
+          catch (e2) { throw e2; }
+        }
 
-          // Try Vectorize (two call shapes)
-          let vecRes = null;
-          try {
-            try {
-              vecRes = await env.VECTORIZE.query({ vector: vectorEmbedding, topK: 3 });
-            } catch (e1) {
-              vecRes = await env.VECTORIZE.query(vectorEmbedding, { topK: 3 });
-            }
-          } catch (vecErr) {
-            throw new Error("vectorize_failed:" + (vecErr?.message || vecErr));
-          }
+        const matches = vecRes?.matches || vecRes?.results || [];
+        const ids = matches.map(m => (m && (m.id ?? m.document_id ?? m.doc_id)) || null).filter(Boolean);
 
-          const matches = vecRes?.matches || vecRes?.results || [];
-          const ids = matches.map(m => m && (m.id ?? m.document_id ?? m.doc_id)).filter(Boolean);
-          if (ids.length) {
-            const placeholders = ids.map(() => "?").join(",");
-            const rowsResp = await env.DB.prepare(
-              `SELECT id, text FROM knowledge_chunks WHERE id IN (${placeholders}) ORDER BY created_at DESC`
-            ).bind(...ids).all();
-            const rows = rowsResp?.results || [];
-            kbSnippet = rows.map(r => r.text || "").join("\n---\n");
-          } else kbSnippet = "";
-        } else {
-          // fallback cheap LIKE
-          const termBase = (subject + " " + bodyText).toLowerCase().replace(/[?!,.;:]/g, " ");
-          const term = termBase.slice(0, 200);
-          try {
-            const res = await env.DB.prepare(
-              `SELECT text FROM knowledge_chunks WHERE LOWER(text) LIKE ? ORDER BY created_at DESC LIMIT 1`
-            ).bind(`%${term}%`).all();
-            kbSnippet = res.results?.[0]?.text || "";
-          } catch {
-            kbSnippet = "";
-          }
+        if (ids.length) {
+          const placeholders = ids.map(() => "?").join(",");
+          const rows = (await env.DB.prepare(`SELECT text FROM knowledge_chunks WHERE id IN (${placeholders})`).bind(...ids).all()).results || [];
+          kbSnippet = rows.map(r => r.text || "").join("\n---\n");
         }
       } catch (e) {
-        console.warn("RAG lookup warning:", e?.message || e);
-        // As last resort, attempt LIKE search again
+        console.warn("RAG lookup fallback:", e?.message || e);
+
+        // --- FIXED: D1 LIKE fallback without ORDER BY created_at ---
         try {
           const termBase = (subject + " " + bodyText).toLowerCase().replace(/[?!,.;:]/g, " ");
           const term = termBase.slice(0, 200);
+          // We purposely do NOT use ORDER BY created_at because some schemas lack that column.
           const res = await env.DB.prepare(
-            `SELECT text FROM knowledge_chunks WHERE LOWER(text) LIKE ? ORDER BY created_at DESC LIMIT 1`
+            `SELECT text FROM knowledge_chunks WHERE LOWER(text) LIKE ? LIMIT 1`
           ).bind(`%${term}%`).all();
           kbSnippet = res.results?.[0]?.text || "";
-        } catch {
+        } catch (e2) {
+          console.warn("D1 LIKE fallback failed:", e2?.message || e2);
           kbSnippet = "";
         }
       }
 
-      // ----- AI reply generation -----
-      const prompt = `You are a helpful assistant for Dolphin House, Alibaug.
-
+      // AI reply
+      const prompt = `You are a helpful and professional assistant for Dolphin House, Alibaug.
+Context:
+${kbSnippet}
 User email:
 ${bodyText}
-
-Relevant context:
-${kbSnippet}
-
-Reply clearly, politely, and concisely.`;
-
-      let replyText = "Thank you for reaching out. We'll get back to you shortly.";
+Compose a short, polite reply.`;
+      let replyText = "Thank you for your email. We'll respond shortly.";
       try {
-        if (env.AI) {
-          const aiRes = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { prompt });
-          const text = safeExtractChatText(aiRes);
-          if (text) replyText = String(text).trim();
-        }
+        const aiRes = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { prompt });
+        replyText = safeExtractChatText(aiRes) || replyText;
       } catch (e) {
         console.warn("AI generation warning:", e?.message || e);
       }
 
-      // ----- Send reply -----
-      // Cloudflare message.reply path (only if explicitly enabled)
-      if (USE_CLOUDFLARE_REPLY && typeof message.reply === "function") {
-        try {
-          let safeMessageId = inboundMessageId;
-          if (!safeMessageId) safeMessageId = `<${crypto.randomUUID()}@dolphinhouse-alibaug.com>`;
-          const mime = buildRawMime({
-            from: FROM_ADDR,
-            to: fromAddr || toAddr,
-            subject: `Re: ${subject}`,
-            text: replyText,
-            inReplyTo: safeMessageId,
-            messageId: safeMessageId
-          });
-          const em = new EmailMessage(FROM_ADDR, fromAddr || toAddr, mime);
-          await message.reply(em);
-        } catch (e) {
-          console.error("Cloudflare reply failed:", e?.message || e);
-          // fall through to MailChannels fallback
-        }
-      }
+      console.log("TEST-MODE generated reply:", replyText);
 
-      // MailChannels send (default). Must include X-Api-Key header.
-      if (MAILCHANNELS_ENABLED) {
-        try {
-          const headers = { "content-type": "application/json" };
-          if (MAILCHANNELS_API_KEY) headers["X-Api-Key"] = MAILCHANNELS_API_KEY;
-          // if you don't want to use an API key and rely on Cloudflare/MailChannels integration,
-          // leave MAILCHANNELS_API_KEY unset — but set up the domain lockdown/SPA if required.
-          const sendPayload = {
-            personalizations: [{ to: [{ email: fromAddr }] }],
-            from: { email: FROM_ADDR },
-            subject: `Re: ${subject}`,
-            content: [{ type: "text/plain", value: replyText }]
-          };
-          const mcResp = await fetch("https://api.mailchannels.net/tx/v1/send", {
-            method: "POST",
-            headers,
-            body: JSON.stringify(sendPayload)
-          });
-          if (!mcResp.ok) {
-            console.error("MailChannels send failed:", await mcResp.text());
-          }
-        } catch (e) {
-          console.error("MailChannels send error:", e?.message || e);
-        }
-      }
-
-      // ----- Log outbound (10 cols) -----
+      // Store outbound in D1 (no sending)
       try {
         await env.DB.prepare(`
           INSERT INTO emails (
@@ -284,7 +185,7 @@ Reply clearly, politely, and concisely.`;
           `Re: ${subject}`,
           replyText,
           null,
-          inboundMessageId || inboundInReplyTo || null,
+          messageId || inReplyTo || null,
           threadKey,
           new Date().toISOString()
         ).run();
@@ -293,7 +194,7 @@ Reply clearly, politely, and concisely.`;
       }
 
     } catch (err) {
-      console.error("Email worker error:", err?.message || err);
+      console.error("Email worker top-level error:", err?.message || err);
     }
   }
 };

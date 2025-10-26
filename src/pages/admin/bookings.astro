@@ -4,7 +4,8 @@ import AdminHeader from '../../components/AdminHeader.astro';
 import { isAuthenticated } from '../../middleware/auth.js';
 
 // Check if user is authenticated
-const authenticated = isAuthenticated(Astro);
+-const authenticated = isAuthenticated(Astro);
++const authenticated = await isAuthenticated(Astro);
 if (!authenticated) {
   return Astro.redirect('/admin/login');
 }
@@ -269,6 +270,26 @@ if (!authenticated) {
       }
     }
 
+    // Send manual review invite SMS
+    async function sendReviewInvite(bookingId) {
+      try {
+        const res = await fetch('/api/review-invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ booking_id: bookingId })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          alert('Review invite SMS sent.');
+        } else {
+          alert('Failed to send review SMS: ' + (data.error || res.statusText));
+        }
+      } catch (err) {
+        console.error('review-invite error:', err);
+        alert('Error sending review SMS: ' + err.message);
+      }
+    }
+
     const table = document.getElementById('bookingTable');
     const dateInput = document.getElementById('filterDate');
     const statusFilter = document.getElementById('statusFilter');
@@ -481,6 +502,12 @@ if (!authenticated) {
               </button>
             `;
           }
+          // Manual Review Invite action (vilpower)
+          actionButtons += `
+            <button class="sms-review-btn px-2 py-1 text-xs bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200" data-id="${b.id}">
+              ⭐ Review SMS
+            </button>
+          `;
         }
         
         tr.innerHTML = ` 
@@ -519,6 +546,7 @@ if (!authenticated) {
         const approveBtn = tr.querySelector('.approve-btn');
         const smsPendingBtn = tr.querySelector('.sms-pending-btn');
         const smsReceivedBtn = tr.querySelector('.sms-received-btn');
+        const smsReviewBtn = tr.querySelector('.sms-review-btn');
         
         editBtn.addEventListener('click', () => openEditModal(b.id));
         deleteBtn.addEventListener('click', () => deleteBooking(b.id));
@@ -536,6 +564,13 @@ if (!authenticated) {
         }
         if (smsReceivedBtn) {
           smsReceivedBtn.addEventListener('click', () => sendPaymentNotification(b.id, 'received'));
+        }
+        if (smsReviewBtn) {
+          smsReviewBtn.addEventListener('click', () => {
+            const name = b.name || 'guest';
+            const ok = confirm(`Send review invite to ${name}?`);
+            if (ok) sendReviewInvite(b.id);
+          });
         }
       });
     }

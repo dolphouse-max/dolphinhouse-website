@@ -1,0 +1,28 @@
+{
+  "sections": [
+    {
+      "title": "Resort",
+      "images": [
+        { "src": "/gallery/hotel-front.webp", "alt": "Resort front view" }
+      ]
+    },
+    {
+      "title": "Pool",
+      "images": [
+        { "src": "/gallery/swimmimg-pool.webp", "alt": "Indoor swimming pool" }
+      ]
+    },
+    {
+      "title": "Dining",
+      "images": [
+        { "src": "/gallery/restaurant.webp", "alt": "Restaurant seating area" }
+      ]
+    },
+    {
+      "title": "Kitchen",
+      "images": [
+        { "src": "/gallery/kitchen.webp", "alt": "Kitchen facilities" }
+      ]
+    }
+  ]
+}
