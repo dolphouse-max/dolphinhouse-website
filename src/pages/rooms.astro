@@ -11,7 +11,9 @@ const roomCategories = [
     area: 140,
     rateNonAC: 2000,
     rateAC: 2300,
-    features: ["Queen Bed", "Attached Bathroom", "Wi-Fi", "TV", "Generator Backup"]
+    features: ["Queen Bed", "Attached Bathroom", "Wi-Fi", "TV", "Generator Backup"],
+    width: 1575,
+    height: 1067
   },
   {
     image: "/uploader/Room-4.webp",
@@ -22,7 +24,9 @@ const roomCategories = [
     area: 160,
     rateNonAC: 2300,
     rateAC: 2600,
-    features: ["King Bed", "Balcony View", "Hot Water", "TV", "Wi-Fi"]
+    features: ["King Bed", "Balcony View", "Hot Water", "TV", "Wi-Fi"],
+    width: 1575,
+    height: 1067
   },
   {
     image: "/uploader/room-5.webp",
@@ -33,7 +37,9 @@ const roomCategories = [
     area: 200,
     rateNonAC: 3000,
     rateAC: 3500,
-    features: ["Double Beds", "Extra Person Option", "TV", "Wi-Fi", "Hot Water"]
+    features: ["Double Beds", "Extra Person Option", "TV", "Wi-Fi", "Hot Water"],
+    width: 1600,
+    height: 1086
   },
   {
     image: "/uploader/room-9.webp",
@@ -44,7 +50,9 @@ const roomCategories = [
     area: 300,
     rateNonAC: 3300,
     rateAC: 3800,
-    features: ["King Bed", "Private Balcony", "Pool View", "TV", "Wi-Fi"]
+    features: ["King Bed", "Private Balcony", "Pool View", "TV", "Wi-Fi"],
+    width: 1600,
+    height: 1086
   },
 ];
 ---
@@ -53,7 +61,13 @@ const roomCategories = [
 
   <!-- Hero Section -->
   <section class="relative mb-16">
-    <img src="/uploader/hotel-front-1.webp" alt="Dolphin House Resort Rooms" class="w-full h-80 md:h-[450px] object-cover rounded-3xl shadow-xl" />
+    <img 
+      src="/uploader/hotel-front-1.webp" 
+      srcset="/uploader/hotel-front-1-480x320.webp 480w, /uploader/hotel-front-1-960x640.webp 960w, /uploader/hotel-front-1.webp 1267w"
+      sizes="(min-width: 1024px) 1267px, (min-width: 768px) 960px, 100vw"
+      alt="Dolphin House Resort Rooms" 
+      class="w-full h-80 md:h-[450px] object-cover rounded-3xl shadow-xl" 
+      width="1267" height="1067" decoding="async" fetchpriority="high" />
     <div class="absolute inset-0 bg-black/50 flex items-center justify-center rounded-3xl">
       <h1 class="text-4xl md:text-6xl font-extrabold text-white text-center tracking-tight">
         Rooms & Tariffs
@@ -75,7 +89,11 @@ const roomCategories = [
     {roomCategories.map(room => (
       <div class="group bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 hover:shadow-2xl transition transform hover:-translate-y-1">
         <div class="relative overflow-hidden">
-          <img src={room.image} alt={room.title} class="w-full h-64 object-cover group-hover:scale-110 transition duration-500" />
+          <img 
+            src={room.image} 
+            alt={room.title} 
+            class="w-full h-64 object-cover group-hover:scale-110 transition duration-500" 
+            width={room.width} height={room.height} loading="lazy" decoding="async" />
           <div class="absolute top-0 left-0 bg-sky-600 text-white px-3 py-1 text-sm rounded-br-xl shadow-md">
             {room.type}
           </div>
@@ -120,10 +138,28 @@ const roomCategories = [
   <section class="mt-20">
     <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Indoor Swimming Pool</h2>
     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-      <img src="/uploader/swimming-pool1.webp" alt="Pool 1" class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" />
-      <img src="/uploader/swimming-pool1_1.webp" alt="Pool 2" class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" />
-      <img src="/uploader/swimming-pool2.webp" alt="Pool 3" class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" />
-      <img src="/uploader/swimming-pool3.webp" alt="Pool 4" class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" />
+      <img 
+        src="/uploader/swimming-pool1.webp" 
+        srcset="/uploader/swimming-pool1-480x320.webp 480w, /uploader/swimming-pool1-960x640.webp 960w, /uploader/swimming-pool1.webp 1600w" 
+        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" 
+        alt="Pool 1" 
+        class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" 
+        width="1600" height="945" loading="lazy" decoding="async" />
+      <img 
+        src="/uploader/swimming-pool1_1.webp" 
+        alt="Pool 2" 
+        class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" 
+        width="1600" height="943" loading="lazy" decoding="async" />
+      <img 
+        src="/uploader/swimming-pool2.webp" 
+        alt="Pool 3" 
+        class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" 
+        width="1600" height="945" loading="lazy" decoding="async" />
+      <img 
+        src="/uploader/swimming-pool3.webp" 
+        alt="Pool 4" 
+        class="rounded-2xl shadow-md w-full h-56 object-cover hover:scale-105 transition" 
+        width="1600" height="943" loading="lazy" decoding="async" />
     </div>
   </section>
 
