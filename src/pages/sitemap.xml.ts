@@ -1,10 +1,9 @@
-export const GET = async ({ locals }) => {
+export const GET = async () => {
   const headers = {
     'Content-Type': 'application/xml'
   };
 
-  // Prefer SITE_URL from environment; fallback to a placeholder that you should update.
-  const base = (locals?.runtime?.env?.SITE_URL || 'https://dolphinhouse-alibaug.com').replace(/\/$/, '');
+  const base = 'https://dolphinhouse-alibaug.com';
   const now = new Date().toISOString();
 
   const paths = [
