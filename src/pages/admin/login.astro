@@ -5,69 +5,50 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 <AdminLayout title="Admin Login | Dolphin House">
   <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Admin Login
-        </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
-          Sign in with Google to access the admin dashboard
-        </p>
+      <div class="text-center">
+        <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Admin Login</h2>
+        <p class="mt-2 text-sm text-gray-600">Sign in with your admin ID and password</p>
       </div>
-      <!-- Google onload container removed; using programmatic initialization -->
-      <div id="googleButton" class="flex justify-center"></div>
-      <div id="errorMessage" class="hidden p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg"></div>
-      <p class="text-center text-xs text-gray-500">Only <span class="font-mono">gjpatil@gmail.com</span> is allowed.</p>
+
+      <form id="adminLoginForm" class="mt-8 space-y-6" method="POST" action="/api/admin-auth">
+        <div class="rounded-md shadow-sm -space-y-px">
+          <div class="mb-4">
+            <label for="loginId" class="block text-sm font-medium text-gray-700">Login ID</label>
+            <input id="loginId" name="login_id" type="text" required placeholder="owner" pattern="owner" title="Login ID must be owner" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+            <p class="text-xs text-gray-500 mt-1">Login ID must be <span class="font-mono">owner</span>.</p>
+          </div>
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <input id="password" name="password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" />
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Sign In</button>
+        </div>
+
+
+      </form>
+
+      <details class="mt-4">
+        <summary class="text-sm text-gray-600 cursor-pointer">Debug info</summary>
+        <pre id="debugInfo" class="mt-2 text-xs bg-gray-100 p-2 rounded"></pre>
+      </details>
+
+      <div id="errorMessage" class="hidden p-3 text-sm text-red-700 bg-red-100 rounded-md"></div>
+      <div id="statusMessage" class="hidden p-3 text-sm text-green-700 bg-green-100 rounded-md"></div>
     </div>
   </div>
 </AdminLayout>
 
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-  const CLIENT_ID = "{Astro.locals?.runtime?.env?.GOOGLE_CLIENT_ID || ''}";
-  function renderButton() {
-    const statusEl = document.getElementById('errorMessage');
-    if (!window.google || !google.accounts || !google.accounts.id) return;
-    const clientId = CLIENT_ID;
-    if (!clientId) {
-      statusEl.textContent = 'GOOGLE_CLIENT_ID is not set. Configure it in environment variables.';
-      statusEl.classList.remove('hidden');
-      return;
-    }
-    google.accounts.id.initialize({
-      client_id: clientId,
-      callback: onGoogleSignIn,
-    });
-    google.accounts.id.renderButton(
-      document.getElementById('googleButton'),
-      { theme: 'outline', size: 'large' }
-    );
-  }
-
-  window.onGoogleSignIn = async function(response) {
-    const statusEl = document.getElementById('errorMessage');
-    try {
-      const idToken = response?.credential;
-      if (!idToken) throw new Error('No Google credential received');
-      const res = await fetch('/api/admin-auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_token: idToken })
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data.success) {
-        window.location.href = '/admin';
-      } else {
-        statusEl.textContent = data.error || 'Login failed';
-        statusEl.classList.remove('hidden');
-      }
-    } catch (err) {
-      statusEl.textContent = err.message;
-      statusEl.classList.remove('hidden');
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', () => {
-    if (window.google) renderButton();
-    else window.addEventListener('load', renderButton);
+    const el = document.getElementById('debugInfo');
+    if (el) {
+      el.textContent = JSON.stringify({
+        location: window.location.href,
+        cookies: document.cookie
+      }, null, 2);
+    }
   });
 </script>

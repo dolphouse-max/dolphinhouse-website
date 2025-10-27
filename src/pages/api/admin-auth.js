@@ -1,4 +1,4 @@
-// Admin Authentication API (Google Sign-In)
+// Admin Authentication API (ID + Password)
 async function hmacHex(secret, message) {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -17,8 +17,13 @@ async function hmacHex(secret, message) {
   return hex;
 }
 
+async function ensureTable(db) {
+  await db.prepare(
+    'CREATE TABLE IF NOT EXISTS admin_credentials (login_id TEXT PRIMARY KEY, password_hash TEXT NOT NULL, updated_at TEXT NOT NULL)'
+  ).run();
+}
+
 export const POST = async ({ request, cookies, locals }) => {
-  // CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS, DELETE',
@@ -27,78 +32,83 @@ export const POST = async ({ request, cookies, locals }) => {
   };
 
   try {
-    const data = await request.json();
-    const { id_token } = data;
-
-    if (!id_token) {
-      return new Response(
-        JSON.stringify({ error: 'Missing id_token' }),
-        { status: 400, headers }
-      );
+    const contentType = request.headers.get('content-type') || '';
+    let login_id, password;
+    if (contentType.includes('application/json')) {
+      const data = await request.json().catch(() => ({}));
+      login_id = data?.login_id || data?.loginId || '';
+      password = data?.password || '';
+    } else {
+      const form = await request.formData().catch(() => null);
+      login_id = form ? (form.get('login_id') || form.get('loginId') || '') : '';
+      password = form ? (form.get('password') || '') : '';
     }
 
-    // Verify the ID token with Google
-    const tokenInfoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(id_token)}`);
-    const tokenInfo = await tokenInfoRes.json().catch(() => ({}));
+    const loginId = String(login_id || '').trim();
+      console.log('[admin-auth] contentType=', contentType, 'login_id=', loginId, 'hasPassword=', !!password);
+      if (!loginId || loginId !== 'owner') {
+        return new Response(JSON.stringify({ error: 'Invalid login ID' }), { status: 400, headers });
+      }
+      if (!password) {
+        return new Response(JSON.stringify({ error: 'Password required' }), { status: 400, headers });
+      }
 
-    if (!tokenInfoRes.ok) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid Google ID token', debug: tokenInfo }),
-        { status: 401, headers }
-      );
+    const secret = locals?.runtime?.env?.SESSION_SECRET || 'dev-secret';
+    const db = locals?.runtime?.env?.DB;
+
+    let storedHash = null;
+    if (db) {
+      await ensureTable(db);
+      const row = await db.prepare('SELECT password_hash FROM admin_credentials WHERE login_id = ?').bind(loginId).first();
+      if (row && row.password_hash) {
+        storedHash = row.password_hash;
+      } else {
+        // Initialize default password: dolphin123
+        const defaultHash = await hmacHex(secret, 'dolphin123');
+        await db.prepare('INSERT OR REPLACE INTO admin_credentials (login_id, password_hash, updated_at) VALUES (?, ?, ?)')
+          .bind(loginId, defaultHash, new Date().toISOString()).run();
+        storedHash = defaultHash;
+      }
+    } else {
+      // No DB available: fall back to hardcoded default
+      storedHash = await hmacHex(secret, 'dolphin123');
+    }
+    console.log('[admin-auth] DB present:', !!db, 'storedHash set:', !!storedHash);
+
+    const candidateHash = await hmacHex(secret, password);
+    console.log('[admin-auth] candidateHash match:', candidateHash === storedHash);
+    if (candidateHash !== storedHash) {
+      return new Response(JSON.stringify({ error: 'Incorrect password' }), { status: 401, headers });
     }
 
-    const email = tokenInfo.email;
-    const emailVerified = tokenInfo.email_verified === 'true' || tokenInfo.email_verified === true;
+    const valueSig = await hmacHex(secret, loginId);
+    const value = `${loginId}.${valueSig}`;
 
-    // Optional: check audience/client id if available via env
-    const expectedAud = locals?.runtime?.env?.GOOGLE_CLIENT_ID;
-    if (expectedAud && tokenInfo.aud && tokenInfo.aud !== expectedAud) {
-      return new Response(
-        JSON.stringify({ error: 'Token audience mismatch' }),
-        { status: 401, headers }
-      );
-    }
+    const isHttps = (() => {
+      try {
+        return new URL(request.url).protocol === 'https:';
+      } catch {
+        return true;
+      }
+    })();
 
-    // Allow only the specific admin email
-    const allowedEmail = 'gjpatil@gmail.com';
-    if (!emailVerified || email !== allowedEmail) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized email' }),
-        { status: 403, headers }
-      );
-    }
-
-    const secret = locals?.runtime?.env?.SESSION_SECRET;
-    if (!secret) {
-      return new Response(
-        JSON.stringify({ error: 'Missing SESSION_SECRET' }),
-        { status: 500, headers }
-      );
-    }
-
-    const sig = await hmacHex(secret, email);
-    const value = `${email}.${sig}`;
-
-    // Set a secure session cookie with signed value
+    console.log('[admin-auth] Setting cookie', { isHttps, secure: isHttps, valuePreview: value.slice(0, 20) + '...' });
     cookies.set('admin_session', value, {
       path: '/',
       httpOnly: true,
-      secure: true,
+      secure: isHttps,
       sameSite: 'Strict',
-      maxAge: 60 * 60 * 24 // 24 hours
+      maxAge: 60 * 60 * 24
     });
 
-    return new Response(
-      JSON.stringify({ success: true, message: 'Login successful', email }),
-      { headers }
-    );
+    if ((request.headers.get('content-type') || '').includes('application/json')) {
+      return new Response(JSON.stringify({ success: true, message: 'Login successful', login_id: loginId }), { headers });
+    } else {
+      return new Response(null, { status: 303, headers: { Location: '/admin' } });
+    }
   } catch (error) {
     console.error('Auth error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Authentication failed', details: error.message }),
-      { status: 500, headers }
-    );
+    return new Response(JSON.stringify({ error: 'Authentication failed', details: error.message }), { status: 500, headers });
   }
 };
 
@@ -111,10 +121,7 @@ export const DELETE = async ({ cookies }) => {
   };
 
   cookies.delete('admin_session', { path: '/' });
-  return new Response(
-    JSON.stringify({ success: true, message: 'Logged out successfully' }),
-    { headers }
-  );
+  return new Response(JSON.stringify({ success: true, message: 'Logged out successfully' }), { headers });
 };
 
 export const OPTIONS = async () => {

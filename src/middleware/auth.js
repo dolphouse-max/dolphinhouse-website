@@ -1,4 +1,4 @@
-// Simple authentication middleware for admin pages
+// Simple authentication middleware for admin pages using login ID
 async function hmacHex(secret, message) {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
@@ -18,29 +18,35 @@ async function hmacHex(secret, message) {
 }
 
 export async function isAuthenticated(context) {
-  const raw = context.cookies.get('admin_session');
+  const rawCookie = context.cookies.get('admin_session');
+  console.log('[isAuthenticated] raw cookie:', rawCookie);
+  const raw = rawCookie?.value || '';
   if (!raw) return false;
   const parts = String(raw).split('.');
   if (parts.length !== 2) return false;
-  const [email, sig] = parts;
-  const allowedEmail = 'gjpatil@gmail.com';
-  if (email !== allowedEmail) return false;
-  const secret = context.locals?.runtime?.env?.SESSION_SECRET || '';
-  if (!secret) return false;
-  const expect = await hmacHex(secret, email);
+  const [loginId, sig] = parts;
+  const allowedLoginId = 'owner';
+  console.log('[isAuthenticated] parts length:', parts.length, 'loginId:', loginId);
+  if (loginId !== allowedLoginId) return false;
+  const secret = context.locals?.runtime?.env?.SESSION_SECRET || 'dev-secret';
+  const expect = await hmacHex(secret, loginId);
+  console.log('[isAuthenticated] expect prefix:', expect.slice(0, 16), 'sig prefix:', String(sig).slice(0,16), 'match:', sig === expect);
   return sig === expect;
 }
 
 export async function requireAuth({ cookies, redirect, locals }) {
-  const raw = cookies.get('admin_session');
+  const rawCookie = cookies.get('admin_session');
+  console.log('[requireAuth] raw cookie:', rawCookie);
+  const raw = rawCookie?.value || '';
   if (!raw) return redirect('/admin/login');
   const parts = String(raw).split('.');
+  const [loginId, sig] = parts;
+  console.log('[requireAuth] partsLen:', parts.length, 'loginId:', loginId);
   if (parts.length !== 2) return redirect('/admin/login');
-  const [email, sig] = parts;
-  const allowedEmail = 'gjpatil@gmail.com';
-  if (email !== allowedEmail) return redirect('/admin/login');
-  const secret = locals?.runtime?.env?.SESSION_SECRET || '';
-  if (!secret) return redirect('/admin/login');
-  const expect = await hmacHex(secret, email);
+  const allowedLoginId = 'owner';
+  if (loginId !== allowedLoginId) return redirect('/admin/login');
+  const secret = locals?.runtime?.env?.SESSION_SECRET || 'dev-secret';
+  const expect = await hmacHex(secret, loginId);
+  console.log('[requireAuth] match:', sig === expect);
   if (sig !== expect) return redirect('/admin/login');
 }
