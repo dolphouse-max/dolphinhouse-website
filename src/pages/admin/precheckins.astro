@@ -1,41 +1,59 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminHeader from '../../components/AdminHeader.astro';
+import { isAuthenticated } from '../../middleware/auth.js';
 
-const db = Astro.locals.runtime.env.DB;
+// Require authentication before touching DB or rendering
+const authenticated = await isAuthenticated(Astro);
+if (!authenticated) {
+  return Astro.redirect('/admin/login');
+}
 
-// Discover available columns to avoid errors if migrations haven't run
-const info = await db.prepare('PRAGMA table_info(precheckin)').all();
-const available = new Set((info.results || []).map((r) => r.name));
+let available = new Set<string>();
+let rows: any[] = [];
+try {
+  const db = Astro.locals.runtime.env.DB;
+  if (!db) {
+    throw new Error('DB binding unavailable for precheckins page');
+  }
 
-const baseCols = [
-  'id',
-  'booking_id',
-  'guest_name',
-  'phone_e164',
-  'email',
-  'checkin_date',
-  'checkout_date',
-  'adults',
-  'children',
-  'arrival_time',
-  'special_requests',
-  'whatsapp_opt_in',
-  'created_at'
-];
-const optionalCols = [
-  'car_reg_number',
-  'id_type',
-  'id_number',
-  'id_front_url',
-  'id_back_url',
-  'id_image_url'
-];
-const selectCols = [...baseCols, ...optionalCols.filter((c) => available.has(c))];
-const selectSql = `SELECT ${selectCols.join(', ')} FROM precheckin ORDER BY created_at DESC LIMIT 200`;
-const res = await db.prepare(selectSql).all();
-const rows = res.results || [];
+  // Discover available columns to avoid errors if migrations haven't run
+  const info = await db.prepare('PRAGMA table_info(precheckin)').all();
+  available = new Set((info.results || []).map((r) => r.name));
+
+  const baseCols = [
+    'id',
+    'booking_id',
+    'guest_name',
+    'phone_e164',
+    'email',
+    'checkin_date',
+    'checkout_date',
+    'adults',
+    'children',
+    'arrival_time',
+    'special_requests',
+    'whatsapp_opt_in',
+    'created_at'
+  ];
+  const optionalCols = [
+    'car_reg_number',
+    'id_type',
+    'id_number',
+    'id_front_url',
+    'id_back_url',
+    'id_image_url'
+  ];
+  const selectCols = [...baseCols, ...optionalCols.filter((c) => available.has(c))];
+  const selectSql = `SELECT ${selectCols.join(', ')} FROM precheckin ORDER BY created_at DESC LIMIT 200`;
+  const res = await db.prepare(selectSql).all();
+  rows = res.results || [];
+} catch (err) {
+  console.error('[admin/precheckins] Failed to load data:', err);
+}
 ---
 <AdminLayout title="Pre-checkins">
+  <AdminHeader />
   <section>
     <h1>Pre-checkin Submissions</h1>
     <p>Recent submissions with car registration and ID images.</p>
