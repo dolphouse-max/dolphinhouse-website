@@ -13,6 +13,17 @@ if (!authenticated) {
 <AdminLayout title="Admin Dashboard | Dolphin House">
   <AdminHeader />
 
+  <!-- 🔐 Change Password Banner (dismissible) -->
+  <section id="changePasswordBanner" class="max-w-6xl mx-auto mt-4 px-4">
+    <div id="cpBanner" class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-2 rounded-lg flex items-center justify-between">
+      <span class="text-sm">For security, please update your admin password.</span>
+      <div class="flex gap-2">
+        <a href="/admin/change-password" class="px-3 py-1 bg-sky-600 text-white rounded hover:bg-sky-700 text-sm">Change Password</a>
+        <button id="dismissCpBanner" class="px-3 py-1 border rounded text-sm">Dismiss</button>
+      </div>
+    </div>
+  </section>
+
   <section id="reportArea" class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow-lg mt-10 mb-16">
     <div class="flex justify-between items-center mb-6">
       <div class="flex items-center gap-4">
@@ -22,9 +33,14 @@ if (!authenticated) {
           <p class="text-gray-600">Bookings, Occupancy, and Revenue Insights</p>
         </div>
       </div>
-      <button id="downloadPdfBtn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg shadow">
-        📥 Download PDF Report
-      </button>
+      <div class="flex items-center gap-3">
+        <button id="downloadPdfBtn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg shadow">
+          📥 Download PDF Report
+        </button>
+        <a href="/admin/change-password" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg shadow">
+          🔐 Change Password
+        </a>
+      </div>
     </div>
 
     <!-- 🗓 Filters -->
@@ -99,96 +115,173 @@ if (!authenticated) {
     </section>
   </section>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Owner Settings: Change Password -->
+  <section id="ownerSettings" class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow mt-4">
+    <h2 class="text-2xl font-semibold mb-4">Owner Settings</h2>
+    <p class="text-gray-600 mb-4">Change the admin password for login.</p>
+    <form id="changePasswordForm" class="space-y-4 max-w-md">
+      <div>
+        <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
+        <input id="newPassword" name="newPassword" type="password" required minlength="6" class="mt-1 w-full px-3 py-2 border rounded" />
+      </div>
+      <div>
+        <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" required minlength="6" class="mt-1 w-full px-3 py-2 border rounded" />
+      </div>
+      <button type="submit" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Update Password</button>
+      <div id="pwStatus" class="hidden mt-3 p-3 rounded text-sm"></div>
+    </form>
+  </section>
+</AdminLayout>
 
-  <script client:load>
-    const { jsPDF } = window.jspdf;
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('changePasswordForm');
+    const statusEl = document.getElementById('pwStatus');
 
-    // Setup logout functionality
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.classList.add('hidden');
+      statusEl.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      if (newPassword !== confirmPassword) {
+        statusEl.textContent = 'Passwords do not match';
+        statusEl.classList.add('bg-red-100', 'text-red-700');
+        statusEl.classList.remove('hidden');
+        return;
+      }
+
       try {
-        const response = await fetch('/api/admin-auth', {
-          method: 'DELETE'
+        const res = await fetch('/api/admin-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_password: newPassword })
         });
-        
-        if (response.ok) {
-          window.location.href = '/admin/login';
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          statusEl.textContent = 'Password updated successfully';
+          statusEl.classList.add('bg-green-100', 'text-green-700');
+          statusEl.classList.remove('hidden');
+          form.reset();
         } else {
-          alert('Logout failed. Please try again.');
+          statusEl.textContent = data.error || 'Failed to update password';
+          statusEl.classList.add('bg-red-100', 'text-red-700');
+          statusEl.classList.remove('hidden');
         }
-      } catch (error) {
-        console.error('Logout error:', error);
-        alert('An error occurred during logout.');
+      } catch (err) {
+        statusEl.textContent = err.message || 'Error updating password';
+        statusEl.classList.add('bg-red-100', 'text-red-700');
+        statusEl.classList.remove('hidden');
       }
     });
+  });
+</script>
 
-    // Generate PDF with multiple pages and custom branding
-    async function generatePDF() {
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const report = document.getElementById('reportArea');
-      const logoUrl = '/uploader/logo-512.webp';
-      const start = document.getElementById('startDate').value || '—';
-      const end = document.getElementById('endDate').value || '—';
-      const dateRange = (start !== '—' || end !== '—') ? `${start} → ${end}` : "All Data";
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-      // 1️⃣ Header Page
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(22);
-      pdf.text("🏨 Dolphin House Beach Resort", 20, 40);
-      pdf.setFontSize(14);
-      pdf.setTextColor(60);
-      pdf.text("Admin Performance Report", 20, 55);
-      pdf.setFontSize(12);
-      pdf.text(`Date Range: ${dateRange}`, 20, 70);
-      pdf.text(`Generated on: ${new Date().toLocaleString()}`, 20, 80);
-      pdf.addImage(logoUrl, 'WEBP', 150, 20, 40, 40);
-      pdf.setLineWidth(0.5);
-      pdf.line(20, 90, 190, 90);
-      pdf.text("Summary and Analytics Overview", 20, 100);
-      pdf.addPage();
+<script client:load>
+  const { jsPDF } = window.jspdf;
 
-      // 2️⃣ Summary Page
-      const summaryCanvas = await html2canvas(document.getElementById('summary'), { scale: 2 });
-      const summaryImg = summaryCanvas.toDataURL('image/png');
-      const width = 190;
-      const height = (summaryCanvas.height * width) / summaryCanvas.width;
-      pdf.addImage(summaryImg, 'PNG', 10, 20, width, height);
-      pdf.text("Booking & Revenue Summary", 20, 15);
-      pdf.addPage();
-
-      // 3️⃣ Charts Page
-      const charts = ['occupancyChart', 'trendChart', 'revenueChart'];
-      for (let i = 0; i < charts.length; i++) {
-        const chart = document.getElementById(charts[i]);
-        if (chart) {
-          const chartCanvas = await html2canvas(chart, { scale: 2 });
-          const imgData = chartCanvas.toDataURL('image/png');
-          pdf.addImage(imgData, 'PNG', 10, 20, 190, 110);
-          pdf.text(chart.parentElement.querySelector('h2').innerText, 20, 15);
-          if (i < charts.length - 1) pdf.addPage();
-        }
+  // Setup logout functionality
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    try {
+      const response = await fetch('/api/admin-auth', {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        window.location.href = '/admin/login';
+      } else {
+        alert('Logout failed. Please try again.');
       }
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert('An error occurred during logout.');
+    }
+  });
 
-      // 4️⃣ Recent Bookings Table
-      const table = document.querySelector('#recentBookings').closest('section');
-      const tableCanvas = await html2canvas(table, { scale: 2 });
-      const tableImg = tableCanvas.toDataURL('image/png');
-      pdf.addImage(tableImg, 'PNG', 10, 20, 190, (tableCanvas.height * 190) / tableCanvas.width);
+  // Generate PDF with multiple pages and custom branding
+  async function generatePDF() {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const report = document.getElementById('reportArea');
+    const logoUrl = '/uploader/logo-512.webp';
+    const start = document.getElementById('startDate').value || '—';
+    const end = document.getElementById('endDate').value || '—';
+    const dateRange = (start !== '—' || end !== '—') ? `${start} → ${end}` : "All Data";
 
-      // Footer & Page Numbers
-      const pageCount = pdf.internal.getNumberOfPages();
-      pdf.setFontSize(9);
-      for (let i = 1; i <= pageCount; i++) {
-        pdf.setPage(i);
-        pdf.text(`Page ${i} of ${pageCount}`, 180, 290, { align: "right" });
-        pdf.text("© Dolphin House Beach Resort", 20, 290);
+    // 1️⃣ Header Page
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(22);
+    pdf.text("🏨 Dolphin House Beach Resort", 20, 40);
+    pdf.setFontSize(14);
+    pdf.setTextColor(60);
+    pdf.text("Admin Performance Report", 20, 55);
+    pdf.setFontSize(12);
+    pdf.text(`Date Range: ${dateRange}`, 20, 70);
+    pdf.text(`Generated on: ${new Date().toLocaleString()}`, 20, 80);
+    pdf.addImage(logoUrl, 'WEBP', 150, 20, 40, 40);
+    pdf.setLineWidth(0.5);
+    pdf.line(20, 90, 190, 90);
+    pdf.text("Summary and Analytics Overview", 20, 100);
+    pdf.addPage();
+
+    // 2️⃣ Summary Page
+    const summaryCanvas = await html2canvas(document.getElementById('summary'), { scale: 2 });
+    const summaryImg = summaryCanvas.toDataURL('image/png');
+    const width = 190;
+    const height = (summaryCanvas.height * width) / summaryCanvas.width;
+    pdf.addImage(summaryImg, 'PNG', 10, 20, width, height);
+    pdf.text("Booking & Revenue Summary", 20, 15);
+    pdf.addPage();
+
+    // 3️⃣ Charts Page
+    const charts = ['occupancyChart', 'trendChart', 'revenueChart'];
+    for (let i = 0; i < charts.length; i++) {
+      const chart = document.getElementById(charts[i]);
+      if (chart) {
+        const chartCanvas = await html2canvas(chart, { scale: 2 });
+        const imgData = chartCanvas.toDataURL('image/png');
+        pdf.addImage(imgData, 'PNG', 10, 20, 190, 110);
+        pdf.text(chart.parentElement.querySelector('h2').innerText, 20, 15);
+        if (i < charts.length - 1) pdf.addPage();
       }
-
-      pdf.save(`DolphinHouse_Report_${Date.now()}.pdf`);
     }
 
-    document.getElementById('downloadPdfBtn').addEventListener('click', generatePDF);
-  </script>
-</Layout>
+    // 4️⃣ Recent Bookings Table
+    const table = document.querySelector('#recentBookings').closest('section');
+    const tableCanvas = await html2canvas(table, { scale: 2 });
+    const tableImg = tableCanvas.toDataURL('image/png');
+    pdf.addImage(tableImg, 'PNG', 10, 20, 190, (tableCanvas.height * 190) / tableCanvas.width);
+
+    // Footer & Page Numbers
+    const pageCount = pdf.internal.getNumberOfPages();
+    pdf.setFontSize(9);
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.text(`Page ${i} of ${pageCount}`, 180, 290, { align: "right" });
+      pdf.text("© Dolphin House Beach Resort", 20, 290);
+    }
+
+    pdf.save(`DolphinHouse_Report_${Date.now()}.pdf`);
+  }
+
+  document.getElementById('downloadPdfBtn').addEventListener('click', generatePDF);
+  
+  // Banner dismiss logic
+  const cpBanner = document.getElementById('cpBanner');
+  const dismissCpBanner = document.getElementById('dismissCpBanner');
+  if (cpBanner) {
+    try {
+      const dismissed = localStorage.getItem('cpBannerDismissed') === '1';
+      if (dismissed) cpBanner.style.display = 'none';
+      dismissCpBanner?.addEventListener('click', () => {
+        localStorage.setItem('cpBannerDismissed', '1');
+        cpBanner.style.display = 'none';
+      });
+    } catch {}
+  }
+</script>

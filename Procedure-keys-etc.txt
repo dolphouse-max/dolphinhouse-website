@@ -22,12 +22,23 @@ Remove-Item Env:CF_API_TOKEN -ErrorAction SilentlyContinue
 Remove-Item Env:CF_ACCOUNT_ID -ErrorAction SilentlyContinue
 
 =========================================
-
+git add .
+git commit -m "seo corrections"
+git push
 
 git add src/pages/booking.astro 
 git commit -m "Phase 1: html correction"
 git push
+
+git add wrangler.toml
+git commit -m "Make wrangler.toml Pages-only (remove Worker keys)"
+git push origin master
 ============================================================
+
+npx --yes wrangler@latest tail dolphinhouse-emailbot --format pretty
+
+
+==============================================================
 🧩 The 3 EmailJS Keys You’ll See
 
 Purpose	Example	Where to find it	Used in code

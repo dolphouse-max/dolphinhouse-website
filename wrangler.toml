@@ -15,8 +15,8 @@ compatibility_date = "2025-10-25"
 # D1 database binding
 [[d1_databases]]
 binding = "DB"
-database_name = "dolphinhouse"
-database_id = "906d5bbf-24bf-4bac-8237-9fc8e197d382"
+database_name = "dolphinhouse-admin"
+database_id = "7fe77243-2caa-46d8-af95-a3f8a234a019"
 
 # Vectorize indexes (if used by Pages Functions)
 [[vectorize]]
