@@ -1,5 +1,7 @@
 ---
 import AdminLayout from '../../../layouts/AdminLayout.astro';
+import AdminHeader from '../../../components/AdminHeader.astro';
+import { isAuthenticated } from '../../../middleware/auth.js';
 
 const db = Astro.locals.runtime.env.DB;
 const thread = Astro.params.thread;
@@ -27,7 +29,14 @@ const res = await db.prepare(
 ).bind(thread).all();
 const rows = res.results || [];
 ---
+// Require authentication
+const ok = await isAuthenticated(Astro);
+if (!ok) {
+  return Astro.redirect('/admin/login');
+}
+
 <AdminLayout title={`Thread: ${thread}`}>
+  <AdminHeader />
   <section>
     <a href="/admin/emails" style="display:inline-block;margin-bottom:12px;">← Back to emails</a>
     <h1>Thread: {thread}</h1>

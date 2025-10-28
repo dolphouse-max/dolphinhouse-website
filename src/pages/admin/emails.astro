@@ -1,5 +1,7 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import AdminHeader from '../../components/AdminHeader.astro';
+import { isAuthenticated } from '../../middleware/auth.js';
 
 const db = Astro.locals.runtime.env.DB;
 
@@ -83,7 +85,14 @@ prevQs.set('page', String(Math.max(1, page - 1)));
 const nextQs = new URLSearchParams(qsBase);
 nextQs.set('page', String(Math.min(totalPages, page + 1)));
 ---
+// Require authentication
+const ok = await isAuthenticated(Astro);
+if (!ok) {
+  return Astro.redirect('/admin/login');
+}
+
 <AdminLayout title="Emails">
+  <AdminHeader />
   <section>
     <h1>Email Threads</h1>
     <p>Grouped by latest activity. Use filters below to narrow results.</p>

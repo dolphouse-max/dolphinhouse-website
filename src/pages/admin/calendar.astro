@@ -1,12 +1,14 @@
----
-import Layout from "../../layouts/Layout.astro";
----
-<Layout title="Admin Calendar | Dolphin House">
-  <div class="flex gap-4 mb-6">
-    <a href="/admin" class="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300">🏠 Dashboard</a>
-    <a href="/admin/bookings" class="px-3 py-2 bg-sky-200 rounded hover:bg-sky-300">📘 Bookings</a>
-    <a href="/admin/inventory" class="px-3 py-2 bg-green-200 rounded hover:bg-green-300">🧾 Inventory</a>
-  </div>
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminHeader from "../../components/AdminHeader.astro";
+import { isAuthenticated } from '../../middleware/auth.js';
+
+// Require authentication for admin calendar
+const ok = await isAuthenticated(Astro);
+if (!ok) {
+  return Astro.redirect('/admin/login');
+}
+<AdminLayout title="Admin Calendar | Dolphin House">
+  <AdminHeader />
 
   <section class="max-w-7xl mx-auto py-8">
     <div class="flex items-center justify-between mb-6">
@@ -193,4 +195,4 @@ import Layout from "../../layouts/Layout.astro";
   })();
   </script>
 
-</Layout>
+</AdminLayout>
