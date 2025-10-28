@@ -84,13 +84,12 @@ const prevQs = new URLSearchParams(qsBase);
 prevQs.set('page', String(Math.max(1, page - 1)));
 const nextQs = new URLSearchParams(qsBase);
 nextQs.set('page', String(Math.min(totalPages, page + 1)));
----
 // Require authentication
 const ok = await isAuthenticated(Astro);
 if (!ok) {
   return Astro.redirect('/admin/login');
 }
-
+---
 <AdminLayout title="Emails">
   <AdminHeader />
   <section>

@@ -1,3 +1,4 @@
+---
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import AdminHeader from "../../components/AdminHeader.astro";
 import { isAuthenticated } from '../../middleware/auth.js';
@@ -7,6 +8,7 @@ const ok = await isAuthenticated(Astro);
 if (!ok) {
   return Astro.redirect('/admin/login');
 }
+---
 <AdminLayout title="Admin Calendar | Dolphin House">
   <AdminHeader />
 

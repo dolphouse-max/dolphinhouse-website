@@ -28,13 +28,12 @@ const res = await db.prepare(
   'SELECT id, direction, from_addr, to_addr, subject, body, message_id, in_reply_to, thread_key, created_at FROM emails WHERE thread_key = ? ORDER BY created_at ASC'
 ).bind(thread).all();
 const rows = res.results || [];
----
 // Require authentication
 const ok = await isAuthenticated(Astro);
 if (!ok) {
   return Astro.redirect('/admin/login');
 }
-
+---
 <AdminLayout title={`Thread: ${thread}`}>
   <AdminHeader />
   <section>
