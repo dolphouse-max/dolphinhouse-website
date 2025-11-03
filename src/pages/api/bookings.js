@@ -7,10 +7,40 @@ export async function GET({ locals, request }) {
   const end = url.searchParams.get("end");
 
   try {
+    // Discover schema to handle snake_case/camelCase differences
+    const info = await db.prepare('PRAGMA table_info(bookings)').all();
+    const cols = new Set((info.results || []).map((r) => r.name));
+    const col = (pref, alt) => (cols.has(pref) ? pref : cols.has(alt) ? alt : pref);
+    const createdCol = col('createdAt', 'created_at');
+    const customerIdCol = col('customer_id', 'customer_id');
+    const emailCol = col('email', 'email');
+    const mobileCol = col('mobile', 'mobile');
+    const roomCol = col('room', 'room');
+    const checkinCol = col('checkin', 'checkin');
+    const checkoutCol = col('checkout', 'checkout');
+    const nightsCol = col('nights', 'nights');
+    const guestsCol = col('guests', 'guests');
+    const totalCol = col('total', 'total');
+    const statusCol = col('status', 'status');
+
     if (id) {
       // Fetch single booking
       const booking = await db
-        .prepare("SELECT * FROM bookings WHERE id = ?")
+        .prepare(`SELECT 
+          id,
+          ${customerIdCol} AS customer_id,
+          name,
+          ${emailCol} AS email,
+          ${mobileCol} AS mobile,
+          ${roomCol} AS room,
+          ${checkinCol} AS checkin,
+          ${checkoutCol} AS checkout,
+          ${nightsCol} AS nights,
+          ${guestsCol} AS guests,
+          ${totalCol} AS total,
+          ${statusCol} AS status,
+          ${createdCol} AS createdAt
+        FROM bookings WHERE id = ?`)
         .bind(id)
         .first();
       return new Response(JSON.stringify(booking || {}), {
@@ -23,16 +53,30 @@ export async function GET({ locals, request }) {
       const clauses = [];
       const values = [];
       if (start) {
-        clauses.push('date(checkout) > date(?)');
+        clauses.push(`date(${checkoutCol}) > date(?)`);
         values.push(start);
       }
       if (end) {
         // end is exclusive in callers
-        clauses.push('date(checkin) < date(?)');
+        clauses.push(`date(${checkinCol}) < date(?)`);
         values.push(end);
       }
       const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-      const sql = `SELECT id, customer_id, name, email, mobile, room, checkin, checkout, nights, guests, total, status, createdAt FROM bookings ${where} ORDER BY date(checkin) ASC`;
+      const sql = `SELECT 
+        id,
+        ${customerIdCol} AS customer_id,
+        name,
+        ${emailCol} AS email,
+        ${mobileCol} AS mobile,
+        ${roomCol} AS room,
+        ${checkinCol} AS checkin,
+        ${checkoutCol} AS checkout,
+        ${nightsCol} AS nights,
+        ${guestsCol} AS guests,
+        ${totalCol} AS total,
+        ${statusCol} AS status,
+        ${createdCol} AS createdAt
+      FROM bookings ${where} ORDER BY date(${checkinCol}) ASC`;
       const res = await db.prepare(sql).bind(...values).all();
       return new Response(JSON.stringify(res.results || []), {
         headers: { "Content-Type": "application/json" },
@@ -41,7 +85,21 @@ export async function GET({ locals, request }) {
 
     // Fetch all bookings when no range params provided
     const { results } = await db
-      .prepare("SELECT * FROM bookings ORDER BY createdAt DESC")
+      .prepare(`SELECT 
+        id,
+        ${customerIdCol} AS customer_id,
+        name,
+        ${emailCol} AS email,
+        ${mobileCol} AS mobile,
+        ${roomCol} AS room,
+        ${checkinCol} AS checkin,
+        ${checkoutCol} AS checkout,
+        ${nightsCol} AS nights,
+        ${guestsCol} AS guests,
+        ${totalCol} AS total,
+        ${statusCol} AS status,
+        ${createdCol} AS createdAt
+      FROM bookings ORDER BY ${createdCol} DESC`)
       .all();
 
     return new Response(JSON.stringify(results), {
