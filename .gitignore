@@ -22,3 +22,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# wrangler temp/state (avoid accidental commits)
+.wrangler/tmp/
+.wrangler/state/
