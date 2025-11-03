@@ -1,6 +1,13 @@
 // src/pages/api/bookings.js
 export async function GET({ locals, request }) {
-  const db = locals.runtime.env.DB;
+  const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
+  const db = env.DB;
+  if (!db) {
+    return new Response(JSON.stringify({ error: 'DB binding missing. Ensure Cloudflare Pages has D1 binding "DB".' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
   const start = url.searchParams.get("start");
@@ -115,7 +122,14 @@ export async function GET({ locals, request }) {
 }
 
 export async function POST({ locals, request }) {
-  const db = locals.runtime.env.DB;
+  const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
+  const db = env.DB;
+  if (!db) {
+    return new Response(JSON.stringify({ error: 'DB binding missing. Ensure Cloudflare Pages has D1 binding "DB".' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
   const body = await request.json();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -140,11 +154,18 @@ export async function POST({ locals, request }) {
   console.log('Creating booking with Customer ID:', customerId);
 
   try {
+    // Discover schema for insert column names (camelCase vs snake_case)
+    const info = await db.prepare('PRAGMA table_info(bookings)').all();
+    const cols = new Set((info.results || []).map((r) => r.name));
+    const has = (c) => cols.has(c);
+    const customerIdCol = has('customer_id') ? 'customer_id' : 'customerId';
+    const createdCol = has('created_at') ? 'created_at' : 'createdAt';
+
     await db
       .prepare(
         `INSERT INTO bookings (
-          id, customer_id, name, email, room, checkin, checkout,
-          guests, nights, total, status, createdAt
+          id, ${customerIdCol}, name, email, room, checkin, checkout,
+          guests, nights, total, status, ${createdCol}
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
@@ -178,7 +199,14 @@ export async function POST({ locals, request }) {
 }
 
 export async function PUT({ locals, request }) {
-  const db = locals.runtime.env.DB;
+  const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
+  const db = env.DB;
+  if (!db) {
+    return new Response(JSON.stringify({ error: 'DB binding missing. Ensure Cloudflare Pages has D1 binding "DB".' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
   const body = await request.json();
   const { id, name, email, mobile, guests, total, screenshot, status } = body;
 

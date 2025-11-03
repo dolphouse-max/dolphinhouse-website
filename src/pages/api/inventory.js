@@ -2,7 +2,11 @@
 // src/pages/api/inventory.js
 export async function GET({ locals }) {
   try {
-    const db = locals.runtime.env.DB;
+    const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
+    const db = env.DB;
+    if (!db) {
+      throw new Error('DB binding missing. Ensure Cloudflare Pages has D1 binding "DB".');
+    }
     // Detect actual column names in inventory table
     const info = await db.prepare('PRAGMA table_info(inventory)').all();
     const cols = new Set((info.results || []).map((r) => r.name));
@@ -41,7 +45,11 @@ export async function GET({ locals }) {
 
 export async function PUT({ locals, request }) {
   try {
-    const db = locals.runtime.env.DB;
+    const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
+    const db = env.DB;
+    if (!db) {
+      throw new Error('DB binding missing. Ensure Cloudflare Pages has D1 binding "DB".');
+    }
     const data = await request.json();
 
     // If data is an object (key-value pairs), convert to array format
