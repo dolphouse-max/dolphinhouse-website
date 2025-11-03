@@ -3,12 +3,31 @@
 export async function GET({ locals }) {
   try {
     const db = locals.runtime.env.DB;
-    const { results } = await db.prepare(`
-      SELECT room, label, qty, rateNonAC, rateAC, occupancy, extraPerson
-      FROM inventory
-    `).all();
+    // Detect actual column names in inventory table
+    const info = await db.prepare('PRAGMA table_info(inventory)').all();
+    const cols = new Set((info.results || []).map((r) => r.name));
 
-    return new Response(JSON.stringify(results), {
+    const col = (pref, alt) => (cols.has(pref) ? pref : cols.has(alt) ? alt : pref);
+    const roomCol = col('room', 'room_type');
+    const rateNonACCol = col('rateNonAC', 'rate_non_ac');
+    const rateACCol = col('rateAC', 'rate_ac');
+    const extraPersonCol = col('extraPerson', 'extra_person');
+    const occupancyCol = col('occupancy', 'occupancy');
+    const labelCol = col('label', 'label');
+    const qtyCol = col('qty', 'qty');
+
+    const sql = `SELECT 
+      ${roomCol} AS room,
+      ${labelCol} AS label,
+      ${qtyCol} AS qty,
+      ${rateNonACCol} AS rateNonAC,
+      ${rateACCol} AS rateAC,
+      ${occupancyCol} AS occupancy,
+      ${extraPersonCol} AS extraPerson
+    FROM inventory`;
+    const { results } = await db.prepare(sql).all();
+
+    return new Response(JSON.stringify(results || []), {
       headers: { "Content-Type": "application/json" }
     });
   } catch (err) {
@@ -38,22 +57,34 @@ export async function PUT({ locals, request }) {
       }));
     }
 
-    // Clear old inventory
+    // Detect actual column names in inventory table
+    const info = await db.prepare('PRAGMA table_info(inventory)').all();
+    const cols = new Set((info.results || []).map((r) => r.name));
+    const has = (name) => cols.has(name);
+    const roomCol = has('room') ? 'room' : has('room_type') ? 'room_type' : 'room';
+    const rateNonACCol = has('rateNonAC') ? 'rateNonAC' : has('rate_non_ac') ? 'rate_non_ac' : 'rateNonAC';
+    const rateACCol = has('rateAC') ? 'rateAC' : has('rate_ac') ? 'rate_ac' : 'rateAC';
+    const extraPersonCol = has('extraPerson') ? 'extraPerson' : has('extra_person') ? 'extra_person' : 'extraPerson';
+    const occupancyCol = has('occupancy') ? 'occupancy' : 'occupancy';
+    const labelCol = has('label') ? 'label' : 'label';
+    const qtyCol = has('qty') ? 'qty' : 'qty';
+
+    // Clear old inventory (keep table structure intact)
     await db.prepare("DELETE FROM inventory").run();
 
-    // Insert new data
+    // Insert new data using detected column names
     for (const item of itemsToUpdate) {
       await db.prepare(`
-        INSERT INTO inventory (room_type, label, qty, rate_non_ac, rate_ac, occupancy, extra_person)
+        INSERT INTO inventory (${roomCol}, ${labelCol}, ${qtyCol}, ${rateNonACCol}, ${rateACCol}, ${occupancyCol}, ${extraPersonCol})
         VALUES (?, ?, ?, ?, ?, ?, ?)
       `).bind(
         item.room,
         item.label,
-        item.qty,
-        item.rateNonAC || 0,
-        item.rateAC || 0,
-        item.occupancy || 2,
-        item.extraPerson || 500
+        Number(item.qty ?? 0),
+        Number(item.rateNonAC ?? 0),
+        Number(item.rateAC ?? 0),
+        Number(item.occupancy ?? 2),
+        Number(item.extraPerson ?? 500)
       ).run();
     }
 

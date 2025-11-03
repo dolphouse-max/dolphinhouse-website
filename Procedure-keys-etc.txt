@@ -23,7 +23,7 @@ Remove-Item Env:CF_ACCOUNT_ID -ErrorAction SilentlyContinue
 
 =========================================
 git add .
-git commit -m "seo corrections"
+git commit -m "chatbot icon changed"
 git push
 
 git add src/pages/booking.astro 

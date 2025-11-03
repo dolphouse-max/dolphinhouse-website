@@ -3,6 +3,8 @@ export async function GET({ locals, request }) {
   const db = locals.runtime.env.DB;
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
+  const start = url.searchParams.get("start");
+  const end = url.searchParams.get("end");
 
   try {
     if (id) {
@@ -16,7 +18,28 @@ export async function GET({ locals, request }) {
       });
     }
 
-    // Fetch all bookings
+    // Date-range filtering (optional)
+    if (start || end) {
+      const clauses = [];
+      const values = [];
+      if (start) {
+        clauses.push('date(checkout) > date(?)');
+        values.push(start);
+      }
+      if (end) {
+        // end is exclusive in callers
+        clauses.push('date(checkin) < date(?)');
+        values.push(end);
+      }
+      const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+      const sql = `SELECT id, customer_id, name, email, mobile, room, checkin, checkout, nights, guests, total, status, createdAt FROM bookings ${where} ORDER BY date(checkin) ASC`;
+      const res = await db.prepare(sql).bind(...values).all();
+      return new Response(JSON.stringify(res.results || []), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Fetch all bookings when no range params provided
     const { results } = await db
       .prepare("SELECT * FROM bookings ORDER BY createdAt DESC")
       .all();
