@@ -71,7 +71,7 @@ export async function POST({ locals, request }) {
     const payload = {
       template_id: TEMPLATE_ID,
       mobile: `91${mobile}`,
-      otp,
+      var: otp,
       sender: SENDER_ID
     };
     console.log('📦 OTP Payload:', JSON.stringify(payload));
