@@ -1,3 +1,2 @@
-Cloudflare Pages deploy trigger
-Date: 2025-11-05
-Reason: Trigger redeploy to pick up OTP API changes.
+Triggered deploy at 2025-11-05T00:00:00Z
+Reason: manual trigger to build and deploy via Cloudflare Pages
