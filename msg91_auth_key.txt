@@ -1,0 +1,16 @@
+473324ARxQLJ59B768ecb81bP1
+
+Dear Customer, your OTP for Dolphin House Beach Resort booking is {#var#}. It is valid for 10 minutes. Do not share this OTP with anyone. -Dolphin House Beach Resort
+
+
+DolphinHouse_OTP  ---  Failed by DLT and Pending by MSG91 --- Dear Customer, your OTP for Dolphin House Beach Resort booking is .##var## It is valid for 10 minutes. Do not share this OTP with anyone. -Dolphin House Beach Resort --- 6909f12d2f7734603577f013 
+
+Go to Settings in Meta Business Suite.
+Click Business portfolio info.
+Scroll down to Business options.
+Click the drop-down menu next to Two-factor authentication.
+Select Admins only or Everyone to choose who this requirement applies to. To turn off two-factor authentication requirement, choose No one.	
+
+git add src/layouts/Layout.astro
+git commit -m "Add Facebook domain verification meta tag"
+git push

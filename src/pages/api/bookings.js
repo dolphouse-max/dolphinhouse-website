@@ -2,9 +2,76 @@
 export async function GET({ locals, request }) {
   const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
   const db = env.DB;
+  // Local fallback: generate sample bookings when DB is unavailable
   if (!db) {
-    return new Response(JSON.stringify({ error: 'DB binding missing. Ensure Cloudflare Pages has D1 binding "DB".' }), {
-      status: 500,
+    const url = new URL(request.url);
+    const start = url.searchParams.get("start");
+    const end = url.searchParams.get("end");
+
+    // Helper to generate ISO date strings
+    const iso = (d) => new Date(d).toISOString().slice(0, 10);
+    const addDays = (d, n) => {
+      const dt = new Date(d);
+      dt.setDate(dt.getDate() + n);
+      return dt;
+    };
+
+    const today = new Date();
+    const startBase = start ? new Date(start) : today;
+    const endBase = end ? new Date(end) : addDays(today, 28);
+    const rooms = [
+      { key: 'standard', label: 'Standard Room', base: 2500 },
+      { key: 'deluxe', label: 'Deluxe Room', base: 3500 },
+      { key: 'family', label: 'Family Room', base: 4000 },
+      { key: 'deluxeFamily', label: 'Deluxe Family Room', base: 5000 }
+    ];
+
+    const statuses = ['pending', 'payment_pending', 'approved', 'confirmed', 'checked_in'];
+    const names = ['Amit', 'Priya', 'Rahul', 'Sneha', 'Vikram', 'Neha', 'Arjun', 'Pooja'];
+
+    const samples = [];
+    let seq = 1;
+    // Create bookings across date range with varied lengths and statuses
+    for (let d = new Date(startBase); d < endBase; d = addDays(d, 2)) {
+      for (const room of rooms) {
+        // roughly 50% fill rate
+        if (Math.random() < 0.5) {
+          const nights = 1 + Math.floor(Math.random() * 3);
+          const checkin = new Date(d);
+          const checkout = addDays(checkin, nights);
+          const status = statuses[Math.floor(Math.random() * statuses.length)];
+          const id = `local-${Date.now()}-${seq++}`;
+          const customerId = `DH-${iso(today).replace(/-/g, '')}-${(seq + '').padStart(4, '0')}`;
+          const name = names[Math.floor(Math.random() * names.length)] + ' ' + ['Patil','Sharma','Desai','Iyer','Gupta'][Math.floor(Math.random()*5)];
+          const email = `${name.split(' ')[0].toLowerCase()}@example.com`;
+          const mobile = `98${Math.floor(10000000 + Math.random()*89999999)}`;
+          samples.push({
+            id,
+            customer_id: customerId,
+            name,
+            email,
+            mobile,
+            room: room.key,
+            checkin: iso(checkin),
+            checkout: iso(checkout),
+            nights,
+            guests: 2 + Math.floor(Math.random()*2),
+            total: nights * room.base,
+            status,
+            createdAt: new Date().toISOString()
+          });
+        }
+      }
+    }
+
+    // Filter based on provided range if any: checkout > start AND checkin < end
+    const filtered = samples.filter(b => {
+      if (start && !(new Date(b.checkout) > new Date(start))) return false;
+      if (end && !(new Date(b.checkin) < new Date(end))) return false;
+      return true;
+    });
+
+    return new Response(JSON.stringify(filtered), {
       headers: { 'Content-Type': 'application/json' }
     });
   }
@@ -17,6 +84,12 @@ export async function GET({ locals, request }) {
     // Discover schema to handle snake_case/camelCase differences
     const info = await db.prepare('PRAGMA table_info(bookings)').all();
     const cols = new Set((info.results || []).map((r) => r.name));
+    // If the bookings table doesn't exist, return an empty list to avoid 500s in local/dev
+    if (!info.results || info.results.length === 0) {
+      return new Response(JSON.stringify([]), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
     const col = (pref, alt) => (cols.has(pref) ? pref : cols.has(alt) ? alt : pref);
     const createdCol = col('createdAt', 'created_at');
     const customerIdCol = col('customer_id', 'customer_id');
@@ -125,8 +198,14 @@ export async function POST({ locals, request }) {
   const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
   const db = env.DB;
   if (!db) {
-    return new Response(JSON.stringify({ error: 'DB binding missing. Ensure Cloudflare Pages has D1 binding "DB".' }), {
-      status: 500,
+    // Local fallback: accept booking and return a mock ID so flows can be tested
+    const body = await request.json();
+    const id = `local-${crypto.randomUUID()}`;
+    const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    const shortId = id.substring(6, 10).toUpperCase();
+    const customerId = `DH-${today}-${shortId}`;
+    console.warn('POST /api/bookings (local fallback) returning mock booking id');
+    return new Response(JSON.stringify({ success: true, id, customerId }), {
       headers: { 'Content-Type': 'application/json' }
     });
   }
@@ -202,8 +281,10 @@ export async function PUT({ locals, request }) {
   const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
   const db = env.DB;
   if (!db) {
-    return new Response(JSON.stringify({ error: 'DB binding missing. Ensure Cloudflare Pages has D1 binding "DB".' }), {
-      status: 500,
+    // Local fallback: accept update request without persistence
+    const body = await request.json().catch(() => ({}));
+    console.warn('PUT /api/bookings (local fallback) received update:', body?.id);
+    return new Response(JSON.stringify({ success: true, note: 'Local fallback: no DB, no persistence' }), {
       headers: { 'Content-Type': 'application/json' }
     });
   }

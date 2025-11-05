@@ -45,9 +45,10 @@ import Layout from "../layouts/Layout.astro";
       box.classList.remove('hidden');
     }
 
-    async function fetchBookings() {
+    // Fetch bookings within a date range to reduce data volume
+    async function fetchBookingsRange(startISO, endISO) {
       try {
-        const res = await fetch('/api/bookings');
+        const res = await fetch(`/api/bookings?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
         return await res.json();
       } catch (err) {
@@ -61,7 +62,14 @@ import Layout from "../layouts/Layout.astro";
       try {
         const res = await fetch('/api/inventory');
         if (!res.ok) throw new Error(`Server returned ${res.status}`);
-        return await res.json();
+        const j = await res.json();
+        // Normalize array to object keyed by room for downstream lookups
+        if (Array.isArray(j)) {
+          const obj = {};
+          j.forEach(it => { if (it?.room) obj[it.room] = it; });
+          return obj;
+        }
+        return j;
       } catch (err) {
         console.warn('⚠️ inventory API unavailable:', err);
         showError("Inventory service is temporarily unavailable – using sample data for now.");
@@ -77,22 +85,80 @@ import Layout from "../layouts/Layout.astro";
       return (aStart < bEnd) && (bStart < aEnd);
     }
 
-    function countBooked(bookings, roomType, checkin, checkout) {
-      const inD = new Date(checkin);
-      const outD = new Date(checkout);
+    function isoDate(d) {
+      const dt = (d instanceof Date) ? d : new Date(d);
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth() + 1).padStart(2,'0');
+      const day = String(dt.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function dateRange(startISO, endISO) {
+      // end is exclusive; returns list of YYYY-MM-DD
+      const dates = [];
+      const start = new Date(startISO);
+      const end = new Date(endISO);
+      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+        dates.push(isoDate(d));
+      }
+      return dates;
+    }
+
+    async function fetchOverrides(startISO, endISO) {
+      try {
+        const res = await fetch(`/api/availability-overrides?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
+        if (!res.ok) throw new Error(`Overrides API returned ${res.status}`);
+        const arr = await res.json();
+        // Normalize to map: overrides[room][date] = { available, rateNonAC, rateAC }
+        const map = {};
+        arr.forEach(o => {
+          if (!map[o.room]) map[o.room] = {};
+          map[o.room][o.date] = { available: Number(o.available)||0, rateNonAC: Number(o.rateNonAC)||0, rateAC: Number(o.rateAC)||0 };
+        });
+        return map;
+      } catch (err) {
+        console.warn('⚠️ overrides API unavailable:', err);
+        return {};
+      }
+    }
+
+    function countBookedOnDate(bookings, roomType, dateYMD) {
+      const dayStart = new Date(dateYMD);
+      const dayEnd = new Date(dateYMD); dayEnd.setDate(dayEnd.getDate() + 1);
       let c = 0;
       bookings.forEach(b => {
         if (b.room !== roomType || b.status === 'cancelled') return;
         const bi = new Date(b.checkin), bo = new Date(b.checkout);
-        if (rangesOverlap(inD, outD, bi, bo)) c++;
+        if (rangesOverlap(dayStart, dayEnd, bi, bo)) c++;
       });
       return c;
     }
 
-    function availableRooms(inv, bookings, rt, ci, co) {
-      const total = inv[rt]?.qty || 0;
-      const reserved = countBooked(bookings, rt, ci, co);
-      return Math.max(0, total - reserved);
+    function availableRoomsWithOverrides(inv, overrides, bookings, rt, ci, co) {
+      const dates = dateRange(ci, co);
+      let minAvail = Infinity;
+      dates.forEach(d => {
+        const baseQty = inv[rt]?.qty || 0;
+        const o = (overrides[rt] && overrides[rt][d]) ? overrides[rt][d] : null;
+        const allowed = o && typeof o.available === 'number' && o.available > 0 ? Math.min(baseQty, o.available) : baseQty;
+        const reserved = countBookedOnDate(bookings, rt, d);
+        const avail = Math.max(0, allowed - reserved);
+        minAvail = Math.min(minAvail, avail);
+      });
+      return minAvail === Infinity ? 0 : minAvail;
+    }
+
+    function computeTotalWithOverrides(inv, overrides, rt, type, ci, co) {
+      const dates = dateRange(ci, co);
+      let total = 0;
+      dates.forEach(d => {
+        const o = overrides[rt]?.[d];
+        const defaultRate = type === 'ac' ? (inv[rt]?.rateAC || 0) : (inv[rt]?.rateNonAC || 0);
+        const overrideRate = type === 'ac' ? (o?.rateAC || 0) : (o?.rateNonAC || 0);
+        const rate = overrideRate > 0 ? overrideRate : defaultRate;
+        total += rate;
+      });
+      return total;
     }
 
     const checkBtn = document.getElementById('checkBtn');
@@ -111,17 +177,24 @@ import Layout from "../layouts/Layout.astro";
       }
 
       const inv = await fetchInventory();
-      const bookings = await fetchBookings();
+      const bookings = await fetchBookingsRange(checkin, checkout);
+      const overrides = await fetchOverrides(checkin, checkout);
 
       roomList.innerHTML = '';
       Object.keys(inv).forEach(rt => {
-        const avail = availableRooms(inv, bookings, rt, checkin, checkout);
+        const avail = availableRoomsWithOverrides(inv, overrides, bookings, rt, checkin, checkout);
+        const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
+        const estTotalNonAC = computeTotalWithOverrides(inv, overrides, rt, 'nonac', checkin, checkout);
+        const estTotalAC = computeTotalWithOverrides(inv, overrides, rt, 'ac', checkin, checkout);
+        const avgNonAC = nights > 0 ? Math.round(estTotalNonAC / nights) : (inv[rt]?.rateNonAC || 0);
+        const avgAC = nights > 0 ? Math.round(estTotalAC / nights) : (inv[rt]?.rateAC || 0);
         const div = document.createElement('div');
         div.className = "border p-4 rounded-lg flex justify-between items-center bg-gray-50 hover:bg-white shadow-sm";
         div.innerHTML = `
           <div>
             <div class="text-lg font-semibold">${inv[rt].label}</div>
-            <div class="text-sm text-gray-600">₹${inv[rt].rateNonAC} / night (Non-AC) | ₹${inv[rt].rateAC} / night (AC)</div>
+            <div class="text-sm text-gray-600">Avg for selected dates: ₹${avgNonAC} / night (Non-AC) | ₹${avgAC} / night (AC)</div>
+            <div class="text-xs text-gray-500">Pricing reflects Monthly Availability Editor overrides when present</div>
             <div class="text-sm text-gray-500">Available: ${avail}</div>
           </div>
           <div class="flex gap-2">
@@ -143,9 +216,8 @@ import Layout from "../layouts/Layout.astro";
         btn.addEventListener('click', async () => {
           const rt = btn.dataset.rt;
           const type = btn.dataset.type;
-          const rate = type === "ac" ? inv[rt].rateAC : inv[rt].rateNonAC;
+          const total = computeTotalWithOverrides(inv, overrides, rt, type, checkin, checkout);
           const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
-          const total = nights * rate;
 
           try {
             // Create booking WITHOUT name/email
@@ -184,10 +256,10 @@ import Layout from "../layouts/Layout.astro";
                 checkin,
                 checkout,
                 guests: guests.toString(),
-                nights: nights.toString(),
-                total: total.toString()
-              });
-              window.location.href = `/pay?${params.toString()}`;
+              nights: nights.toString(),
+              total: total.toString()
+            });
+            window.location.href = `/pay?${params.toString()}`;
             } else {
               showError('Booking created but no ID returned. Please contact support.');
             }

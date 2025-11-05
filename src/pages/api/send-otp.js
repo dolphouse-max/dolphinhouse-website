@@ -64,83 +64,7 @@ export async function POST({ locals, request }) {
     }
 
     // =============================
-    // Provider: VILPOWER (preferred)
-    // =============================
-    if (VILPOWER_API_KEY && VILPOWER_TEMPLATE_ID_OTP && VILPOWER_SENDER_ID) {
-      if (!VILPOWER_API_URL) {
-        console.error('❌ VILPOWER_API_URL missing');
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'Vilpower API URL not configured',
-          debug: { missing: ['VILPOWER_API_URL'] }
-        }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-
-      try {
-        const payload = {
-          template_id: VILPOWER_TEMPLATE_ID_OTP,
-          sender_id: VILPOWER_SENDER_ID,
-          peid: VILPOWER_PEID || '',
-          to: `91${mobile}`,
-          variables: [otp] // {#var#} = OTP
-        };
-
-        console.log('📦 Vilpower Payload:', JSON.stringify(payload));
-
-        const vpResponse = await fetch(VILPOWER_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            // Adjust header as per Vilpower spec: Bearer or API key header
-            'Authorization': `Bearer ${VILPOWER_API_KEY}`
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const vpResult = await vpResponse.json().catch(() => ({}));
-        console.log('📨 Vilpower Response:', JSON.stringify(vpResult));
-
-        const vpOk = vpResponse.ok || vpResult.success === true || /success/i.test(vpResult.message || '');
-        if (vpOk) {
-          console.log('✅ OTP sent via Vilpower to:', mobile);
-          return new Response(JSON.stringify({ 
-            success: true,
-            message: 'OTP sent successfully',
-            provider: 'vilpower'
-          }), {
-            headers: { 'Content-Type': 'application/json' }
-          });
-        }
-
-        console.error('❌ Vilpower error:', vpResult);
-        return new Response(JSON.stringify({
-          success: false,
-          error: vpResult.message || 'Failed to send OTP via Vilpower',
-          provider: 'vilpower',
-          debug: vpResult
-        }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } catch (vpErr) {
-        console.error('❌ Vilpower request error:', vpErr);
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'Vilpower request failed',
-          provider: 'vilpower',
-          debug: vpErr?.message || String(vpErr)
-        }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-    }
-
-    // =============================
-    // Fallback: MSG91 (if configured)
+    // Provider: MSG91 (preferred, per your setup)
     // =============================
     if (MSG91_AUTH_KEY && MSG91_TEMPLATE_ID) {
       console.log('📤 Calling MSG91 API...');
@@ -186,6 +110,55 @@ export async function POST({ locals, request }) {
           error: result.message || 'Failed to send OTP via MSG91',
           provider: 'msg91',
           debug: { msg91Response: result, status: msg91Response.status }
+        }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    // =============================
+    // Fallback: VILPOWER (only if truly configured)
+    // =============================
+    if (VILPOWER_API_URL && VILPOWER_API_KEY && VILPOWER_TEMPLATE_ID_OTP && VILPOWER_SENDER_ID) {
+      try {
+        const payload = {
+          template_id: VILPOWER_TEMPLATE_ID_OTP,
+          sender_id: VILPOWER_SENDER_ID,
+          peid: VILPOWER_PEID || '',
+          to: `91${mobile}`,
+          variables: [otp]
+        };
+
+        console.log('📦 Vilpower Payload:', JSON.stringify(payload));
+
+        const vpResponse = await fetch(VILPOWER_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${VILPOWER_API_KEY}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const vpResult = await vpResponse.json().catch(() => ({}));
+        console.log('📨 Vilpower Response:', JSON.stringify(vpResult));
+
+        const vpOk = (vpResult.success === true) || /success/i.test(vpResult.message || '');
+        if (vpOk) {
+          console.log('✅ OTP sent via Vilpower to:', mobile);
+          return new Response(JSON.stringify({ success: true, message: 'OTP sent successfully', provider: 'vilpower' }), { headers: { 'Content-Type': 'application/json' } });
+        }
+
+        console.error('❌ Vilpower error:', vpResult);
+        return new Response(JSON.stringify({ success: false, error: vpResult.message || 'Failed to send OTP via Vilpower', provider: 'vilpower', debug: vpResult }), { status: 500, headers: { 'Content-Type': 'application/json' } });
+      } catch (vpErr) {
+        console.error('❌ Vilpower request error:', vpErr);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Vilpower request failed',
+          provider: 'vilpower',
+          debug: vpErr?.message || String(vpErr)
         }), {
           status: 500,
           headers: { 'Content-Type': 'application/json' }

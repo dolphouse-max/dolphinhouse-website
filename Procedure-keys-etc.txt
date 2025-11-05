@@ -1,3 +1,16 @@
+VILPOWER
+
+- VILPOWER_TEMPLATE_ID_OTP : 1107176121900123714
+- VILPOWER_SENDER_ID : DLHNOS 
+- VILPOWER_PEID : 1101212580000089778
+- VILPOWER_API_URL:  https://api.msg91.com/api/v5/otp
+- VILPOWER_API_KEY : 473324ARxQLJ59B768ecb81bP1 ( This is actually Msg91 API key)
+-MSG91 TEMPLATE ID: 6909643a168ec212790d17c8  (Not yet approved but we can continue our work)
+
+- MSG91 fallback values:
+- MSG91_AUTH_KEY : 473324ARxQLJ59B768ecb81bP1
+- MSG91_TEMPLATE_ID : 68ee3244b19fba0551555855
+====================================================================
 Username: admin Password: dolphin2023
 Account ID:  e8e9c4e8cbb5cd7137842f51149f8b10
 ==============================================================================

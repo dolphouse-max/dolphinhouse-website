@@ -97,14 +97,27 @@ if (!authenticated) {
     <!-- Room Inventory Cards -->
     <div id="inventoryGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10"></div>
 
-    <!-- Chart Section -->
-    <section class="bg-white p-6 rounded-lg shadow mb-8">
+    <!-- Chart Section (hidden per request) -->
+    <section class="bg-white p-6 rounded-lg shadow mb-8 hidden">
       <h2 class="text-xl font-semibold mb-4">Occupancy Chart</h2>
       <canvas id="occupancyChart" height="120"></canvas>
     </section>
 
-    <!-- Room Inventory Table -->
+    <!-- Monthly Availability Editor -->
     <section class="bg-white p-6 rounded-lg shadow mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">Monthly Availability Editor</h3>
+        <div class="flex items-center gap-2">
+          <input id="monthPicker" type="month" class="border px-2 py-1 rounded" />
+          <button id="loadMonthBtn" class="px-3 py-1 border rounded">Load Month</button>
+          <button id="saveOverridesBtn" class="px-3 py-1 bg-sky-600 text-white rounded">Save Changes</button>
+        </div>
+      </div>
+      <div id="monthGrid" class="overflow-x-auto"></div>
+    </section>
+
+    <!-- Room Inventory Table (hidden per request) -->
+    <section class="bg-white p-6 rounded-lg shadow mb-8 hidden">
       <h3 class="text-lg font-semibold mb-4">Room Inventory</h3>
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -128,8 +141,8 @@ if (!authenticated) {
       </div>
     </section>
 
-    <!-- Availability Calendar -->
-    <section class="bg-white p-6 rounded-lg shadow">
+    <!-- Availability Calendar (hidden per request) -->
+    <section class="bg-white p-6 rounded-lg shadow hidden">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-lg font-semibold">Availability Calendar</h3>
         <div class="flex items-center gap-2">
@@ -252,7 +265,17 @@ if (!authenticated) {
       try {
         const res = await fetch('/api/inventory');
         if (!res.ok) throw new Error('inventory API not available');
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        if (!ct.includes('application/json')) {
+          throw new Error('inventory API returned non-JSON');
+        }
         const data = await res.json();
+        // Normalize array response to object keyed by room
+        if (Array.isArray(data)) {
+          const obj = {};
+          data.forEach(it => { if (it?.room) obj[it.room] = it; });
+          return obj;
+        }
         if (data && typeof data === 'object') return data;
       } catch (err) {
         console.warn('inventory API error, using defaults:', err.message);
@@ -310,6 +333,7 @@ if (!authenticated) {
     async function loadInventory() {
       inventory = await fetchInventoryAPI();
       renderInventory();
+      renderInventoryTable();
     }
 
     async function saveInventory() {
@@ -386,6 +410,83 @@ if (!authenticated) {
       } catch (err) {
         console.error('Chart error:', err);
         alert('Failed to load chart.');
+      }
+    }
+
+    // ===== Monthly Availability Editor =====
+    function daysInMonth(year, month) { return new Date(year, month, 0).getDate(); }
+    function dateString(y, m, d) { const mm = String(m).padStart(2,'0'); const dd = String(d).padStart(2,'0'); return `${y}-${mm}-${dd}`; }
+    async function loadOverrides(start, end) {
+      try { const res = await fetch(`/api/availability-overrides?start=${start}&end=${end}`); if (!res.ok) throw new Error('Failed to load overrides'); return await res.json(); }
+      catch (e) { console.warn('Overrides load failed', e); return []; }
+    }
+    function mapOverrides(list) {
+      const m = {};
+      for (const it of list) {
+        m[`${it.room}|${it.date}`] = {
+          available: Number(it.available) || 0,
+          rateNonAC: Number(it.rateNonAC ?? NaN),
+          rateAC: Number(it.rateAC ?? NaN)
+        };
+      }
+      return m;
+    }
+    function bookedCountsForDate(bookings, date, inventoryLocal) {
+      const counts = {}; Object.keys(inventoryLocal).forEach(k => counts[k] = 0);
+      bookings.forEach(b => { if (b.status === 'cancelled') return; const ci = parseYMD(b.checkin); const co = parseYMD(b.checkout); const dd = parseYMD(date); if (dd >= ci && dd < co) { counts[b.room] = (counts[b.room]||0) + 1; } });
+      return counts;
+    }
+    function buildMonthGrid(inventoryLocal, bookings, overridesMap, year, month) {
+      const container = document.getElementById('monthGrid'); if (!container) return; const dcount = daysInMonth(year, month);
+      const rooms = Object.keys(inventoryLocal).map(k => ({ key: k, label: inventoryLocal[k].label, qty: Number(inventoryLocal[k].qty)||0 }));
+      let html = '<div class="overflow-x-auto"><table class="min-w-full border-collapse"><thead><tr><th class="px-2 py-1 text-left border">Room Type</th>';
+      for (let d=1; d<=dcount; d++) html += `<th class="px-1 py-1 border text-xs">${d}</th>`; html += '</tr></thead><tbody>';
+      for (const room of rooms) { html += `<tr><td class="px-2 py-1 border text-sm font-medium">${room.label}</td>`;
+        for (let d=1; d<=dcount; d++) {
+          const date = dateString(year, month, d);
+          const booked = bookedCountsForDate(bookings, date, inventoryLocal)[room.key] || 0;
+          const computedAvailable = Math.max(0, room.qty - booked);
+          const key = `${room.key}|${date}`;
+          const ov = overridesMap[key] || {};
+          const availVal = (ov.available !== undefined) ? Math.min(computedAvailable, Math.max(0, Number(ov.available))) : computedAvailable;
+          const rateN = isNaN(ov.rateNonAC) ? (Number(inventoryLocal[room.key].rateNonAC)||0) : Number(ov.rateNonAC);
+          const rateA = isNaN(ov.rateAC) ? (Number(inventoryLocal[room.key].rateAC)||0) : Number(ov.rateAC);
+          const bg = (availVal>0) ? '#dcfce7' : '#fee2e2';
+          html += `<td class="border px-1 py-1 text-center monthCell" data-room="${room.key}" data-date="${date}" style="background:${bg}">`
+            + `<input type=\"number\" class=\"availInput border rounded px-1 py-0.5 text-xs w-14 mr-1\" data-room=\"${room.key}\" data-date=\"${date}\" min=\"0\" max=\"${computedAvailable}\" value=\"${availVal}\" />`
+            + `<input type=\"number\" class=\"rateNonACInput border rounded px-1 py-0.5 text-xs w-16 mr-1\" placeholder=\"Non-AC\" value=\"${rateN}\" />`
+            + `<input type=\"number\" class=\"rateACInput border rounded px-1 py-0.5 text-xs w-16\" placeholder=\"AC\" value=\"${rateA}\" />`
+            + `<div class=\"text-[10px] text-gray-600\">${booked}/${room.qty}</div>`
+            + `</td>`;
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table></div>'; container.innerHTML = html;
+    }
+    async function renderMonthEditor(inventoryLocal, bookings) {
+      const picker = document.getElementById('monthPicker'); const now = new Date(); const defaultMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; if (!picker.value) picker.value = defaultMonth; const [yStr, mStr] = picker.value.split('-'); const year = Number(yStr); const month = Number(mStr); const dcount = daysInMonth(year, month); const start = `${picker.value}-01`; const end = dateString(year, month, dcount + 1); const overrides = await loadOverrides(start, end); const overridesMap = mapOverrides(overrides); buildMonthGrid(inventoryLocal, bookings, overridesMap, year, month);
+    }
+    async function saveOverrides() {
+      const cells = Array.from(document.querySelectorAll('.monthCell'));
+      const payload = cells.map(cell => ({
+        room: cell.dataset.room,
+        date: cell.dataset.date,
+        available: Number(cell.querySelector('.availInput')?.value) || 0,
+        rateNonAC: Number(cell.querySelector('.rateNonACInput')?.value) || 0,
+        rateAC: Number(cell.querySelector('.rateACInput')?.value) || 0
+      }));
+      try {
+        const res = await fetch('/api/availability-overrides', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ overrides: payload })
+        });
+        if (!res.ok) throw new Error('Save failed');
+        const j = await res.json();
+        alert(`Saved ${j.updated || 0} cells`);
+      } catch (e) {
+        console.error('saveOverrides error', e);
+        alert('Failed to save changes.');
       }
     }
 
@@ -523,7 +624,7 @@ if (!authenticated) {
     // ---------- Initial load and bindings ----------
     saveBtn.addEventListener('click', saveInventory);
     refreshBtn.addEventListener('click', loadInventory);
-    loadChartBtn.addEventListener('click', loadChart);
+    if (loadChartBtn && chartCanvas) { loadChartBtn.addEventListener('click', loadChart); }
     
     // Room modal events
      addRoomBtn.addEventListener('click', () => {
@@ -555,7 +656,7 @@ if (!authenticated) {
        
        modalTitle.textContent = 'Edit Room';
        editModeInput.value = 'true';
-       roomIdInput.value = room.room;
+       roomIdInput.value = roomId;
        roomIdInput.disabled = true;
        document.getElementById('roomLabel').value = room.label;
        document.getElementById('roomQty').value = room.qty;
@@ -609,8 +710,14 @@ if (!authenticated) {
          });
          
          if (!response.ok) {
-           const error = await response.json();
-           throw new Error(error.error || 'Failed to save room');
+           const ct = (response.headers.get('content-type') || '').toLowerCase();
+           if (ct.includes('application/json')) {
+             const error = await response.json();
+             throw new Error(error.error || 'Failed to save room');
+           } else {
+             const text = await response.text();
+             throw new Error(text || 'Failed to save room');
+           }
          }
          
          roomModal.classList.add('hidden');
@@ -622,13 +729,82 @@ if (!authenticated) {
        }
      });
 
+    // Render inventory table rows from current inventory
+    function renderInventoryTable() {
+      const tbody = inventoryTable;
+      tbody.innerHTML = '';
+      const keys = Object.keys(inventory);
+      if (keys.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">No rooms found.</td></tr>';
+        return;
+      }
+      keys.forEach((key) => {
+        const r = inventory[key];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${key}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${r.label}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${r.qty}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${r.rateNonAC}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${r.rateAC}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <button class="edit-room-btn text-indigo-600 hover:text-indigo-900" data-room="${key}">Edit</button>
+            <button class="delete-room-btn text-red-600 hover:text-red-800 ml-3" data-room="${key}">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Unified refresh helper: reload data and refresh UI sections
+    async function loadData() {
+      inventory = await fetchInventoryAPI();
+      renderInventory();
+      if (inventoryTable) renderInventoryTable();
+      if (calendarGrid) await loadAndRenderCalendar();
+    }
+
     // load inventory then calendar
     await loadInventory();
     // set dateSelect default to today
     dateSelect.value = isoDate(new Date());
-    // initial chart (if date is selected)
+    // initial chart (auto render)
+    if (chartCanvas) { await loadChart(); }
     // initial calendar
-    await loadAndRenderCalendar();
+    if (calendarGrid) { await loadAndRenderCalendar(); }
+
+    // Initial render for monthly editor
+    try {
+      const now = new Date();
+      const startISO = isoDate(new Date(now.getFullYear(), now.getMonth(), 1));
+      const endISO = isoDate(new Date(now.getFullYear(), now.getMonth()+1, 1));
+      const bookingsMonth = await fetchBookingsRange(startISO, endISO);
+      await renderMonthEditor(inventory, bookingsMonth);
+    } catch (e) {
+      console.warn('Initial month editor render failed', e);
+    }
+
+    // Hide old chart controls since chart was replaced
+    document.getElementById('loadChartBtn')?.closest('div')?.classList.add('hidden');
+    document.getElementById('dateSelect')?.closest('div')?.classList.add('hidden');
+    document.getElementById('chartRange')?.closest('div')?.classList.add('hidden');
+
+    // Wire month editor buttons
+    document.getElementById('loadMonthBtn')?.addEventListener('click', async () => {
+      try {
+        const picker = document.getElementById('monthPicker');
+        const [yStr, mStr] = picker.value.split('-');
+        const year = Number(yStr); const month = Number(mStr);
+        const startISO = isoDate(new Date(year, month - 1, 1));
+        const endISO = isoDate(new Date(year, month, 1));
+        const bookings = await fetchBookingsRange(startISO, endISO);
+        await renderMonthEditor(inventory, bookings);
+      } catch (e) {
+        console.error('Load month failed', e);
+        alert('Failed to load month data');
+      }
+    });
+    document.getElementById('saveOverridesBtn')?.addEventListener('click', saveOverrides);
 
   })();
   </script>

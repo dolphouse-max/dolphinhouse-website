@@ -337,23 +337,45 @@ if (!authenticated) {
 
     async function loadData() {
       try {
-        const [bRes, iRes] = await Promise.all([
+        const [bRes, iRes] = await Promise.allSettled([
           fetch('/api/bookings'),
           fetch('/api/inventory')
         ]);
-        
-        if (!bRes.ok || !iRes.ok) {
-          throw new Error('Failed to fetch data');
+
+        // bookings
+        if (bRes.status === 'fulfilled' && bRes.value.ok) {
+          bookings = await bRes.value.json();
+        } else {
+          console.warn('bookings API failed – using sample data');
+          const today = new Date();
+          const iso = (d) => new Date(d).toISOString().slice(0,10);
+          const addDays = (d,n)=>{const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt;};
+          bookings = [
+            { id: 'local-1', customer_id: 'DH-'+iso(today).replace(/-/g,'')+'-0001', name: 'Amit Sharma', email: 'amit@example.com', mobile: '9812345678', room: 'standard', checkin: iso(today), checkout: iso(addDays(today,2)), nights: 2, guests: 2, total: 5000, status: 'pending', createdAt: new Date().toISOString() },
+            { id: 'local-2', customer_id: 'DH-'+iso(today).replace(/-/g,'')+'-0002', name: 'Neha Desai', email: 'neha@example.com', mobile: '9876543210', room: 'deluxe', checkin: iso(addDays(today,1)), checkout: iso(addDays(today,3)), nights: 2, guests: 3, total: 7000, status: 'approved', createdAt: new Date().toISOString() }
+          ];
         }
-        
-        bookings = await bRes.json();
-        const invArr = await iRes.json();
-        
-        // Convert inventory array to object for easy lookup
-        inventory = {};
-        invArr.forEach(item => {
-          inventory[item.room] = item;
-        });
+
+        // inventory
+        let invPayload = {};
+        if (iRes.status === 'fulfilled' && iRes.value.ok) {
+          const j = await iRes.value.json();
+          if (Array.isArray(j)) {
+            j.forEach(it => { if (it?.room) invPayload[it.room] = it; });
+          } else if (j && typeof j === 'object') {
+            invPayload = j;
+          }
+        } else {
+          console.warn('inventory API failed – using defaults');
+          invPayload = {
+            standard: { label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500 },
+            deluxe: { label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500 },
+            family: { label: 'Family Room', qty: 1, rateNonAC: 3500, rateAC: 4000 },
+            deluxeFamily: { label: 'Deluxe Family Room', qty: 1, rateNonAC: 4500, rateAC: 5000 }
+          };
+        }
+
+        inventory = invPayload;
         
         // Populate room filter dropdown
         populateRoomFilter();
@@ -369,7 +391,18 @@ if (!authenticated) {
         renderChart();
       } catch (error) {
         console.error('Error loading data:', error);
-        alert('Failed to load data. Please try again.');
+        alert('Failed to load data from APIs; showing sample data.');
+        // As a last resort, ensure basic defaults are present
+        inventory = inventory && Object.keys(inventory).length ? inventory : {
+          standard: { label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500 },
+          deluxe: { label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500 }
+        };
+        bookings = Array.isArray(bookings) ? bookings : [];
+        populateRoomFilter();
+        updatePendingCount();
+        totalBookingsSpan.textContent = bookings.length;
+        applyFilters();
+        renderChart();
       }
     }
     

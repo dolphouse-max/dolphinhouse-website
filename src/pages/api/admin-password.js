@@ -23,13 +23,14 @@ async function ensureTable(db) {
   ).run();
 }
 
-function validateSessionCookie(raw, secret) {
+async function validateSessionCookie(raw, secret) {
   if (!raw) return false;
   const parts = String(raw).split('.');
   if (parts.length !== 2) return false;
   const [loginId, sig] = parts;
   if (loginId !== 'owner') return false;
-  return true;
+  const expectedSig = await hmacHex(secret, loginId);
+  return sig === expectedSig;
 }
 
 export const POST = async ({ request, cookies, locals }) => {
@@ -44,8 +45,8 @@ export const POST = async ({ request, cookies, locals }) => {
     const secret = locals?.runtime?.env?.SESSION_SECRET || 'dev-secret';
     const db = locals?.runtime?.env?.DB;
 
-    const raw = cookies.get('admin_session');
-    if (!validateSessionCookie(raw, secret)) {
+    const raw = cookies.get('admin_session')?.value;
+    if (!(await validateSessionCookie(raw, secret))) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers });
     }
 

@@ -60,7 +60,16 @@ if (!ok) {
     async function fetchInventory(){
       try {
         const res = await fetch('/api/inventory');
-        if(res.ok){ const j = await res.json(); return j; }
+        if(res.ok){
+          const j = await res.json();
+          // Normalize array response to object keyed by room
+          if (Array.isArray(j)) {
+            const obj = {};
+            j.forEach(it => { if (it?.room) obj[it.room] = it; });
+            return obj;
+          }
+          return j;
+        }
       } catch(e){}
       return {
         "standard": { label: "Standard Room", qty: 5 },

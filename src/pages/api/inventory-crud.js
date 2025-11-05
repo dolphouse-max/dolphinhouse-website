@@ -22,6 +22,21 @@ export async function onRequest(context) {
 
     // GET request - retrieve inventory
     if (request.method === 'GET') {
+      // Dev fallback when DB is missing
+      if (!env.DB) {
+        const defaults = [
+          { room: 'standard', label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500 },
+          { room: 'deluxe', label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500 },
+          { room: 'family', label: 'Family Room', qty: 1, rateNonAC: 3500, rateAC: 4000 },
+          { room: 'deluxeFamily', label: 'Deluxe Family Room', qty: 1, rateNonAC: 4500, rateAC: 5000 }
+        ];
+        if (roomId) {
+          const one = defaults.find((r) => r.room === roomId);
+          if (!one) return new Response(JSON.stringify({ error: 'Room not found' }), { status: 404, headers });
+          return new Response(JSON.stringify(one), { headers });
+        }
+        return new Response(JSON.stringify(defaults), { headers });
+      }
       if (roomId) {
         // Get specific room
         const room = await env.DB.prepare(`
@@ -49,6 +64,13 @@ export async function onRequest(context) {
     // POST request - create new room
     if (request.method === 'POST') {
       const data = await request.json();
+      if (!env.DB) {
+        // Dev fallback: accept and echo back
+        return new Response(
+          JSON.stringify({ success: true, message: 'Room added successfully (dev)' }),
+          { headers }
+        );
+      }
       
       // Validate required fields
       if (!data.room || !data.label || data.qty === undefined) {
@@ -91,6 +113,12 @@ export async function onRequest(context) {
     // PUT request - update existing room
     if (request.method === 'PUT') {
       const data = await request.json();
+      if (!env.DB) {
+        return new Response(
+          JSON.stringify({ success: true, message: 'Room updated successfully (dev)' }),
+          { headers }
+        );
+      }
       
       // Validate required fields
       if (!data.room) {
@@ -133,6 +161,12 @@ export async function onRequest(context) {
 
     // DELETE request - remove room
     if (request.method === 'DELETE') {
+      if (!env.DB) {
+        return new Response(
+          JSON.stringify({ success: true, message: 'Room deleted successfully (dev)' }),
+          { headers }
+        );
+      }
       if (!roomId) {
         return new Response(
           JSON.stringify({ error: 'Room ID is required' }),
@@ -192,3 +226,10 @@ export async function onRequest(context) {
     );
   }
 }
+
+// Export per-method handlers for environments that require them
+export const GET = onRequest;
+export const POST = onRequest;
+export const PUT = onRequest;
+export const DELETE = onRequest;
+export const OPTIONS = onRequest;

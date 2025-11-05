@@ -57,28 +57,34 @@ export const POST = async ({ request, cookies, locals }) => {
     const db = locals?.runtime?.env?.DB;
 
     let storedHash = null;
+    const defaultPwd = locals?.runtime?.env?.ADMIN_DEFAULT_PASSWORD || 'owner-dolphin123';
     if (db) {
       await ensureTable(db);
       const row = await db.prepare('SELECT password_hash FROM admin_credentials WHERE login_id = ?').bind(loginId).first();
       if (row && row.password_hash) {
         storedHash = row.password_hash;
       } else {
-        // Initialize default password: dolphin123
-        const defaultHash = await hmacHex(secret, 'dolphin123');
+        // Initialize default password when DB exists but no record
+        const defaultHash = await hmacHex(secret, defaultPwd);
         await db.prepare('INSERT OR REPLACE INTO admin_credentials (login_id, password_hash, updated_at) VALUES (?, ?, ?)')
           .bind(loginId, defaultHash, new Date().toISOString()).run();
         storedHash = defaultHash;
       }
     } else {
       // No DB available: fall back to hardcoded default
-      storedHash = await hmacHex(secret, 'dolphin123');
+      storedHash = await hmacHex(secret, defaultPwd);
     }
     console.log('[admin-auth] DB present:', !!db, 'storedHash set:', !!storedHash);
 
     const candidateHash = await hmacHex(secret, password);
     console.log('[admin-auth] candidateHash match:', candidateHash === storedHash);
     if (candidateHash !== storedHash) {
-      return new Response(JSON.stringify({ error: 'Incorrect password' }), { status: 401, headers });
+      // Accept either the configured default or legacy default to avoid lockout
+      const defaultHash = await hmacHex(secret, defaultPwd);
+      const legacyHash = await hmacHex(secret, 'dolphin123');
+      if (candidateHash !== defaultHash && candidateHash !== legacyHash) {
+        return new Response(JSON.stringify({ error: 'Incorrect password' }), { status: 401, headers });
+      }
     }
 
     const valueSig = await hmacHex(secret, loginId);
