@@ -75,6 +75,9 @@ export async function POST({ locals, request }) {
       sender: SENDER_ID
     };
     console.log('📦 OTP Payload:', JSON.stringify(payload));
+    console.log('Using template_id:', (TEMPLATE_ID||'').slice(0,4)+'…'+(TEMPLATE_ID||'').slice(-4));
+    console.log('API URL:', API_URL);
+
 
     const resp = await fetch(API_URL, {
       method: 'POST',

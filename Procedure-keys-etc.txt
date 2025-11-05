@@ -1,16 +1,46 @@
-VILPOWER
+MSG91 Authkey: Found in your MSG91 account under API settings, this is a static key for authentication.
+Sender ID: An approved Sender ID registered on both the DLT platform (like Vilpower) and your MSG91 account.
+DLT Entity ID: Your unique identification number assigned by the DLT platform after you register your business entity.
+DLT Template ID: A
 
-- VILPOWER_TEMPLATE_ID_OTP : 1107176121900123714
-- VILPOWER_SENDER_ID : DLHNOS 
-- VILPOWER_PEID : 1101212580000089778
-- VILPOWER_API_URL:  https://api.msg91.com/api/v5/otp
+VILPOWER
+MSG91_AUTH_KEY : 473324ARxQLJ59B768ecb81bP1
+VILPOWER_TEMPLATE_ID_OTP : 1107176123434997840
+VILPOWER_SENDER_ID : DLHNOS 
+VILPOWER_PEID : 1101212580000089778  
+VILPOWER_API_URL:  https://api.msg91.com/api/v5/otp
+
 - VILPOWER_API_KEY : 473324ARxQLJ59B768ecb81bP1 ( This is actually Msg91 API key)
--MSG91 TEMPLATE ID: 6909643a168ec212790d17c8  (Not yet approved but we can continue our work)
+-MSG91 TEMPLATE ID: 690ae3bf3debf520f86fd515  
 
 - MSG91 fallback values:
 - MSG91_AUTH_KEY : 473324ARxQLJ59B768ecb81bP1
-- MSG91_TEMPLATE_ID : 68ee3244b19fba0551555855
+- MSG91_TEMPLATE_ID : 690ae3bf3debf520f86fd515 
 ====================================================================
+OTP Widget
+
+
+  const url = new URL(
+    'https://control.msg91.com/api/v5/widget/verifyAccessToken'
+  );
+  let headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+  };
+
+  let body = {
+  "authkey": "473324ARxQLJ59B768ecb81bP1",
+  "access-token": "{jwt_token_from_otp_widget}"
+}
+  fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body:  JSON.stringify(body)
+  })
+  .then(response => response.json())
+  .then(json => console.log(json));
+===============================================================
+
 Username: admin Password: dolphin2023
 Account ID:  e8e9c4e8cbb5cd7137842f51149f8b10
 ==============================================================================
@@ -36,7 +66,7 @@ Remove-Item Env:CF_ACCOUNT_ID -ErrorAction SilentlyContinue
 
 =========================================
 git add .
-git commit -m "chatbot icon changed"
+git commit -m "Fix: Vilpower url changed"
 git push
 
 git add src/pages/booking.astro 
