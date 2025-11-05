@@ -46,4 +46,4 @@ VILPOWER_PEID = "1101212580000089778"
 VILPOWER_API_URL = "https://control.msg91.com/api/v5/otp"       # Using MSG91 OTP endpoint via Vilpower vars
 
 MSG91_AUTH_KEY = "473324ARxQLJ59B768ecb81bP1"
-MSG91_TEMPLATE_ID = "690ae3bf3debf520f86fd515"                     # DLT OTP template
+MSG91_TEMPLATE_ID = "68ee3244b19fba0551555855"                     # DLT OTP template
