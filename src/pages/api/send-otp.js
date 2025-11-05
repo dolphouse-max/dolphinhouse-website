@@ -1,15 +1,11 @@
 // src/pages/api/send-otp.js
 export async function POST({ locals, request }) {
-  // Prefer Vilpower when configured; fallback to MSG91; else test mode.
-  const VILPOWER_API_URL = locals.runtime.env.VILPOWER_API_URL; // e.g., https://api.vilpower.in/v1/sms/send
-  const VILPOWER_API_KEY = locals.runtime.env.VILPOWER_API_KEY; // secret key/token
-  const VILPOWER_TEMPLATE_ID_OTP = locals.runtime.env.VILPOWER_TEMPLATE_ID_OTP || '1107176121900123714'; // OTP_DolphinHouse
-  const VILPOWER_SENDER_ID = locals.runtime.env.VILPOWER_SENDER_ID || 'DLHNOS';
-  const VILPOWER_PEID = locals.runtime.env.VILPOWER_PEID; // Principal Entity ID
+  // Simplified: use MSG91 OTP endpoint with DLT template ID only.
+  const API_URL = locals.runtime.env.VILPOWER_API_URL; // expected: https://api.msg91.com/api/v5/otp
+  const AUTH_KEY = locals.runtime.env.MSG91_AUTH_KEY;  // MSG91 auth key
+  const TEMPLATE_ID = locals.runtime.env.VILPOWER_TEMPLATE_ID_OTP; // DLT template ID for OTP
+  const SENDER_ID = locals.runtime.env.VILPOWER_SENDER_ID;
 
-  const MSG91_AUTH_KEY = locals.runtime.env.MSG91_AUTH_KEY;
-  const MSG91_TEMPLATE_ID = locals.runtime.env.MSG91_TEMPLATE_ID;
-  
   // KV fallback for local/dev when OTP_STORE binding is missing
   const KV = locals.runtime.env?.OTP_STORE;
   const memoryStore = (() => {
@@ -64,107 +60,50 @@ export async function POST({ locals, request }) {
     }
 
     // =============================
-    // Provider: MSG91 (preferred, per your setup)
+    // Send via MSG91 OTP using DLT template ID
     // =============================
-    if (MSG91_AUTH_KEY && MSG91_TEMPLATE_ID) {
-      console.log('📤 Calling MSG91 API...');
-      const msg91Url = `https://control.msg91.com/api/v5/otp`;
-      const msg91Payload = {
-        template_id: MSG91_TEMPLATE_ID,
-        mobile: `91${mobile}`,
-        otp: otp
-      };
-      
-      console.log('📦 MSG91 Payload:', JSON.stringify(msg91Payload));
-
-      const msg91Response = await fetch(msg91Url, {
-        method: 'POST',
-        headers: {
-          'authkey': MSG91_AUTH_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(msg91Payload)
-      });
-
-      console.log('📡 MSG91 Status:', msg91Response.status);
-      const result = await msg91Response.json().catch(() => ({}));
-      console.log('📨 MSG91 Response:', JSON.stringify(result));
-      
-      const isSuccess = msg91Response.ok || 
-                       result.type === 'success' || 
-                       (result.message && /success/i.test(result.message));
-      
-      if (isSuccess) {
-        console.log('✅ OTP sent via MSG91 to:', mobile);
-        return new Response(JSON.stringify({ 
-          success: true,
-          message: 'OTP sent successfully',
-          provider: 'msg91'
-        }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } else {
-        console.error('❌ MSG91 returned error:', result);
-        return new Response(JSON.stringify({ 
-          success: false,
-          error: result.message || 'Failed to send OTP via MSG91',
-          provider: 'msg91',
-          debug: { msg91Response: result, status: msg91Response.status }
-        }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
+    if (!API_URL || !AUTH_KEY || !TEMPLATE_ID) {
+      console.error('❌ Missing configuration for OTP send:', { hasApiUrl: !!API_URL, hasAuth: !!AUTH_KEY, hasTemplate: !!TEMPLATE_ID });
+      return new Response(JSON.stringify({ success: false, error: 'OTP provider not configured' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
 
-    // =============================
-    // Fallback: VILPOWER (only if truly configured)
-    // =============================
-    if (VILPOWER_API_URL && VILPOWER_API_KEY && VILPOWER_TEMPLATE_ID_OTP && VILPOWER_SENDER_ID) {
-      try {
-        const payload = {
-          template_id: VILPOWER_TEMPLATE_ID_OTP,
-          sender_id: VILPOWER_SENDER_ID,
-          peid: VILPOWER_PEID || '',
-          to: `91${mobile}`,
-          variables: [otp]
-        };
+    console.log('📤 Calling MSG91 OTP API...');
+    const payload = {
+      template_id: TEMPLATE_ID,
+      mobile: `91${mobile}`,
+      otp,
+      sender: SENDER_ID
+    };
+    console.log('📦 OTP Payload:', JSON.stringify(payload));
 
-        console.log('📦 Vilpower Payload:', JSON.stringify(payload));
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'authkey': AUTH_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
 
-        const vpResponse = await fetch(VILPOWER_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${VILPOWER_API_KEY}`
-          },
-          body: JSON.stringify(payload)
-        });
-
-        const vpResult = await vpResponse.json().catch(() => ({}));
-        console.log('📨 Vilpower Response:', JSON.stringify(vpResult));
-
-        const vpOk = (vpResult.success === true) || /success/i.test(vpResult.message || '');
-        if (vpOk) {
-          console.log('✅ OTP sent via Vilpower to:', mobile);
-          return new Response(JSON.stringify({ success: true, message: 'OTP sent successfully', provider: 'vilpower' }), { headers: { 'Content-Type': 'application/json' } });
-        }
-
-        console.error('❌ Vilpower error:', vpResult);
-        return new Response(JSON.stringify({ success: false, error: vpResult.message || 'Failed to send OTP via Vilpower', provider: 'vilpower', debug: vpResult }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-      } catch (vpErr) {
-        console.error('❌ Vilpower request error:', vpErr);
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'Vilpower request failed',
-          provider: 'vilpower',
-          debug: vpErr?.message || String(vpErr)
-        }), {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
+    console.log('📡 OTP Status:', resp.status);
+    let data = {};
+    try {
+      data = await resp.json();
+    } catch (_jsonErr) {
+      const text = await resp.text().catch(() => '');
+      data = { raw: text };
     }
+    console.log('📨 OTP Response:', JSON.stringify(data));
+
+    const ok = resp.ok || data.type === 'success' || /success/i.test(data.message || '');
+    if (ok) {
+      console.log('✅ OTP sent via MSG91 to:', mobile);
+      return new Response(JSON.stringify({ success: true, message: 'OTP sent successfully', provider: 'msg91' }), { headers: { 'Content-Type': 'application/json' } });
+    }
+
+    console.error('❌ OTP send failed:', data);
+    return new Response(JSON.stringify({ success: false, error: data.message || 'Failed to send OTP', provider: 'msg91', debug: { status: resp.status, response: data } }), { status: 500, headers: { 'Content-Type': 'application/json' } });
 
     // =============================
     // Last resort: Test mode

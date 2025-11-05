@@ -40,12 +40,10 @@ binding = "AI"
 [vars]
 EMAIL_FROM = "contact@dolphinhouse-alibaug.com"
 USE_CLOUDFLARE_REPLY = "0"   # set to "1" to use message.reply(...)
-VILPOWER_TEMPLATE_ID_OTP = "1107176121900123714"
+VILPOWER_TEMPLATE_ID_OTP = "1107176123434997840"
 VILPOWER_SENDER_ID = "DLHNOS"
 VILPOWER_PEID = "1101212580000089778"
 VILPOWER_API_URL = "https://api.msg91.com/api/v5/otp"       # Using MSG91 OTP endpoint via Vilpower vars
-VILPOWER_API_KEY = "473324ARxQLJ59B768ecb81bP1"             # MSG91 key used for OTP
 
-# MSG91 fallback configuration
 MSG91_AUTH_KEY = "473324ARxQLJ59B768ecb81bP1"
-MSG91_TEMPLATE_ID = "690ae3bf3debf520f86fd515"              # Verified
+MSG91_TEMPLATE_ID = "690ae3bf3debf520f86fd515"                     # DLT OTP template
