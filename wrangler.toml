@@ -9,7 +9,6 @@ pages_build_output_dir = "./dist"
 
 # Runtime compatibility for Pages Functions
 compatibility_date = "2025-10-25"
-compatibility_flags = ["nodejs_compat"]
 
 # Bindings available to Pages Functions
 
