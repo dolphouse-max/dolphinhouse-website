@@ -3,7 +3,7 @@ export async function POST({ locals, request }) {
   // Simplified: use MSG91 OTP endpoint with DLT template ID only.
   const API_URL = locals.runtime.env.VILPOWER_API_URL; // expected: https://api.msg91.com/api/v5/otp
   const AUTH_KEY = locals.runtime.env.MSG91_AUTH_KEY;  // MSG91 auth key
-  const TEMPLATE_ID = locals.runtime.env.MSG91_TEMPLATE_ID_OTP; // DLT template ID for OTP
+  const TEMPLATE_ID = locals.runtime.env.MSG91_TEMPLATE_ID; // DLT template ID for OTP
   const SENDER_ID = locals.runtime.env.VILPOWER_SENDER_ID;
 
   // KV fallback for local/dev when OTP_STORE binding is missing
