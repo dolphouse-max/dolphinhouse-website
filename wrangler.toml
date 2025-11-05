@@ -13,6 +13,11 @@ compatibility_flags = ["nodejs_compat"]
 
 # Bindings available to Pages Functions
 
+# KV namespace for OTP persistence
+[[kv_namespaces]]
+binding = "OTP_STORE"
+id = "cb77a16259424309a0439b1495182822"
+
 # D1 database binding
 [[d1_databases]]
 binding = "DB"
