@@ -1,0 +1,265 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminHeader from "../../components/AdminHeader.astro";
+---
+<AdminLayout title="Accounts">
+  <AdminHeader />
+  <div id="accountsReport" class="p-6">
+    <h1 class="text-2xl font-bold mb-4">Accounts & Revenue</h1>
+    <div class="mb-4 flex gap-2">
+      <button id="downloadCsv" class="px-3 py-2 border rounded">Download CSV</button>
+      <button id="downloadPdf" class="px-3 py-2 border rounded">Download PDF</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Booking From</label>
+        <select id="sourceFilter" class="mt-1 block w-full border rounded-md px-3 py-2">
+          <option value="">All</option>
+          <option value="Direct">Direct</option>
+          <option value="Makemytrip">Makemytrip</option>
+          <option value="Goibibo">Goibibo</option>
+          <option value="booking.com">booking.com</option>
+          <option value="Airbnb">Airbnb</option>
+          <option value="others">others</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">From Date</label>
+        <input type="date" id="fromDate" class="mt-1 block w-full border rounded-md px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">To Date</label>
+        <input type="date" id="toDate" class="mt-1 block w-full border rounded-md px-3 py-2">
+      </div>
+
+      <div class="flex items-end gap-2">
+        <button id="presetDaily" class="px-3 py-2 border rounded-md">Daily</button>
+        <button id="presetWeekly" class="px-3 py-2 border rounded-md">Weekly</button>
+        <button id="applyFilters" class="px-4 py-2 bg-sky-600 text-white rounded-md">Apply</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="p-4 bg-green-50 border border-green-200 rounded">
+        <div class="text-sm text-green-700">Total Revenue</div>
+        <div id="totalRevenue" class="text-2xl font-bold">₹0</div>
+      </div>
+      <div class="p-4 bg-blue-50 border border-blue-200 rounded">
+        <div class="text-sm text-blue-700">Bookings Count</div>
+        <div id="bookingCount" class="text-2xl font-bold">0</div>
+      </div>
+      <div class="p-4 bg-yellow-50 border border-yellow-200 rounded">
+        <div class="text-sm text-yellow-700">Filtered Source</div>
+        <div id="filteredSource" class="text-lg font-semibold">All</div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 text-left">Customer</th>
+            <th class="px-4 py-2 text-left">Mobile</th>
+            <th class="px-4 py-2 text-left">Room</th>
+            <th class="px-4 py-2 text-left">Check-in → Check-out</th>
+            <th class="px-4 py-2 text-left">Source</th>
+            <th class="px-4 py-2 text-right">Total (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="accountsTable"></tbody>
+      </table>
+    </div>
+
+    <div class="mt-6">
+      <h2 class="text-lg font-semibold mb-2">Revenue by Source</h2>
+      <div id="bySource" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+    </div>
+  </div>
+
+  <!-- External libs for PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+  <script>
+    let allBookings = [];
+    let lastFiltered = [];
+
+    function todayISO() {
+      return new Date().toISOString().slice(0,10);
+    }
+    function addDays(dateStr, n) {
+      const d = new Date(dateStr);
+      d.setDate(d.getDate() + n);
+      return d.toISOString().slice(0,10);
+    }
+
+    async function loadBookings() {
+      try {
+        const res = await fetch('/api/bookings');
+        allBookings = await res.json();
+        render();
+      } catch (e) {
+        console.error('loadBookings failed', e);
+        allBookings = [];
+        render();
+      }
+    }
+
+    function normalizeSource(s) {
+      return (s || 'Direct').trim();
+    }
+
+    function withinRange(b, from, to) {
+      if (!from && !to) return true;
+      const ci = b.checkin?.slice(0,10);
+      const co = b.checkout?.slice(0,10);
+      if (from && co <= from) return false; // checkout must be after from
+      if (to && ci >= to) return false;     // checkin must be before to
+      return true;
+    }
+
+    function render() {
+      const source = document.getElementById('sourceFilter').value;
+      const from = document.getElementById('fromDate').value;
+      const to = document.getElementById('toDate').value;
+
+      const filtered = allBookings.filter(b => {
+        const notCancelled = String(b.status || '').toLowerCase() !== 'cancelled';
+        const sourceMatch = !source || normalizeSource(b.booking_from) === source;
+        return notCancelled && sourceMatch && withinRange(b, from, to);
+      });
+
+      const tbody = document.getElementById('accountsTable');
+      tbody.innerHTML = '';
+      let total = 0;
+      lastFiltered = filtered;
+      filtered.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b';
+        total += Number(b.total || 0);
+        tr.innerHTML = `
+          <td class="px-4 py-2">
+            <div class="font-medium">${b.name || 'N/A'}</div>
+            <div class="text-xs text-gray-500">${b.customer_id || ''}</div>
+          </td>
+          <td class="px-4 py-2">${b.mobile || ''}</td>
+          <td class="px-4 py-2">${b.room || ''}</td>
+          <td class="px-4 py-2">${b.checkin} → ${b.checkout}</td>
+          <td class="px-4 py-2">${normalizeSource(b.booking_from)}</td>
+          <td class="px-4 py-2 text-right">₹${(b.total || 0).toLocaleString()}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('totalRevenue').textContent = '₹' + total.toLocaleString();
+      document.getElementById('bookingCount').textContent = filtered.length;
+      document.getElementById('filteredSource').textContent = source || 'All';
+
+      // Revenue by source summary
+      const buckets = {};
+      filtered.forEach(b => {
+        const src = normalizeSource(b.booking_from);
+        buckets[src] = (buckets[src] || 0) + Number(b.total || 0);
+      });
+      const bySource = document.getElementById('bySource');
+      bySource.innerHTML = '';
+      Object.entries(buckets).forEach(([src, amt]) => {
+        const div = document.createElement('div');
+        div.className = 'p-3 border rounded bg-white';
+        div.innerHTML = `<div class="text-sm text-gray-600">${src}</div><div class="text-lg font-semibold">₹${amt.toLocaleString()}</div>`;
+        bySource.appendChild(div);
+      });
+    }
+
+    // Presets
+    document.getElementById('presetDaily').addEventListener('click', () => {
+      const t = todayISO();
+      document.getElementById('fromDate').value = t;
+      document.getElementById('toDate').value = addDays(t, 1);
+      render();
+    });
+    document.getElementById('presetWeekly').addEventListener('click', () => {
+      const t = todayISO();
+      document.getElementById('fromDate').value = addDays(t, -6);
+      document.getElementById('toDate').value = addDays(t, 1);
+      render();
+    });
+    document.getElementById('applyFilters').addEventListener('click', render);
+    document.getElementById('sourceFilter').addEventListener('change', render);
+    document.getElementById('fromDate').addEventListener('change', render);
+    document.getElementById('toDate').addEventListener('change', render);
+
+    // CSV export
+    function downloadCsvFromFiltered() {
+      const headers = ['Customer','Customer ID','Mobile','Room','Checkin','Checkout','Source','Total'];
+      const rows = lastFiltered.map(b => [
+        (b.name||'').replace(/,/g,' '),
+        (b.customer_id||'').replace(/,/g,' '),
+        (b.mobile||'').replace(/,/g,' '),
+        (b.room||'').replace(/,/g,' '),
+        String(b.checkin||''),
+        String(b.checkout||''),
+        String(normalizeSource(b.booking_from)),
+        String(b.total||0)
+      ]);
+      const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const from = document.getElementById('fromDate').value || 'start';
+      const to = document.getElementById('toDate').value || 'end';
+      a.download = `accounts_${from}_to_${to}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+    document.getElementById('downloadCsv').addEventListener('click', downloadCsvFromFiltered);
+
+    // PDF export
+    async function downloadPdfFromReport() {
+      try {
+        const el = document.getElementById('accountsReport');
+        const canvas = await html2canvas(el, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p','mm','a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        // Fit image into page maintaining aspect ratio
+        const imgWidth = pageWidth - 10; // margins
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        let y = 5;
+        if (imgHeight > pageHeight) {
+          // Split across pages
+          let sY = 0;
+          const sliceHeight = canvas.height * (pageHeight - 10) / imgWidth;
+          while (sY < canvas.height) {
+            const slice = document.createElement('canvas');
+            slice.width = canvas.width;
+            slice.height = Math.min(sliceHeight, canvas.height - sY);
+            const sctx = slice.getContext('2d');
+            sctx.drawImage(canvas, 0, sY, canvas.width, slice.height, 0, 0, slice.width, slice.height);
+            const sliceData = slice.toDataURL('image/png');
+            pdf.addImage(sliceData, 'PNG', 5, y, imgWidth, (slice.height * imgWidth / slice.width));
+            sY += sliceHeight;
+            if (sY < canvas.height) pdf.addPage();
+          }
+        } else {
+          pdf.addImage(imgData, 'PNG', 5, y, imgWidth, imgHeight);
+        }
+        const from = document.getElementById('fromDate').value || 'start';
+        const to = document.getElementById('toDate').value || 'end';
+        pdf.save(`accounts_${from}_to_${to}.pdf`);
+      } catch (e) {
+        console.error('PDF export failed', e);
+        alert('Failed to generate PDF.');
+      }
+    }
+    document.getElementById('downloadPdf').addEventListener('click', downloadPdfFromReport);
+
+    loadBookings();
+  </script>
+</AdminLayout>

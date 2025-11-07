@@ -102,6 +102,7 @@ export async function GET({ locals, request }) {
     const guestsCol = col('guests', 'guests');
     const totalCol = col('total', 'total');
     const statusCol = col('status', 'status');
+    const bookingFromCol = cols.has('booking_from') ? 'booking_from' : null;
 
     if (id) {
       // Fetch single booking
@@ -120,6 +121,7 @@ export async function GET({ locals, request }) {
           ${totalCol} AS total,
           ${statusCol} AS status,
           ${createdCol} AS createdAt
+          ${bookingFromCol ? `, ${bookingFromCol} AS booking_from` : ''}
         FROM bookings WHERE id = ?`)
         .bind(id)
         .first();
@@ -155,6 +157,7 @@ export async function GET({ locals, request }) {
         ${guestsCol} AS guests,
         ${totalCol} AS total,
         ${statusCol} AS status,
+        ${bookingFromCol ? `${bookingFromCol} AS booking_from,` : ''}
         ${createdCol} AS createdAt
       FROM bookings ${where} ORDER BY date(${checkinCol}) ASC`;
       const res = await db.prepare(sql).bind(...values).all();
@@ -178,6 +181,7 @@ export async function GET({ locals, request }) {
         ${guestsCol} AS guests,
         ${totalCol} AS total,
         ${statusCol} AS status,
+        ${bookingFromCol ? `${bookingFromCol} AS booking_from,` : ''}
         ${createdCol} AS createdAt
       FROM bookings ORDER BY ${createdCol} DESC`)
       .all();

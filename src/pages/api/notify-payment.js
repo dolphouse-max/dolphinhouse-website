@@ -34,11 +34,12 @@ export async function POST({ locals, request }) {
     let variables = [];
 
     if (type === 'received') {
-      // DH_PAYMENT_RECEIVED_TXN: {#var#} = Name, Amount, Booking ID, Link
+      // DH_PAYMENT_RECEIVED_TXN: order-sensitive array for DLT templates
+      // {#var#}/{##var1##} = [Name, Amount, Booking ID, Precheckin Link]
       template_id = TEMPLATE_RECEIVED;
       variables = [name, amount, id, PRECHECKIN_URL];
     } else if (type === 'pending') {
-      // DH_PAYMENT_PENDING_REMINDER: {#var#} = Name, Booking ID, Outstanding, Payment Link
+      // DH_PAYMENT_PENDING_REMINDER: [Name, Booking ID, Outstanding, Payment Link]
       template_id = TEMPLATE_PENDING;
       const outstanding = amount || '';
       variables = [name, id, outstanding, paymentLink];

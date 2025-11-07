@@ -14,3 +14,35 @@ Select Admins only or Everyone to choose who this requirement applies to. To tur
 git add src/layouts/Layout.astro
 git commit -m "Add Facebook domain verification meta tag"
 git push
+
+
+======================================================
+
+Vilpower Template Name: DH_PAYMENT_RECEIVED_TXN
+
+Template Message:
+
+DH_PAYMENT_RECEIVED_TXN Hi {#var#}, we have received your payment of Rs {#var#} for booking {#var#}. Please complete pre check in here {#var#}. Thank you -Dolphin House Beach Resort
+
+Template ID: 1107176123495987139
+
+Dolphin House Beach Resort
+
+Header(s): DLHNOS
+------
+msg91 Email template id: dh_payment_received_email
+
+msg91 template id : 690c0c671039895c1e211972
+
+msg91 Template Name: DH_PAYMENT_RECEIVED_TXN
+
+DH_PAYMENT_RECEIVED_TXN Hi ##var##, we have received your payment of Rs ##var## for booking ##var##. Please complete pre check in here ##var##. Thank you -Dolphin House Beach Resort
+-------------------
+msg91 Email template id: dh_payment_received_email
+====================================================
+
+Bhavna Batra <Bhavna.Batra@makemytrip.com>
+Nishul Kumar <Nishul.Kumar@makemytrip.com>,
+Alok Mishra <Alok.Mishra@makemytrip.com>,
+HDPSIER <HDPSIER@makemytrip.com>,
+HDPS-Chat <HDPS-Chat@makemytrip.com>

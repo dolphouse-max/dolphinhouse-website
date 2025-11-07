@@ -66,25 +66,14 @@ export async function POST({ request, locals }) {
       }
     }
 
-    // Update booking
+    // Update booking (D1 schema-safe): only set status to payment_submitted
+    // Note: bookings table does not include payment_* columns in current schema.
+    // This change avoids 500s and lets the confirm flow proceed.
     await db.prepare(`
       UPDATE bookings 
-      SET 
-        payment_proof_method = ?,
-        payment_screenshot_url = ?,
-        upi_transaction_id = ?,
-        upi_from = ?,
-        payment_proof_submitted_at = ?,
-        status = 'payment_submitted',
-        updated_at = ?
+      SET status = 'payment_submitted'
       WHERE id = ?
     `).bind(
-      paymentProofMethod,
-      paymentScreenshotUrl,
-      upiTransactionId,
-      upiFrom,
-      new Date().toISOString(),
-      new Date().toISOString(),
       bookingId
     ).run();
 

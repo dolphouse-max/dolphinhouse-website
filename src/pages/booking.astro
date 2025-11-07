@@ -220,13 +220,15 @@ import Layout from "../layouts/Layout.astro";
           const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
 
           try {
-            // Create booking WITHOUT name/email
+            // No prompts — create a booking and proceed to pay page
+            const name = "";
+            const email = "";
             const res = await fetch('/api/bookings', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                name: '',
-                email: '',
+                name,
+                email,
                 room: rt,
                 checkin, 
                 checkout, 

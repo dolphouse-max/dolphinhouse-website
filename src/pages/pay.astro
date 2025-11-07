@@ -135,7 +135,7 @@ import Layout from "../layouts/Layout.astro";
         <h4 class="font-bold mb-2">💳 UPI Transaction ID</h4>
         <p class="text-sm text-gray-600 mb-3">Enter UPI details (No screenshot needed)</p>
         
-        <div id="upiSection" class="space-y-3 hidden">
+        <div id="upiSection" class="space-y-3">
           <div>
             <label class="block text-sm font-medium mb-1">Transaction ID *</label>
             <input type="text" id="upiTransactionId" placeholder="123456789012" 
@@ -146,6 +146,9 @@ import Layout from "../layouts/Layout.astro";
             <label class="block text-sm font-medium mb-1">From (Mobile/UPI) *</label>
             <input type="text" id="upiFrom" placeholder="9876543210 or user@paytm" 
               class="w-full px-3 py-2 border rounded text-sm">
+          </div>
+          <div>
+            <button type="button" id="confirmUpiBtn" class="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm font-semibold">Confirm UPI Details</button>
           </div>
         </div>
       </div>
@@ -236,6 +239,9 @@ import Layout from "../layouts/Layout.astro";
     const fileLabel = document.getElementById('fileLabel');
     const proofError = document.getElementById('proofError');
     const proofSuccess = document.getElementById('proofSuccess');
+    const upiTransactionIdInput = document.getElementById('upiTransactionId');
+    const upiFromInput = document.getElementById('upiFrom');
+    const confirmUpiBtn = document.getElementById('confirmUpiBtn');
 
     function selectProofMethod(method) {
       selectedProofMethod = method;
@@ -262,12 +268,17 @@ import Layout from "../layouts/Layout.astro";
       } else if (method === 'upi') {
         upiCard.classList.add('border-purple-500', 'shadow-lg', 'bg-purple-50');
         upiSection.classList.remove('hidden');
+        // Validate UPI fields on selection in case they are prefilled
+        validateUpi();
       }
     }
 
     whatsappCard.addEventListener('click', () => selectProofMethod('whatsapp'));
     uploadCard.addEventListener('click', () => selectProofMethod('upload'));
     upiCard.addEventListener('click', () => selectProofMethod('upi'));
+
+    // Default: select UPI so its section and button are visible immediately
+    selectProofMethod('upi');
 
     // WhatsApp
     openWhatsappBtn.addEventListener('click', () => {
@@ -306,6 +317,54 @@ import Layout from "../layouts/Layout.astro";
       confirmBtn.classList.add('bg-sky-600', 'hover:bg-sky-700', 'cursor-pointer');
       confirmBtn.textContent = 'Confirm Booking';
     }
+
+    function disableConfirmButton() {
+      confirmBtn.disabled = true;
+      confirmBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+      confirmBtn.classList.remove('bg-sky-600', 'hover:bg-sky-700', 'cursor-pointer');
+      confirmBtn.textContent = 'Submit Payment Proof First';
+    }
+
+    // UPI: live validation to enable/disable confirm button
+    function validateUpi(showErrors = false) {
+      const txnId = (upiTransactionIdInput?.value || '').trim();
+      const from = (upiFromInput?.value || '').trim();
+      const isValidTxn = txnId.length >= 12; // typical UTR is 12+ chars
+      const isValidFrom = /^([6-9]\d{9}|[a-zA-Z0-9._-]+@[a-zA-Z]+)$/.test(from);
+      const isValid = isValidTxn && isValidFrom;
+      if (selectedProofMethod === 'upi') {
+        if (isValid) {
+          proofSubmitted = true;
+          proofSuccess.classList.remove('hidden');
+          proofSuccess.textContent = '✅ UPI details entered. Click Confirm Booking.';
+          enableConfirmButton();
+        } else {
+          proofSubmitted = false;
+          proofSuccess.classList.add('hidden');
+          if (showErrors) {
+            proofError.textContent = 'Please enter a valid UPI Transaction ID (12+ characters) and a valid sender (10-digit mobile or UPI ID like name@bank).';
+            proofError.classList.remove('hidden');
+          } else {
+            proofError.classList.add('hidden');
+          }
+          disableConfirmButton();
+        }
+      }
+      return isValid;
+    }
+
+    upiTransactionIdInput?.addEventListener('input', validateUpi);
+    upiFromInput?.addEventListener('input', validateUpi);
+    confirmUpiBtn?.addEventListener('click', () => {
+      const ok = validateUpi(true);
+      if (ok) {
+        proofSubmitted = true;
+        proofSuccess.classList.remove('hidden');
+        proofSuccess.textContent = '✅ UPI details confirmed. Click Confirm Booking.';
+        proofError.classList.add('hidden');
+        enableConfirmButton();
+      }
+    });
 
     // ==========================================
     // OTP LOGIC

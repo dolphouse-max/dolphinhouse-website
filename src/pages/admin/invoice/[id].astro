@@ -1,0 +1,88 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import AdminHeader from "../../../components/AdminHeader.astro";
+export async function getStaticPaths() {
+  return [];
+}
+const id = Astro.params.id;
+let booking = {};
+try {
+  const res = await fetch(Astro.site ? new URL(`/api/bookings?id=${id}`, Astro.site).toString() : `/api/bookings?id=${id}`);
+  booking = await res.json();
+} catch (e) {
+  booking = {};
+}
+---
+<AdminLayout title={`Invoice ${id}`}>
+  <AdminHeader />
+  <div class="p-4">
+    <div class="flex justify-between mb-4">
+      <h1 class="text-xl font-bold">Invoice</h1>
+      <div class="space-x-2">
+        <button id="printBtn" class="px-3 py-2 border rounded">Print</button>
+        <button id="pdfBtn" class="px-3 py-2 border rounded">Download PDF</button>
+      </div>
+    </div>
+
+    <div id="receipt" class="mx-auto bg-white border rounded p-3" style="width: 80mm;">
+      <div class="text-center mb-2">
+        <div class="text-lg font-bold">Dolphin House</div>
+        <div class="text-xs text-gray-600">Varsoli Beach, Alibaug</div>
+        <div class="text-xs text-gray-600">GSTIN: NA</div>
+      </div>
+
+      <hr class="my-2" />
+
+      <div class="text-sm">
+        <div><span class="font-semibold">Invoice #</span>: <span class="font-mono">${id}</span></div>
+        <div><span class="font-semibold">Customer</span>: ${booking.name || ''}</div>
+        <div><span class="font-semibold">Mobile</span>: ${booking.mobile || ''}</div>
+        <div><span class="font-semibold">Source</span>: ${booking.booking_from || 'Direct'}</div>
+        <div><span class="font-semibold">Room</span>: ${booking.room || ''}</div>
+        <div><span class="font-semibold">Check-in</span>: ${booking.checkin || ''}</div>
+        <div><span class="font-semibold">Check-out</span>: ${booking.checkout || ''}</div>
+        <div><span class="font-semibold">Nights</span>: ${booking.nights || 1}</div>
+        <div><span class="font-semibold">Guests</span>: ${booking.guests || 1}</div>
+      </div>
+
+      <hr class="my-2" />
+
+      <div class="text-sm">
+        <div class="flex justify-between"><span>Room Charges</span><span>₹${(booking.total || 0).toLocaleString()}</span></div>
+        <div class="flex justify-between"><span>Tax</span><span>₹0</span></div>
+        <div class="flex justify-between font-semibold border-t mt-1 pt-1"><span>Total</span><span>₹${(booking.total || 0).toLocaleString()}</span></div>
+      </div>
+
+      <hr class="my-2" />
+
+      <div class="text-center text-xs">Thank you for choosing Dolphin House!</div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script>
+    document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+    document.getElementById('pdfBtn').addEventListener('click', async () => {
+      const { jsPDF } = window.jspdf;
+      const receipt = document.getElementById('receipt');
+      const canvas = await html2canvas(receipt, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 150] });
+      // Fit image to width 80mm
+      const pageWidth = 80;
+      const pageHeight = (canvas.height / canvas.width) * pageWidth;
+      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+      pdf.save(`invoice-${encodeURIComponent('${id}')}.pdf`);
+    });
+  </script>
+
+  <style>
+    @media print {
+      @page { size: 80mm auto; margin: 5mm; }
+      body { background: white; }
+      .border, hr { border-color: #e5e7eb; }
+    }
+  </style>
+</AdminLayout>

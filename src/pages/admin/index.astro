@@ -183,6 +183,273 @@ if (!authenticated) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+<!-- Dashboard data fetch and render -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const elTotal = document.getElementById('totalCount');
+    const elPending = document.getElementById('pendingCount');
+    const elConfirmed = document.getElementById('confirmedCount');
+    const elVacant = document.getElementById('vacantCount');
+    const elRevenue = document.getElementById('revenueCount');
+    const recentTbody = document.getElementById('recentBookings');
+    const chartTitle = document.getElementById('chartTitle');
+    const occCanvas = document.getElementById('occupancyChart');
+    const trendCanvas = document.getElementById('trendChart');
+    const revCanvas = document.getElementById('revenueChart');
+
+    let occChart = null;
+    let trendChart = null;
+    let revenueChart = null;
+
+    const fetchJSON = async (url) => {
+      try {
+        const res = await fetch(`${url}${url.includes('?') ? '&' : '?'}ts=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (e) {
+        console.warn('Fetch failed', url, e);
+        return [];
+      }
+    };
+
+    const isoDate = (d) => {
+      const dt = (d instanceof Date) ? d : new Date(d);
+      const y = dt.getFullYear();
+      const m = String(dt.getMonth() + 1).padStart(2, '0');
+      const day = String(dt.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    const dateRange = (start, end) => {
+      const s = (start instanceof Date) ? start : new Date(start);
+      const e = (end instanceof Date) ? end : new Date(end);
+      const arr = [];
+      const cur = new Date(s);
+      while (cur <= e) {
+        arr.push(isoDate(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return arr;
+    };
+
+    const rangesOverlap = (aStart, aEnd, bStart, bEnd) => {
+      return aStart < bEnd && bStart < aEnd;
+    };
+
+    const countBookedOnDate = (bookings, roomType, ymd) => {
+      const start = new Date(ymd);
+      const end = new Date(ymd); end.setDate(end.getDate() + 1);
+      let c = 0;
+      bookings.forEach(b => {
+        if (!b || b.status === 'cancelled') return;
+        if (roomType && b.room !== roomType) return;
+        const bi = new Date(b.checkin), bo = new Date(b.checkout);
+        if (rangesOverlap(start, end, bi, bo)) c++;
+      });
+      return c;
+    };
+
+    const sumRevenueByDate = (bookings, ymd) => {
+      const start = new Date(ymd);
+      const end = new Date(ymd); end.setDate(end.getDate() + 1);
+      let sum = 0;
+      bookings.forEach(b => {
+        if (!b || b.status === 'cancelled') return;
+        const bi = new Date(b.checkin), bo = new Date(b.checkout);
+        if (rangesOverlap(start, end, bi, bo)) sum += Number(b.total || 0);
+      });
+      return sum;
+    };
+
+    async function loadDashboard(rangeStart, rangeEnd) {
+      const [bookings, inventoryArr] = await Promise.all([
+        fetchJSON('/api/bookings'),
+        fetchJSON('/api/inventory')
+      ]);
+
+      const inventory = Array.isArray(inventoryArr)
+        ? inventoryArr.reduce((acc, it) => { if (it?.room) acc[it.room] = it; return acc; }, {})
+        : (inventoryArr || {});
+
+      // Summary counts
+      const totalCount = Array.isArray(bookings) ? bookings.length : 0;
+      const pendingCount = bookings.filter(b => (b?.status || '').toLowerCase() === 'pending').length;
+      const confirmedCount = bookings.filter(b => (b?.status || '').toLowerCase() === 'confirmed').length;
+
+      // Determine date range
+      let end = rangeEnd ? new Date(rangeEnd) : new Date();
+      let start = rangeStart ? new Date(rangeStart) : new Date(end);
+      if (!rangeStart) start.setDate(end.getDate() - 29); // default last 30 days
+      const days = dateRange(start, end);
+
+      // Vacant rooms: compute snapshot for end date across all room types
+      const today = isoDate(end);
+      const vacantTotal = Object.keys(inventory).reduce((sum, room) => {
+        const qty = Number(inventory[room]?.qty || 0);
+        const booked = countBookedOnDate(bookings, room, today);
+        return sum + Math.max(0, qty - booked);
+      }, 0);
+
+      // Revenue: sum across active bookings (confirmed/approved) in selected range
+      const allowedStatuses = new Set(['confirmed', 'approved']);
+      const activeBookings = bookings.filter(b => allowedStatuses.has((b?.status || '').toLowerCase()));
+      const dailyRevenue = days.map(d => sumRevenueByDate(activeBookings, d));
+      const revenueTotal = dailyRevenue.reduce((a, b) => a + b, 0);
+
+      elTotal.textContent = String(totalCount);
+      elPending.textContent = String(pendingCount);
+      elConfirmed.textContent = String(confirmedCount);
+      elVacant.textContent = String(vacantTotal);
+      elRevenue.textContent = String(Math.round(revenueTotal));
+
+      // Recent bookings table
+      recentTbody.innerHTML = '';
+      const recent = bookings
+        .slice()
+        .sort((a, b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0))
+        .slice(0, 10);
+      recent.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b';
+        const dates = `${b.checkin} → ${b.checkout}`;
+        const status = (b.status || '').toUpperCase();
+        tr.innerHTML = `
+          <td class="py-2 px-3">${b.name || ''}</td>
+          <td class="py-2 px-3">${b.room || ''}</td>
+          <td class="py-2 px-3">${dates}</td>
+          <td class="py-2 px-3 text-center">${status}</td>
+        `;
+        recentTbody.appendChild(tr);
+      });
+
+      // Charts
+      if (chartTitle) chartTitle.textContent = `📊 Occupancy Snapshot (${today})`;
+
+      // Occupancy snapshot by room
+      const rooms = Object.keys(inventory);
+      const avail = rooms.map(room => {
+        const qty = Number(inventory[room]?.qty || 0);
+        const booked = countBookedOnDate(bookings, room, today);
+        return Math.max(0, qty - booked);
+      });
+
+      if (occChart) occChart.destroy();
+      if (occCanvas) {
+        occChart = new Chart(occCanvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: rooms,
+            datasets: [{
+              label: 'Vacant Today',
+              data: avail,
+              backgroundColor: '#38bdf8'
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+      }
+
+      // Trend chart: bookings per day (selected range)
+      const dailyBookings = days.map(d => {
+        return bookings.filter(b => {
+          const bi = new Date(b.checkin), bo = new Date(b.checkout);
+          const ds = new Date(d), de = new Date(d); de.setDate(de.getDate() + 1);
+          return rangesOverlap(ds, de, bi, bo);
+        }).length;
+      });
+
+      if (trendChart) trendChart.destroy();
+      if (trendCanvas) {
+        trendChart = new Chart(trendCanvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: days.map(d => d.slice(5)),
+            datasets: [{
+              label: 'Bookings per Day',
+              data: dailyBookings,
+              borderColor: '#0ea5e9',
+              backgroundColor: 'rgba(14,165,233,0.2)'
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+      }
+
+      // Revenue chart: daily revenue (confirmed/approved)
+      if (revenueChart) revenueChart.destroy();
+      if (revCanvas) {
+        revenueChart = new Chart(revCanvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: days.map(d => d.slice(5)),
+            datasets: [{
+              label: 'Revenue per Day (₹)',
+              data: dailyRevenue.map(v => Math.round(v)),
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16,185,129,0.2)'
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+      }
+    }
+
+    // Filters: Today / Week / Month buttons
+    const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
+    const startInput = document.getElementById('startDate');
+    const endInput = document.getElementById('endDate');
+
+    function setActiveButton(val) {
+      filterButtons.forEach(b => {
+        const isActive = b.dataset.filter === val;
+        b.classList.toggle('bg-sky-600', isActive);
+        b.classList.toggle('text-white', isActive);
+        b.classList.toggle('bg-gray-200', !isActive);
+      });
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const f = btn.dataset.filter;
+        const today = isoDate(new Date());
+        if (f === 'today') {
+          startInput.value = today;
+          endInput.value = today;
+          setActiveButton('today');
+          loadDashboard(today, today);
+        } else if (f === 'week') {
+          const end = today;
+          const start = isoDate(new Date(new Date().setDate(new Date().getDate() - 6)));
+          startInput.value = start;
+          endInput.value = end;
+          setActiveButton('week');
+          loadDashboard(start, end);
+        } else if (f === 'month') {
+          const end = today;
+          const start = isoDate(new Date(new Date().setDate(new Date().getDate() - 29)));
+          startInput.value = start;
+          endInput.value = end;
+          setActiveButton('month');
+          loadDashboard(start, end);
+        }
+      });
+    });
+
+    // Apply custom range
+    document.getElementById('applyRangeBtn')?.addEventListener('click', () => {
+      const s = startInput.value;
+      const e = endInput.value;
+      if (!s || !e) return loadDashboard();
+      if (new Date(s) > new Date(e)) return alert('Start date must be before end date');
+      setActiveButton('');
+      loadDashboard(s, e);
+    });
+
+    // Initial load (default last 30 days)
+    loadDashboard();
+  });
+</script>
+
 <script client:load>
   const { jsPDF } = window.jspdf;
 
@@ -208,7 +475,7 @@ if (!authenticated) {
   async function generatePDF() {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const report = document.getElementById('reportArea');
-    const logoUrl = '/uploader/logo-512.webp';
+    const logoUrl = '/uploader/logo-512.png';
     const start = document.getElementById('startDate').value || '—';
     const end = document.getElementById('endDate').value || '—';
     const dateRange = (start !== '—' || end !== '—') ? `${start} → ${end}` : "All Data";
@@ -223,7 +490,7 @@ if (!authenticated) {
     pdf.setFontSize(12);
     pdf.text(`Date Range: ${dateRange}`, 20, 70);
     pdf.text(`Generated on: ${new Date().toLocaleString()}`, 20, 80);
-    pdf.addImage(logoUrl, 'WEBP', 150, 20, 40, 40);
+    pdf.addImage(logoUrl, 'PNG', 150, 20, 40, 40);
     pdf.setLineWidth(0.5);
     pdf.line(20, 90, 190, 90);
     pdf.text("Summary and Analytics Overview", 20, 100);

@@ -104,6 +104,12 @@ const bookingId = Astro.url.searchParams.get('booking') || 'Unknown';
                 <input type="text" id="upiFrom" placeholder="9876543210 or user@paytm" 
                   class="w-full px-4 py-3 border rounded-lg">
               </div>
+              <div>
+                <button type="submit" id="submitBtnUpi" 
+                  class="w-full bg-sky-600 text-white py-4 rounded-lg hover:bg-sky-700 font-bold">
+                  Submit Payment Proof
+                </button>
+              </div>
             </div>
           </div>
 
@@ -154,6 +160,8 @@ const bookingId = Astro.url.searchParams.get('booking') || 'Unknown';
     const errorMessage = document.getElementById('errorMessage');
     const mainForm = document.getElementById('mainForm');
     const successScreen = document.getElementById('successScreen');
+    const upiTransactionIdInput = document.getElementById('upiTransactionId');
+    const upiFromInput = document.getElementById('upiFrom');
 
     // Select method
     function selectMethod(method) {
@@ -183,7 +191,8 @@ const bookingId = Astro.url.searchParams.get('booking') || 'Unknown';
       } else if (method === 'upi') {
         upiCard.classList.add('border-purple-500', 'shadow-lg');
         upiSection.classList.remove('hidden');
-        submitSection.classList.remove('hidden');
+        // Use the submit button inside the UPI card instead of the global one
+        submitSection.classList.add('hidden');
       }
     }
 
@@ -228,15 +237,12 @@ const bookingId = Astro.url.searchParams.get('booking') || 'Unknown';
       }
 
       if (selectedMethod === 'upi') {
-        const txnId = document.getElementById('upiTransactionId').value.trim();
-        const from = document.getElementById('upiFrom').value.trim();
-        if (!txnId || txnId.length < 12) {
-          errorMessage.textContent = 'Transaction ID must be at least 12 characters';
-          errorAlert.classList.remove('hidden');
-          return;
-        }
-        if (!from) {
-          errorMessage.textContent = 'Please enter sender mobile or UPI ID';
+        const txnId = upiTransactionIdInput.value.trim();
+        const from = upiFromInput.value.trim();
+        const isValidTxn = txnId.length >= 12;
+        const isValidFrom = /^([6-9]\d{9}|[a-zA-Z0-9._-]+@[a-zA-Z]+)$/.test(from);
+        if (!isValidTxn || !isValidFrom) {
+          errorMessage.textContent = 'Enter valid UPI Transaction ID (12+ chars) and sender (10-digit mobile or UPI like name@bank).';
           errorAlert.classList.remove('hidden');
           return;
         }
@@ -276,5 +282,7 @@ const bookingId = Astro.url.searchParams.get('booking') || 'Unknown';
         errorAlert.classList.remove('hidden');
       }
     });
+
+    // Simple UPI flow: submit button is inside the UPI card; validation occurs on form submit.
   </script>
 </Layout>

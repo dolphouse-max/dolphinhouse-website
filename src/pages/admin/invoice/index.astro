@@ -1,0 +1,188 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import AdminHeader from "../../../components/AdminHeader.astro";
+import { isAuthenticated } from '../../../middleware/auth.js';
+
+const ok = await isAuthenticated(Astro);
+if (!ok) {
+  return Astro.redirect('/admin/login');
+}
+---
+<AdminLayout title="Invoice">
+  <AdminHeader />
+
+  <section class="max-w-7xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-2xl font-bold">Invoices</h1>
+      <div class="flex items-end gap-3">
+        <div>
+          <label for="bookingIdInput" class="block text-sm font-medium text-gray-700">Quick open by ID</label>
+          <input id="bookingIdInput" type="text" class="mt-1 block w-40 border rounded px-3 py-2" placeholder="e.g. 123" />
+        </div>
+        <button id="openInvoiceBtn" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Open</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Sort by</label>
+        <select id="sortBy" class="mt-1 block w-full border rounded px-3 py-2">
+          <option value="id">Booking ID</option>
+          <option value="name">Customer name</option>
+          <option value="checkin">Date Check-in</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Order</label>
+        <select id="sortOrder" class="mt-1 block w-full border rounded px-3 py-2">
+          <option value="asc">Ascending</option>
+          <option value="desc" selected>Descending</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">From Date</label>
+        <input type="date" id="fromDate" class="mt-1 block w-full border rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">To Date</label>
+        <input type="date" id="toDate" class="mt-1 block w-full border rounded px-3 py-2">
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Filter by customer</label>
+        <input type="text" id="nameFilter" class="mt-1 block w-full border rounded px-3 py-2" placeholder="e.g. John">
+      </div>
+      <div class="flex items-end gap-2">
+        <button id="presetDaily" class="px-3 py-2 border rounded">Daily</button>
+        <button id="presetWeekly" class="px-3 py-2 border rounded">Weekly</button>
+        <button id="applyFilters" class="px-4 py-2 bg-sky-600 text-white rounded">Apply</button>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 text-left">Invoice #</th>
+            <th class="px-4 py-2 text-left">Customer</th>
+            <th class="px-4 py-2 text-left">Mobile</th>
+            <th class="px-4 py-2 text-left">Check-in → Check-out</th>
+            <th class="px-4 py-2 text-left">Source</th>
+            <th class="px-4 py-2 text-right">Total (₹)</th>
+            <th class="px-4 py-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="invoiceTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    let allBookings = [];
+    let lastFiltered = [];
+
+    function todayISO() {
+      return new Date().toISOString().slice(0,10);
+    }
+    function addDays(dateStr, n) {
+      const d = new Date(dateStr);
+      d.setDate(d.getDate() + n);
+      return d.toISOString().slice(0,10);
+    }
+
+    async function loadBookings() {
+      try {
+        const res = await fetch('/api/bookings');
+        allBookings = await res.json();
+        render();
+      } catch (e) {
+        console.error('loadBookings failed', e);
+        allBookings = [];
+        render();
+      }
+    }
+
+    function withinRange(b, from, to) {
+      if (!from && !to) return true;
+      const ci = b.checkin?.slice(0,10);
+      const co = b.checkout?.slice(0,10);
+      if (from && co <= from) return false; // checkout must be after from
+      if (to && ci >= to) return false;     // checkin must be before to
+      return true;
+    }
+
+    function render() {
+      const nameQ = document.getElementById('nameFilter').value.trim().toLowerCase();
+      const from = document.getElementById('fromDate').value;
+      const to = document.getElementById('toDate').value;
+      const sortBy = document.getElementById('sortBy').value;
+      const order = document.getElementById('sortOrder').value;
+
+      const filtered = (Array.isArray(allBookings) ? allBookings : [])
+        .filter(b => {
+          const notCancelled = String(b.status || '').toLowerCase() !== 'cancelled';
+          const nameMatch = !nameQ || String(b.name || '').toLowerCase().includes(nameQ);
+          const rangeMatch = withinRange(b, from, to);
+          return notCancelled && nameMatch && rangeMatch;
+        });
+
+      filtered.sort((a,b) => {
+        let av, bv;
+        if (sortBy === 'id') { av = Number(a.id||0); bv = Number(b.id||0); }
+        else if (sortBy === 'name') { av = String(a.name||'').toLowerCase(); bv = String(b.name||'').toLowerCase(); }
+        else if (sortBy === 'checkin') { av = String(a.checkin||''); bv = String(b.checkin||''); }
+        else { av = 0; bv = 0; }
+        if (av < bv) return order === 'asc' ? -1 : 1;
+        if (av > bv) return order === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      lastFiltered = filtered;
+      const tbody = document.getElementById('invoiceTable');
+      tbody.innerHTML = '';
+      filtered.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b';
+        tr.innerHTML = `
+          <td class="px-4 py-2 font-mono">${b.id}</td>
+          <td class="px-4 py-2">${b.name || 'N/A'}</td>
+          <td class="px-4 py-2">${b.mobile || ''}</td>
+          <td class="px-4 py-2">${b.checkin} → ${b.checkout}</td>
+          <td class="px-4 py-2">${(b.booking_from||'Direct')}</td>
+          <td class="px-4 py-2 text-right">₹${(b.total || 0).toLocaleString()}</td>
+          <td class="px-4 py-2">
+            <a href="/admin/invoice/${b.id}" class="px-3 py-1 border rounded hover:bg-gray-50">View</a>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('presetDaily').addEventListener('click', () => {
+      const t = todayISO();
+      document.getElementById('fromDate').value = t;
+      document.getElementById('toDate').value = addDays(t, 1);
+      render();
+    });
+    document.getElementById('presetWeekly').addEventListener('click', () => {
+      const t = todayISO();
+      document.getElementById('fromDate').value = addDays(t, -6);
+      document.getElementById('toDate').value = addDays(t, 1);
+      render();
+    });
+    document.getElementById('applyFilters').addEventListener('click', render);
+    document.getElementById('nameFilter').addEventListener('input', render);
+    document.getElementById('fromDate').addEventListener('change', render);
+    document.getElementById('toDate').addEventListener('change', render);
+    document.getElementById('sortBy').addEventListener('change', render);
+    document.getElementById('sortOrder').addEventListener('change', render);
+    document.getElementById('openInvoiceBtn').addEventListener('click', () => {
+      const id = document.getElementById('bookingIdInput').value.trim();
+      if (id) window.location.href = `/admin/invoice/${id}`;
+    });
+
+    loadBookings();
+  </script>
+</AdminLayout>

@@ -24,8 +24,8 @@ if (!authenticated) {
 
     <!-- Filter Tabs -->
     <div class="flex flex-wrap gap-2 mb-4">
-      <button class="filter-tab active" data-status="all">All Bookings</button>
-      <button class="filter-tab" data-status="pending">⏳ Pending Approval (<span id="pendingCount">0</span>)</button>
+      <button class="filter-tab" data-status="all">All Bookings</button>
+      <button class="filter-tab active" data-status="pending">⏳ Pending Approval (<span id="pendingCount">0</span>)</button>
       <button class="filter-tab" data-status="approved">✅ Approved</button>
       <button class="filter-tab" data-status="confirmed">💚 Confirmed</button>
       <button class="filter-tab" data-status="payment_submitted">💳 Payment Submitted</button>
@@ -111,7 +111,7 @@ if (!authenticated) {
           
           <div>
             <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input type="email" id="guestEmail" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+            <input type="email" id="guestEmail" class="mt-1 block w-full border rounded-md px-3 py-2" placeholder="Optional">
           </div>
           
           <div>
@@ -148,6 +148,18 @@ if (!authenticated) {
           <div>
             <label class="block text-sm font-medium text-gray-700">Total Amount (₹)</label>
             <input type="number" id="totalAmount" min="0" step="0.01" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Booking From</label>
+            <select id="bookingFrom" class="mt-1 block w-full border rounded-md px-3 py-2" required>
+              <option value="Direct">Direct</option>
+              <option value="Makemytrip">Makemytrip</option>
+              <option value="Goibibo">Goibibo</option>
+              <option value="booking.com">booking.com</option>
+              <option value="Airbnb">Airbnb</option>
+              <option value="others">others</option>
+            </select>
           </div>
           
           <div>
@@ -224,7 +236,7 @@ if (!authenticated) {
     let chartInstance = null;
     let editMode = false;
     let currentBookingForApproval = null;
-    let currentStatusFilter = 'all';
+    let currentStatusFilter = 'pending';
     
     // Setup logout functionality
     document.getElementById('logoutBtn')?.addEventListener('click', async () => {
@@ -321,13 +333,21 @@ if (!authenticated) {
     // Filter tabs
     const filterTabs = document.querySelectorAll('.filter-tab');
 
+    // Normalize status string to a consistent format
+    function normStatus(s) {
+      return String(s || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[-\s]+/g, '_');
+    }
+
     function statusBadge(status) {
       const map = {
         pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
         payment_pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
         approved: "bg-green-100 text-green-800 border-green-300",
         confirmed: "bg-blue-100 text-blue-800 border-blue-300",
-        payment_submitted: "bg-purple-100 text-purple-800 border-purple-300",
+        payment_submitted: "bg-yellow-100 text-yellow-800 border-yellow-300",
         checked_in: "bg-indigo-100 text-indigo-800 border-indigo-300",
         cancelled: "bg-red-100 text-red-800 border-red-300"
       };
@@ -407,9 +427,10 @@ if (!authenticated) {
     }
     
     function updatePendingCount() {
-      const pendingCount = bookings.filter(b => 
-        b.status === 'pending' || b.status === 'payment_pending'
-      ).length;
+      const pendingCount = bookings.filter(b => {
+        const st = normStatus(b.status);
+        return st === 'pending' || st === 'payment_pending' || st === 'payment_submitted';
+      }).length;
       document.getElementById('pendingCount').textContent = pendingCount;
     }
     
@@ -445,13 +466,15 @@ if (!authenticated) {
       
       let filtered = bookings;
       
-      // Apply status tab filter (treat payment_pending as pending for filter tabs)
+      // Apply status tab filter (treat payment_pending/payment_submitted as pending for filter tabs)
       if (currentStatusFilter !== 'all') {
         filtered = filtered.filter(b => {
-          if (currentStatusFilter === 'pending') {
-            return b.status === 'pending' || b.status === 'payment_pending';
+          const st = normStatus(b.status);
+          const cur = normStatus(currentStatusFilter);
+          if (cur === 'pending') {
+            return st === 'pending' || st === 'payment_pending' || st === 'payment_submitted';
           }
-          return b.status === currentStatusFilter;
+          return st === cur;
         });
       }
       
@@ -467,7 +490,16 @@ if (!authenticated) {
       
       // Apply status filter if selected
       if (statusValue) {
-        filtered = filtered.filter(b => b.status?.toLowerCase() === statusValue.toLowerCase());
+        const sv = normStatus(statusValue);
+        if (sv === 'pending') {
+          // Treat dropdown "Pending" as including payment_pending and payment_submitted
+          filtered = filtered.filter(b => {
+            const st = normStatus(b.status);
+            return st === 'pending' || st === 'payment_pending' || st === 'payment_submitted';
+          });
+        } else {
+          filtered = filtered.filter(b => normStatus(b.status) === sv);
+        }
       }
       
       // Apply room filter if selected
@@ -502,7 +534,7 @@ if (!authenticated) {
         // Determine action buttons based on status
         let actionButtons = '';
         
-        if (b.status === 'pending' || b.status === 'payment_pending') {
+        if (['pending','payment_pending','payment_submitted'].includes(normStatus(b.status))) {
           actionButtons = `
             <button class="approve-btn px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 font-medium mr-1" data-id="${b.id}">
               ✅ Approve
@@ -510,7 +542,7 @@ if (!authenticated) {
           `;
         }
         
-        if (b.status === 'checked_in') {
+        if (normStatus(b.status) === 'checked_in') {
           actionButtons += `
             <button class="view-checkin-btn px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 font-medium mr-1" data-id="${b.id}">
               👁️ Check-in
@@ -520,14 +552,14 @@ if (!authenticated) {
 
         // Payment SMS actions (vilpower)
         if (b.mobile) {
-          if (["pending", "payment_pending", "approved"].includes(b.status)) {
+          if (["pending", "payment_pending", "approved"].includes(normStatus(b.status))) {
             actionButtons += `
               <button class="sms-pending-btn px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200" data-id="${b.id}">
                 📨 Pending SMS
               </button>
             `;
           }
-          if (["payment_submitted", "confirmed"].includes(b.status)) {
+          if (["payment_submitted", "confirmed"].includes(normStatus(b.status))) {
             actionButtons += `
               <button class="sms-received-btn px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200" data-id="${b.id}">
                 ✅ Received SMS
@@ -565,6 +597,7 @@ if (!authenticated) {
             <div class="flex flex-wrap gap-1">
               ${actionButtons}
               <button class="edit-btn px-2 py-1 text-xs bg-sky-100 text-sky-700 rounded hover:bg-sky-200" data-id="${b.id}">Edit</button>
+              <a href="/admin/invoice/${b.id}" class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200">Invoice</a>
               <button class="delete-btn px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200" data-id="${b.id}">Delete</button>
             </div>
           </td>
@@ -713,17 +746,37 @@ if (!authenticated) {
           const errorData = await res.json();
           throw new Error(errorData.error || 'Approval failed');
         }
-
-        alert('✅ Booking approved successfully!\n\nConfirmation email has been sent to the customer.');
+        const data = await res.json().catch(() => ({}));
+        const sentEmail = !!data.email_sent;
+        const sentSms = !!data.sms_sent;
+        let note = '✅ Booking approved successfully!';
+        if (sentEmail && sentSms) {
+          note += '\n\nSMS and Email notifications sent.';
+        } else if (sentSms) {
+          note += '\n\nSMS notification sent.';
+        } else if (sentEmail) {
+          note += '\n\nEmail notification sent.';
+        } else {
+          note += '\n\nNo notification sent (missing contact or provider config).';
+        }
+        alert(note);
         closeApprovalModalFn();
         await loadData();
+        // Switch to Approved tab after successful approval
+        filterTabs.forEach(t => t.classList.remove('active'));
+        const approvedTab = Array.from(filterTabs).find(t => t.dataset.status === 'approved');
+        if (approvedTab) {
+          approvedTab.classList.add('active');
+          currentStatusFilter = 'approved';
+          applyFilters();
+        }
 
       } catch (err) {
         console.error('Approval error:', err);
         alert(`Failed to approve booking: ${err.message}\n\nNote: API endpoint may not be set up yet.`);
       } finally {
         confirmApprovalBtn.disabled = false;
-        confirmApprovalBtn.innerHTML = '✅ Approve & Send Confirmation Email';
+        confirmApprovalBtn.innerHTML = '✅ Approve & Send SMS/Email';
       }
     }
     
@@ -795,6 +848,9 @@ if (!authenticated) {
         document.getElementById('checkoutDate').value = booking.checkout.split('T')[0];
         document.getElementById('totalAmount').value = booking.total;
         document.getElementById('bookingStatus').value = booking.status;
+        if (booking.booking_from) {
+          document.getElementById('bookingFrom').value = booking.booking_from;
+        }
         
         bookingModal.classList.remove('hidden');
       } catch (error) {
@@ -822,6 +878,7 @@ if (!authenticated) {
         const checkout = document.getElementById('checkoutDate').value;
         const total = parseFloat(document.getElementById('totalAmount').value);
         const status = document.getElementById('bookingStatus').value;
+        const booking_from = document.getElementById('bookingFrom').value;
         
         const nights = calculateNights(checkin, checkout);
         
@@ -836,7 +893,8 @@ if (!authenticated) {
           checkout,
           nights,
           total,
-          status
+          status,
+          booking_from
         };
         
         let response;
