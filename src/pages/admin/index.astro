@@ -131,6 +131,53 @@ if (!authenticated) {
       <button type="submit" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Update Password</button>
       <div id="pwStatus" class="hidden mt-3 p-3 rounded text-sm"></div>
     </form>
+
+    <hr class="my-8" />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="p-4 border rounded-lg bg-gray-50">
+        <h3 class="text-lg font-semibold mb-2">Global Booking Availability</h3>
+        <p class="text-sm text-gray-600 mb-3">Toggle whether visitors can book rooms on the website.</p>
+        <div class="flex items-center gap-3">
+          <span id="bookingStatusLabel" class="px-2 py-1 rounded text-sm bg-green-100 text-green-700 hidden">Enabled</span>
+          <span id="bookingStatusLabelOff" class="px-2 py-1 rounded text-sm bg-yellow-100 text-yellow-800 hidden">Paused</span>
+          <button id="toggleBookingsBtn" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Toggle Bookings</button>
+        </div>
+        <div id="bookingToggleMsg" class="hidden mt-3 p-2 rounded text-sm"></div>
+        <div class="mt-4">
+          <label for="bookingNoticeInput" class="block text-sm font-medium text-gray-700 mb-1">Pause Notice Message</label>
+          <textarea id="bookingNoticeInput" rows="3" class="w-full px-3 py-2 border rounded" placeholder="e.g. Bookings are paused due to maintenance until 15 Dec."></textarea>
+          <div class="mt-2 flex gap-2">
+            <button id="saveBookingNoticeBtn" class="px-3 py-2 bg-gray-700 text-white rounded hover:bg-gray-800">Save Message</button>
+            <div id="bookingNoticeMsg" class="hidden p-2 rounded text-sm"></div>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="text-sm font-medium text-gray-700 mb-1">Contact Details (shown on booking page when paused)</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label class="block">
+              <span class="text-xs text-gray-600">Phone 1 (E.164)</span>
+              <input id="bookingPhone1" class="w-full px-3 py-2 border rounded" placeholder="+918554871073" />
+            </label>
+            <label class="block">
+              <span class="text-xs text-gray-600">Phone 2 (E.164)</span>
+              <input id="bookingPhone2" class="w-full px-3 py-2 border rounded" placeholder="+917276171735" />
+            </label>
+            <label class="block">
+              <span class="text-xs text-gray-600">WhatsApp (E.164)</span>
+              <input id="bookingWhatsapp" class="w-full px-3 py-2 border rounded" placeholder="+918554871073" />
+            </label>
+            <label class="block">
+              <span class="text-xs text-gray-600">Email</span>
+              <input id="bookingEmail" type="email" class="w-full px-3 py-2 border rounded" placeholder="booking@dolphinhouse-alibaug.com" />
+            </label>
+          </div>
+          <div class="mt-2 flex gap-2">
+            <button id="saveBookingContactsBtn" class="px-3 py-2 bg-gray-700 text-white rounded hover:bg-gray-800">Save Contacts</button>
+            <div id="bookingContactsMsg" class="hidden p-2 rounded text-sm"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 </AdminLayout>
 
@@ -181,7 +228,7 @@ if (!authenticated) {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 
 <!-- Dashboard data fetch and render -->
 <script>
@@ -451,7 +498,8 @@ if (!authenticated) {
 </script>
 
 <script client:load>
-  const { jsPDF } = window.jspdf;
+  // Safely reference jsPDF when available; avoid crashing if not loaded yet
+  let jsPDF = window.jspdf?.jsPDF;
 
   // Setup logout functionality
   document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -473,6 +521,12 @@ if (!authenticated) {
 
   // Generate PDF with multiple pages and custom branding
   async function generatePDF() {
+    // If jsPDF is not yet available, attempt to grab it again; otherwise inform user
+    jsPDF = jsPDF || window.jspdf?.jsPDF;
+    if (!jsPDF) {
+      alert('PDF export is unavailable right now. Please try again in a few seconds.');
+      return;
+    }
     const pdf = new jsPDF('p', 'mm', 'a4');
     const report = document.getElementById('reportArea');
     const logoUrl = '/uploader/logo-512.png';
@@ -550,5 +604,158 @@ if (!authenticated) {
         cpBanner.style.display = 'none';
       });
     } catch {}
+  }
+
+  // Booking toggle control
+  async function refreshBookingToggleUI() {
+    const labelOn = document.getElementById('bookingStatusLabel');
+    const labelOff = document.getElementById('bookingStatusLabelOff');
+    const btn = document.getElementById('toggleBookingsBtn');
+    const msg = document.getElementById('bookingToggleMsg');
+    const noticeInput = document.getElementById('bookingNoticeInput');
+    const phone1Input = document.getElementById('bookingPhone1');
+    const phone2Input = document.getElementById('bookingPhone2');
+    const whatsappInput = document.getElementById('bookingWhatsapp');
+    const emailInput = document.getElementById('bookingEmail');
+    try {
+      const res = await fetch('/api/booking-toggle', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const enabled = !!data?.bookingEnabled;
+      labelOn.classList.toggle('hidden', !enabled);
+      labelOff.classList.toggle('hidden', enabled);
+      btn.textContent = enabled ? 'Pause Bookings' : 'Enable Bookings';
+      btn.classList.toggle('bg-sky-600', enabled);
+      btn.classList.toggle('bg-green-600', !enabled);
+      btn.classList.toggle('hover:bg-sky-700', enabled);
+      btn.classList.toggle('hover:bg-green-700', !enabled);
+      // Show current status message prominently
+      msg.textContent = enabled ? 'Bookings enabled' : 'Bookings paused';
+      msg.classList.remove('hidden');
+      msg.classList.remove('bg-red-100', 'text-red-700');
+      msg.classList.add('bg-green-100', 'text-green-700');
+      if (noticeInput && typeof data?.notice === 'string') {
+        noticeInput.value = data.notice;
+      }
+      const c = data?.contact || {};
+      if (phone1Input) phone1Input.value = c.phone1 || '';
+      if (phone2Input) phone2Input.value = c.phone2 || '';
+      if (whatsappInput) whatsappInput.value = c.whatsapp || '';
+      if (emailInput) emailInput.value = c.email || '';
+      // Ensure button is enabled after status refresh
+      btn.disabled = false;
+    } catch (e) {
+      msg.textContent = 'Failed to load booking status';
+      msg.classList.remove('hidden');
+      msg.classList.add('bg-red-100', 'text-red-700');
+      // Ensure the button is usable even if fetch fails
+      btn.textContent = 'Enable Bookings';
+      btn.classList.add('bg-green-600');
+      btn.classList.add('hover:bg-green-700');
+      btn.classList.remove('bg-sky-600');
+      btn.classList.remove('hover:bg-sky-700');
+      btn.disabled = false;
+    }
+  }
+
+  async function toggleBookings() {
+    const btn = document.getElementById('toggleBookingsBtn');
+    const msg = document.getElementById('bookingToggleMsg');
+    btn.disabled = true;
+    const currentlyEnabled = !document.getElementById('bookingStatusLabel').classList.contains('hidden');
+    try {
+      const res = await fetch('/api/booking-toggle', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingEnabled: !currentlyEnabled })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      msg.textContent = data.bookingEnabled ? 'Bookings enabled' : 'Bookings paused';
+      msg.classList.remove('hidden');
+      msg.classList.remove('bg-red-100', 'text-red-700');
+      msg.classList.add('bg-green-100', 'text-green-700');
+      await refreshBookingToggleUI();
+    } catch (e) {
+      msg.textContent = String(e.message || e);
+      msg.classList.remove('hidden');
+      msg.classList.remove('bg-green-100', 'text-green-700');
+      msg.classList.add('bg-red-100', 'text-red-700');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // Attach listeners after DOM is ready
+  function initBookingControls() {
+    const toggleBtn = document.getElementById('toggleBookingsBtn');
+    if (toggleBtn) {
+      toggleBtn.disabled = false; // Always enable on load
+      toggleBtn.addEventListener('click', toggleBookings);
+    }
+    const saveNoticeBtn = document.getElementById('saveBookingNoticeBtn');
+    if (saveNoticeBtn) saveNoticeBtn.addEventListener('click', saveBookingNotice);
+    const saveContactsBtn = document.getElementById('saveBookingContactsBtn');
+    if (saveContactsBtn) saveContactsBtn.addEventListener('click', saveBookingContacts);
+    refreshBookingToggleUI();
+  }
+  
+  async function saveBookingNotice() {
+    const noticeInput = document.getElementById('bookingNoticeInput');
+    const msg = document.getElementById('bookingNoticeMsg');
+    msg.classList.add('hidden');
+    msg.classList.remove('bg-green-100','text-green-700','bg-red-100','text-red-700');
+    const notice = noticeInput.value.trim();
+    try {
+      const res = await fetch('/api/booking-toggle', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notice })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      msg.textContent = 'Message saved';
+      msg.classList.add('bg-green-100','text-green-700');
+      msg.classList.remove('hidden');
+    } catch (e) {
+      msg.textContent = String(e.message || e);
+      msg.classList.add('bg-red-100','text-red-700');
+      msg.classList.remove('hidden');
+    }
+  }
+
+  // moved into initBookingControls()
+
+  async function saveBookingContacts() {
+    const msg = document.getElementById('bookingContactsMsg');
+    const phone1 = document.getElementById('bookingPhone1').value.trim();
+    const phone2 = document.getElementById('bookingPhone2').value.trim();
+    const whatsapp = document.getElementById('bookingWhatsapp').value.trim();
+    const email = document.getElementById('bookingEmail').value.trim();
+    msg.classList.add('hidden');
+    msg.classList.remove('bg-green-100','text-green-700','bg-red-100','text-red-700');
+    try {
+      const res = await fetch('/api/booking-toggle', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contact: { phone1, phone2, whatsapp, email } })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      msg.textContent = 'Contacts saved';
+      msg.classList.add('bg-green-100','text-green-700');
+      msg.classList.remove('hidden');
+    } catch (e) {
+      msg.textContent = String(e.message || e);
+      msg.classList.add('bg-red-100','text-red-700');
+      msg.classList.remove('hidden');
+    }
+  }
+
+  // Initialize immediately if DOM is ready; otherwise wait for DOMContentLoaded
+  if (document.readyState !== 'loading') {
+    initBookingControls();
+  } else {
+    document.addEventListener('DOMContentLoaded', initBookingControls);
   }
 </script>

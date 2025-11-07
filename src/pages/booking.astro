@@ -6,6 +6,29 @@ import Layout from "../layouts/Layout.astro";
 
   <section class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
     <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Check Availability & Book</h1>
+    <div id="bookingClosedBanner" class="hidden bg-yellow-100 text-yellow-800 p-3 rounded-md mb-2 text-center font-medium">
+      <span id="bookingNoticeText">Bookings are temporarily paused. Please check back later.</span>
+    </div>
+    <div id="contactPanel" class="hidden bg-yellow-50 border border-yellow-200 text-gray-800 p-4 rounded-md mb-4">
+      <div class="font-semibold mb-2">Contact us directly to book:</div>
+      <ul class="list-disc pl-5 mb-3">
+        <li>
+          Call: <a id="contactPhone1" class="text-blue-700 underline" href="tel:+918554871073">+91 8554871073</a>
+          or <a id="contactPhone2" class="text-blue-700 underline" href="tel:+917276171735">+91 7276171735</a>
+        </li>
+        <li>
+          WhatsApp: <a id="contactWhatsAppLink" class="text-blue-700 underline" href="https://wa.me/918554871073" target="_blank" rel="noopener noreferrer">+91 8554871073</a>
+        </li>
+        <li>
+          Email: <a id="contactEmailLink" class="text-blue-700 underline" href="mailto:booking@dolphinhouse-alibaug.com">booking@dolphinhouse-alibaug.com</a>
+        </li>
+      </ul>
+      <div class="flex gap-2">
+        <a href="tel:+918554871073" class="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700" id="contactCallBtn">Call Now</a>
+        <a href="https://wa.me/918554871073" target="_blank" rel="noopener noreferrer" class="rounded bg-green-600 px-3 py-2 text-white hover:bg-green-700" id="contactWhatsAppBtn">WhatsApp</a>
+        <a href="/contact" class="rounded bg-gray-600 px-3 py-2 text-white hover:bg-gray-700">More Contact Options</a>
+      </div>
+    </div>
     <div id="errorBox" class="hidden bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center"></div>
 
     <!-- Step 1: Date and Guest Count ONLY -->
@@ -43,6 +66,64 @@ import Layout from "../layouts/Layout.astro";
       const box = document.getElementById('errorBox');
       box.textContent = msg;
       box.classList.remove('hidden');
+    }
+
+    // Global booking availability toggle
+    async function checkBookingToggle() {
+      try {
+        const res = await fetch('/api/booking-toggle', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const enabled = !!data?.bookingEnabled;
+        const banner = document.getElementById('bookingClosedBanner');
+        const noticeEl = document.getElementById('bookingNoticeText');
+        const contactPanel = document.getElementById('contactPanel');
+        const phone1Link = document.getElementById('contactPhone1');
+        const phone2Link = document.getElementById('contactPhone2');
+        const whatsappLink = document.getElementById('contactWhatsAppLink');
+        const emailLink = document.getElementById('contactEmailLink');
+        const callBtn = document.getElementById('contactCallBtn');
+        const waBtn = document.getElementById('contactWhatsAppBtn');
+        const checkBtn = document.getElementById('checkBtn');
+        if (!enabled) {
+          banner.classList.remove('hidden');
+          if (noticeEl) {
+            const defaultMsg = 'Bookings are temporarily paused. Please check back later.';
+            const msg = (typeof data?.notice === 'string' && data.notice.trim().length > 0) ? data.notice.trim() : defaultMsg;
+            noticeEl.textContent = msg;
+          }
+          const c = data?.contact || {};
+          if (phone1Link && c.phone1) { phone1Link.href = `tel:${c.phone1}`; phone1Link.textContent = formatPhone(c.phone1); }
+          if (phone2Link && c.phone2) { phone2Link.href = `tel:${c.phone2}`; phone2Link.textContent = formatPhone(c.phone2); }
+          if (whatsappLink && c.whatsapp) { whatsappLink.href = `https://wa.me/${stripPlus(c.whatsapp)}`; whatsappLink.textContent = formatPhone(c.whatsapp); }
+          if (emailLink && c.email) { emailLink.href = `mailto:${c.email}`; emailLink.textContent = c.email; }
+          if (callBtn && c.phone1) { callBtn.href = `tel:${c.phone1}`; }
+          if (waBtn && c.whatsapp) { waBtn.href = `https://wa.me/${stripPlus(c.whatsapp)}`; }
+          contactPanel.classList.remove('hidden');
+          checkBtn.disabled = true;
+          checkBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          checkBtn.textContent = 'Bookings Paused';
+        } else {
+          banner.classList.add('hidden');
+          if (noticeEl) {
+            noticeEl.textContent = '';
+          }
+          contactPanel.classList.add('hidden');
+          checkBtn.disabled = false;
+          checkBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+          checkBtn.textContent = 'Check Availability';
+        }
+        return enabled;
+      } catch (err) {
+        console.warn('booking-toggle check failed', err);
+        return true; // default to enabled if toggle API unreachable
+      }
+    }
+
+    function stripPlus(s) { return String(s || '').replace(/^\+/, ''); }
+    function formatPhone(s) {
+      const t = String(s || '');
+      return t;
     }
 
     // Fetch bookings within a date range to reduce data volume
@@ -166,6 +247,11 @@ import Layout from "../layouts/Layout.astro";
     const roomList = document.getElementById('roomList');
 
     checkBtn.addEventListener('click', async () => {
+      const enabled = await checkBookingToggle();
+      if (!enabled) {
+        showError('Bookings are currently paused by the resort.');
+        return;
+      }
       const guests = parseInt(document.getElementById('guestCount').value);
       const checkin = document.getElementById('checkin').value;
       const checkout = document.getElementById('checkout').value;
@@ -214,6 +300,11 @@ import Layout from "../layouts/Layout.astro";
 
       document.querySelectorAll('.selectRoom').forEach(btn => {
         btn.addEventListener('click', async () => {
+          const enabled = await checkBookingToggle();
+          if (!enabled) {
+            showError('Bookings are currently paused by the resort.');
+            return;
+          }
           const rt = btn.dataset.rt;
           const type = btn.dataset.type;
           const total = computeTotalWithOverrides(inv, overrides, rt, type, checkin, checkout);
@@ -272,6 +363,8 @@ import Layout from "../layouts/Layout.astro";
         });
       });
     });
+    // Initial toggle check on page load
+    checkBookingToggle();
   </script>
 
 </Layout>

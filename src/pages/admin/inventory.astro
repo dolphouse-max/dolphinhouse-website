@@ -445,15 +445,18 @@ if (!authenticated) {
         for (let d=1; d<=dcount; d++) {
           const date = dateString(year, month, d);
           const booked = bookedCountsForDate(bookings, date, inventoryLocal)[room.key] || 0;
-          const computedAvailable = Math.max(0, room.qty - booked);
+          // Treat override.available as the cap BEFORE bookings; then subtract bookings
           const key = `${room.key}|${date}`;
           const ov = overridesMap[key] || {};
-          const availVal = (ov.available !== undefined) ? Math.min(computedAvailable, Math.max(0, Number(ov.available))) : computedAvailable;
+          const baseCap = (ov.available !== undefined)
+            ? Math.min(Math.max(0, Number(ov.available)), room.qty)
+            : room.qty;
+          const availVal = Math.max(0, baseCap - booked);
           const rateN = isNaN(ov.rateNonAC) ? (Number(inventoryLocal[room.key].rateNonAC)||0) : Number(ov.rateNonAC);
           const rateA = isNaN(ov.rateAC) ? (Number(inventoryLocal[room.key].rateAC)||0) : Number(ov.rateAC);
           const bg = (availVal>0) ? '#dcfce7' : '#fee2e2';
           html += `<td class="border px-1 py-1 text-center monthCell" data-room="${room.key}" data-date="${date}" style="background:${bg}">`
-            + `<input type=\"number\" class=\"availInput border rounded px-1 py-0.5 text-xs w-14 mr-1\" data-room=\"${room.key}\" data-date=\"${date}\" min=\"0\" max=\"${computedAvailable}\" value=\"${availVal}\" />`
+            + `<input type=\"number\" class=\"availInput border rounded px-1 py-0.5 text-xs w-14 mr-1\" data-room=\"${room.key}\" data-date=\"${date}\" min=\"0\" max=\"${room.qty}\" value=\"${baseCap}\" />`
             + `<input type=\"number\" class=\"rateNonACInput border rounded px-1 py-0.5 text-xs w-16 mr-1\" placeholder=\"Non-AC\" value=\"${rateN}\" />`
             + `<input type=\"number\" class=\"rateACInput border rounded px-1 py-0.5 text-xs w-16\" placeholder=\"AC\" value=\"${rateA}\" />`
             + `<div class=\"text-[10px] text-gray-600\">${booked}/${room.qty}</div>`
