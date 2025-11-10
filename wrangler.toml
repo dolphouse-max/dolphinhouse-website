@@ -8,7 +8,8 @@ name = "dolphinhouse-website"
 pages_build_output_dir = "./dist"
 
 # Runtime compatibility for Pages Functions
-compatibility_date = "2025-10-25"
+compatibility_date = "2025-09-06"
+compatibility_flags = ["nodejs_compat"]
 
 # Bindings available to Pages Functions
 
@@ -27,14 +28,17 @@ database_id = "7fe77243-2caa-46d8-af95-a3f8a234a019"
 [[vectorize]]
 binding = "VECTORIZE"
 index_name = "dolphinhouse-rag"
+remote = true
 
 [[vectorize]]
 binding = "VECTORIZE_NEW"
 index_name = "dolphinhouse-rag-384"
+remote = true
 
 # Cloudflare AI binding
 [ai]
 binding = "AI"
+remote = true
 
 # Global vars used by Pages Functions
 [vars]

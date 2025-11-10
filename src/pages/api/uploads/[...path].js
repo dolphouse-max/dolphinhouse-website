@@ -1,8 +1,6 @@
 // src/pages/api/uploads/[...path].js
 // Proxy route to serve files from R2 (ID_BUCKET) for production.
-// Falls back to serving from local filesystem if R2 is not bound.
-import { promises as fs } from 'node:fs';
-import path from 'node:path';
+// In Cloudflare Workers/Pages Functions, Node fs/path are not used.
 
 export async function GET({ locals, params }) {
   const r2Bucket = locals.runtime.env.ID_BUCKET;
@@ -21,16 +19,9 @@ export async function GET({ locals, params }) {
       return new Response(body, { headers: { 'Content-Type': ct } });
     }
 
-    // Dev fallback: serve from local public/uploads
-    const fullPath = path.join(process.cwd(), 'public', 'uploads', key);
-    const data = await fs.readFile(fullPath);
-    const ext = path.extname(fullPath).toLowerCase();
-    const ct = (
-      ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' :
-      ext === '.png' ? 'image/png' :
-      ext === '.pdf' ? 'application/pdf' : 'application/octet-stream'
-    );
-    return new Response(data, { headers: { 'Content-Type': ct } });
+    // No R2 binding: in production, uploads should be served statically from /uploads.
+    // Return 404 to avoid relying on Node-only fs/path fallback in Workers.
+    return new Response('Not found', { status: 404 });
   } catch (err) {
     console.error('Uploads proxy error:', err);
     return new Response('Server error', { status: 500 });
