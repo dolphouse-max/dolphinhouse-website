@@ -178,6 +178,7 @@ import Layout from "../layouts/Layout.astro";
     const guests = parseInt(params.get('guests') || '2');
     const nights = parseInt(params.get('nights') || '1');
     const baseTotal = parseFloat(params.get('total') || '0');
+    const rooms = parseInt(params.get('rooms') || '1');
 
     const summaryDiv = document.getElementById('bookingSummary');
     const chargesDiv = document.getElementById('charges');
@@ -199,6 +200,7 @@ import Layout from "../layouts/Layout.astro";
         </div>
         <div class="border-t pt-2">
           <div class="flex justify-between"><span class="font-medium">Room:</span><span>${roomLabel}${acType ? ` (${acType.toUpperCase()})` : ''}</span></div>
+          <div class="flex justify-between"><span class="font-medium">Number of Rooms:</span><span>${rooms}</span></div>
           <div class="flex justify-between"><span class="font-medium">Check-in:</span><span>${checkin}</span></div>
           <div class="flex justify-between"><span class="font-medium">Check-out:</span><span>${checkout}</span></div>
           <div class="flex justify-between"><span class="font-medium">Nights:</span><span>${nights}</span></div>
@@ -208,8 +210,9 @@ import Layout from "../layouts/Layout.astro";
 
     function updateCharges() {
       const currentGuests = parseInt(guestsInput.value);
-      const baseGuests = (room && room.includes('family')) ? 4 : 2;
-      const extras = Math.max(0, currentGuests - baseGuests);
+      const baseGuestsPerRoom = (room && room.includes('family')) ? 4 : 2;
+      const baseGuestsTotal = baseGuestsPerRoom * rooms;
+      const extras = Math.max(0, currentGuests - baseGuestsTotal);
       const extraCharges = extras * extraPersonCharge * nights;
       const finalTotal = baseTotal + extraCharges;
 
@@ -548,8 +551,9 @@ import Layout from "../layouts/Layout.astro";
       }
 
       const currentGuests = parseInt(guestsInput.value);
-      const baseGuests = room.includes('family') ? 4 : 2;
-      const extras = Math.max(0, currentGuests - baseGuests);
+      const baseGuestsPerRoom = room.includes('family') ? 4 : 2;
+      const baseGuestsTotal = baseGuestsPerRoom * rooms;
+      const extras = Math.max(0, currentGuests - baseGuestsTotal);
       const extraCharges = extras * extraPersonCharge * nights;
       const finalTotal = baseTotal + extraCharges;
 

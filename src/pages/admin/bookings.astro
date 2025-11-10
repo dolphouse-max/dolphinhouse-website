@@ -371,8 +371,8 @@ if (!authenticated) {
           const iso = (d) => new Date(d).toISOString().slice(0,10);
           const addDays = (d,n)=>{const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt;};
           bookings = [
-            { id: 'local-1', customer_id: 'DH-'+iso(today).replace(/-/g,'')+'-0001', name: 'Amit Sharma', email: 'amit@example.com', mobile: '9812345678', room: 'standard', checkin: iso(today), checkout: iso(addDays(today,2)), nights: 2, guests: 2, total: 5000, status: 'pending', createdAt: new Date().toISOString() },
-            { id: 'local-2', customer_id: 'DH-'+iso(today).replace(/-/g,'')+'-0002', name: 'Neha Desai', email: 'neha@example.com', mobile: '9876543210', room: 'deluxe', checkin: iso(addDays(today,1)), checkout: iso(addDays(today,3)), nights: 2, guests: 3, total: 7000, status: 'approved', createdAt: new Date().toISOString() }
+            { id: 'local-1', customer_id: 'dh00000001', name: 'Amit Sharma', email: 'amit@example.com', mobile: '9812345678', room: 'standard', checkin: iso(today), checkout: iso(addDays(today,2)), nights: 2, guests: 2, total: 5000, status: 'pending', createdAt: new Date().toISOString() },
+            { id: 'local-2', customer_id: 'dh00000002', name: 'Neha Desai', email: 'neha@example.com', mobile: '9876543210', room: 'deluxe', checkin: iso(addDays(today,1)), checkout: iso(addDays(today,3)), nights: 2, guests: 3, total: 7000, status: 'approved', createdAt: new Date().toISOString() }
           ];
         }
 
@@ -552,14 +552,16 @@ if (!authenticated) {
 
         // Payment SMS actions (vilpower)
         if (b.mobile) {
-          if (["pending", "payment_pending", "approved"].includes(normStatus(b.status))) {
+          // Show Pending SMS only for pending/payment_pending statuses
+          if (["pending", "payment_pending"].includes(normStatus(b.status))) {
             actionButtons += `
               <button class="sms-pending-btn px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200" data-id="${b.id}">
                 📨 Pending SMS
               </button>
             `;
           }
-          if (["payment_submitted", "confirmed"].includes(normStatus(b.status))) {
+          // Show Received SMS for approved/payment_submitted/confirmed statuses
+          if (["approved", "payment_submitted", "confirmed"].includes(normStatus(b.status))) {
             actionButtons += `
               <button class="sms-received-btn px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200" data-id="${b.id}">
                 ✅ Received SMS
@@ -584,7 +586,10 @@ if (!authenticated) {
           <td class="px-4 py-2">
             ${b.mobile ? `<a href="tel:${b.mobile}" class="text-sky-600 hover:underline">${b.mobile}</a>` : 'N/A'}
           </td>
-          <td class="px-4 py-2 capitalize">${inventory[b.room]?.label || b.room}</td>
+          <td class="px-4 py-2">
+            <div class="capitalize">${inventory[b.room]?.label || b.room}</div>
+            <div class="text-xs text-gray-500">Rooms: ${Number(b.rooms || 1)}</div>
+          </td>
           <td class="px-4 py-2">
             <div class="text-sm">${b.checkin}</div>
             <div class="text-xs text-gray-500">→ ${b.checkout}</div>

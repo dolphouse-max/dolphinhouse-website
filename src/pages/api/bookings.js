@@ -41,7 +41,7 @@ export async function GET({ locals, request }) {
           const checkout = addDays(checkin, nights);
           const status = statuses[Math.floor(Math.random() * statuses.length)];
           const id = `local-${Date.now()}-${seq++}`;
-          const customerId = `DH-${iso(today).replace(/-/g, '')}-${(seq + '').padStart(4, '0')}`;
+          const customerId = `dh${(seq + '').padStart(8, '0').slice(-8)}`;
           const name = names[Math.floor(Math.random() * names.length)] + ' ' + ['Patil','Sharma','Desai','Iyer','Gupta'][Math.floor(Math.random()*5)];
           const email = `${name.split(' ')[0].toLowerCase()}@example.com`;
           const mobile = `98${Math.floor(10000000 + Math.random()*89999999)}`;
@@ -239,9 +239,8 @@ export async function POST({ locals, request }) {
     // Local fallback: accept booking and return a mock ID so flows can be tested
     const body = await request.json();
     const id = `local-${crypto.randomUUID()}`;
-    const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-    const shortId = id.substring(6, 10).toUpperCase();
-    const customerId = `DH-${today}-${shortId}`;
+    // Generate short customer id: dh + 8 digits
+    const customerId = `dh${String(Math.floor(10000000 + Math.random() * 90000000))}`;
     console.warn('POST /api/bookings (local fallback) returning mock booking id');
     return new Response(JSON.stringify({ success: true, id, customerId }), {
       headers: { 'Content-Type': 'application/json' }
@@ -263,10 +262,25 @@ export async function POST({ locals, request }) {
     status = "payment_pending",
   } = body;
 
-  // Generate Customer ID: DH-YYYYMMDD-XXXX
-  const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-  const shortId = id.substring(0, 4).toUpperCase();
-  const customerId = `DH-${today}-${shortId}`;
+  // Generate Customer ID: dh + 8 digits, ensure uniqueness
+  // Discover schema for insert column names (camelCase vs snake_case)
+  const infoPre = await db.prepare('PRAGMA table_info(bookings)').all();
+  const colsPre = new Set((infoPre.results || []).map((r) => r.name));
+  const hasPre = (c) => colsPre.has(c);
+  const customerIdColPre = hasPre('customer_id') ? 'customer_id' : 'customerId';
+  async function generateUniqueCustomerId() {
+    for (let i = 0; i < 6; i++) {
+      const cid = `dh${String(Math.floor(10000000 + Math.random() * 90000000))}`;
+      const exists = await db
+        .prepare(`SELECT 1 FROM bookings WHERE ${customerIdColPre} = ? LIMIT 1`)
+        .bind(cid)
+        .first();
+      if (!exists) return cid;
+    }
+    // Fallback to time-based last 8 digits if random collisions persist
+    return `dh${String(Date.now()).slice(-8)}`;
+  }
+  const customerId = await generateUniqueCustomerId();
 
   console.log('Creating booking with Customer ID:', customerId);
 

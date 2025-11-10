@@ -173,6 +173,36 @@ export async function POST({ locals, request }) {
       idImageUrl
     ).run();
 
+    // --- Sync core guest details back to bookings table ---
+    try {
+      const info = await db.prepare('PRAGMA table_info(bookings)').all();
+      const cols = new Set((info.results || []).map((r) => r.name));
+      const customerIdCol = cols.has('customer_id') ? 'customer_id' : (cols.has('customerId') ? 'customerId' : null);
+
+      // Try match by bookings.id (UUID) first, then by customer_id (DH-YYYYMMDD-XXXX)
+      let bookingRow = await db.prepare('SELECT id FROM bookings WHERE id = ?').bind(bookingId).first();
+      if (!bookingRow && customerIdCol) {
+        bookingRow = await db.prepare(`SELECT id FROM bookings WHERE ${customerIdCol} = ?`).bind(bookingId).first();
+      }
+
+      if (bookingRow) {
+        // Build dynamic update only for provided non-empty fields
+        const updates = [];
+        const values = [];
+        if (guestName) { updates.push('name = ?'); values.push(guestName); }
+        if (email) { updates.push('email = ?'); values.push(email); }
+        if (phoneE164) { updates.push('mobile = ?'); values.push(phoneE164); }
+
+        if (updates.length > 0) {
+          values.push(bookingRow.id);
+          await db.prepare(`UPDATE bookings SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
+        }
+      }
+    } catch (syncErr) {
+      // Non-fatal: log but do not fail the pre-checkin flow
+      console.warn('Pre-checkin: failed to sync guest details to bookings:', syncErr?.message || syncErr);
+    }
+
     // The successful completion of this logic allows any subsequent email logic to run.
     return new Response(JSON.stringify({ success: true, id, idFrontUrl, idBackUrl, idImageUrl }), {
       headers: { 'Content-Type': 'application/json' }
