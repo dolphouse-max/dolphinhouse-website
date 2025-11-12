@@ -435,10 +435,9 @@ if (!authenticated) {
     }
     function bookedCountsForDate(bookings, date, inventoryLocal) {
       const counts = {}; Object.keys(inventoryLocal).forEach(k => counts[k] = 0);
-      const active = new Set(['approved','confirmed','checked_in']);
       bookings.forEach(b => {
         const st = String(b.status || '').toLowerCase();
-        if (!active.has(st)) return;
+        if (st === 'cancelled') return; // count all non-cancelled bookings, including payment_pending
         const ci = parseYMD(b.checkin); const co = parseYMD(b.checkout); const dd = parseYMD(date);
         if (dd >= ci && dd < co) { counts[b.room] = (counts[b.room]||0) + 1; }
       });
