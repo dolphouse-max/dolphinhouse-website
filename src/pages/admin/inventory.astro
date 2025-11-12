@@ -522,12 +522,25 @@ if (!authenticated) {
           + `<td class="px-2 py-1 border">${inv.qty}</td>`
           + `<td class="px-2 py-1 border">${rateN}</td>`
           + `<td class="px-2 py-1 border">${rateA}</td>`
-          + `<td class="px-2 py-1 border"><input type="number" class="summaryBookedInput border rounded px-2 py-1 w-20" data-room="${key}" data-date="${dateISO}" min="0" value="${bookedShow}" /></td>`
-          + `<td class="px-2 py-1 border">${available}</td>`
+          + `<td class="px-2 py-1 border"><input type="number" class="summaryBookedInput border rounded px-2 py-1 w-20" data-room="${key}" data-date="${dateISO}" min="0" max="${inv.qty}" value="${bookedShow}" /></td>`
+          + `<td class="px-2 py-1 border summaryAvailableCell">${available}</td>`
           + `</tr>`;
       });
       html += '</tbody></table></div>';
       container.innerHTML = html;
+      // Live update: as No. Booked changes, recompute No. Available = Total Rooms − No. Booked
+      const inputs = Array.from(container.querySelectorAll('.summaryBookedInput'));
+      inputs.forEach(inp => {
+        inp.addEventListener('input', () => {
+          const room = inp.dataset.room;
+          const qty = Number(inventoryLocal[room]?.qty) || 0;
+          const booked = Math.max(0, Number(inp.value) || 0);
+          const availableCalc = Math.max(0, qty - booked);
+          const row = inp.closest('tr');
+          const availCell = row ? row.querySelector('.summaryAvailableCell') : null;
+          if (availCell) availCell.textContent = String(availableCalc);
+        });
+      });
     }
     async function renderMonthEditor(inventoryLocal, bookings) {
       const picker = document.getElementById('monthPicker'); const now = new Date(); const defaultMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`; if (!picker.value) picker.value = defaultMonth; const [yStr, mStr] = picker.value.split('-'); const year = Number(yStr); const month = Number(mStr); const dcount = daysInMonth(year, month); const start = `${picker.value}-01`; const end = dateString(year, month, dcount + 1); const overrides = await loadOverrides(start, end); const overridesMap = mapOverrides(overrides); buildMonthGrid(inventoryLocal, bookings, overridesMap, year, month);
