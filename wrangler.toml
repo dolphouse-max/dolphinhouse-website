@@ -28,17 +28,14 @@ database_id = "7fe77243-2caa-46d8-af95-a3f8a234a019"
 [[vectorize]]
 binding = "VECTORIZE"
 index_name = "dolphinhouse-rag"
-remote = true
 
 [[vectorize]]
 binding = "VECTORIZE_NEW"
 index_name = "dolphinhouse-rag-384"
-remote = true
 
 # Cloudflare AI binding
 [ai]
 binding = "AI"
-remote = true
 
 # Global vars used by Pages Functions
 [vars]

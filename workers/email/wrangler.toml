@@ -14,11 +14,9 @@ database_id = "7fe77243-2caa-46d8-af95-a3f8a234a019"
 [[vectorize]]
 binding = "VECTORIZE"
 index_name = "dolphinhouse-rag"
-remote = true
 
 [ai]
 binding = "AI"
-remote = true
 
 [vars]
 EMAIL_FROM = "contact@dolphinhouse-alibaug.com"
