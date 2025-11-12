@@ -511,12 +511,10 @@ if (!authenticated) {
       Object.keys(inventoryLocal).forEach(key => {
         const inv = inventoryLocal[key];
         const ov = (overridesMap[`${key}|${dateISO}`] || {});
-        const baseCap = (ov.available !== undefined)
-          ? Math.min(Math.max(0, Number(ov.available)), Number(inv.qty)||0)
-          : Number(inv.qty)||0;
         const bookedCalc = counts[key] || 0;
         const bookedShow = (ov.bookedOverride !== undefined && !isNaN(Number(ov.bookedOverride))) ? Number(ov.bookedOverride) : bookedCalc;
-        const available = Math.max(0, baseCap - bookedShow);
+        // Summary table: No. Available = Total Rooms - No. Booked (as requested)
+        const available = Math.max(0, (Number(inv.qty)||0) - bookedShow);
         const rateN = isNaN(ov.rateNonAC) ? (Number(inv.rateNonAC)||0) : Number(ov.rateNonAC);
         const rateA = isNaN(ov.rateAC) ? (Number(inv.rateAC)||0) : Number(ov.rateAC);
         html += `<tr>`
@@ -588,6 +586,25 @@ if (!authenticated) {
         if (!res.ok) throw new Error('Save failed');
         const j = await res.json();
         alert(`Saved ${j.updated || 0} cells`);
+        // Refresh month grid and summary to reflect saved overrides
+        const picker = document.getElementById('monthPicker');
+        if (picker && picker.value) {
+          const [yStr, mStr] = picker.value.split('-');
+          const year = Number(yStr); const month = Number(mStr);
+          const dcount = daysInMonth(year, month);
+          const start = `${picker.value}-01`;
+          const end = dateString(year, month, dcount + 1);
+          const overrides = await loadOverrides(start, end);
+          const overridesMap = mapOverrides(overrides);
+          // Rebuild grid
+          buildMonthGrid(inventory, await fetchBookingsRange(start, end), overridesMap, year, month);
+          // Re-render summary for selected date
+          const summaryInput = document.getElementById('summaryDate');
+          if (summaryInput && summaryInput.value) {
+            const bookings = await fetchBookingsRange(start, end);
+            renderSummary(inventory, bookings, overridesMap, summaryInput.value);
+          }
+        }
       } catch (e) {
         console.error('saveOverrides error', e);
         alert('Failed to save changes.');
