@@ -433,7 +433,8 @@ if (!authenticated) {
         m[`${it.room}|${it.date}`] = {
           available: Number(it.available) || 0,
           rateNonAC: Number(it.rateNonAC ?? NaN),
-          rateAC: Number(it.rateAC ?? NaN)
+          rateAC: Number(it.rateAC ?? NaN),
+          bookedOverride: (it.bookedOverride !== undefined) ? Number(it.bookedOverride) : undefined
         };
       }
       return m;
@@ -469,13 +470,14 @@ if (!authenticated) {
         // Date columns with numeric-only values
         for (let d=1; d<=dcount; d++) {
           const date = dateString(year, month, d);
-          const booked = bookedCountsForDate(bookings, date, inventoryLocal)[room.key] || 0;
+          const bookedCalc = bookedCountsForDate(bookings, date, inventoryLocal)[room.key] || 0;
           const key = `${room.key}|${date}`;
           const ov = overridesMap[key] || {};
           const baseCap = (ov.available !== undefined)
             ? Math.min(Math.max(0, Number(ov.available)), room.qty)
             : room.qty;
-          const availVal = Math.max(0, baseCap - booked);
+          const bookedShow = (ov.bookedOverride !== undefined && !isNaN(Number(ov.bookedOverride))) ? Number(ov.bookedOverride) : bookedCalc;
+          const availVal = Math.max(0, baseCap - bookedShow);
           const rateN = isNaN(ov.rateNonAC) ? (Number(inventoryLocal[room.key].rateNonAC)||0) : Number(ov.rateNonAC);
           const rateA = isNaN(ov.rateAC) ? (Number(inventoryLocal[room.key].rateAC)||0) : Number(ov.rateAC);
           const bg = (availVal>0) ? '#dcfce7' : '#fee2e2';
@@ -483,11 +485,12 @@ if (!authenticated) {
             + `<div class=\"text-[11px] text-gray-900\">${room.qty}</div>`
             + `<div class=\"text-[11px] text-gray-900\">${rateN}</div>`
             + `<div class=\"text-[11px] text-gray-900\">${rateA}</div>`
-            + `<div class=\"text-[11px] text-gray-900\">${booked}</div>`
+            + `<div class=\"text-[11px] text-gray-900\">${bookedShow}</div>`
             + `<div class=\"text-[11px] text-gray-900\">${availVal}</div>`
             + `<input type=\"number\" class=\"rateNonACInput hidden\" value=\"${rateN}\" />`
             + `<input type=\"number\" class=\"rateACInput hidden\" value=\"${rateA}\" />`
             + `<input type=\"number\" class=\"availInput hidden\" data-room=\"${room.key}\" data-date=\"${date}\" min=\"0\" max=\"${room.qty}\" value=\"${baseCap}\" />`
+            + `<input type=\"number\" class=\"bookedOverrideInput hidden\" value=\"${(ov.bookedOverride !== undefined) ? Number(ov.bookedOverride) : ''}\" />`
             + `</td>`;
         }
         html += '</tr>';
@@ -502,7 +505,7 @@ if (!authenticated) {
         + '<th class="px-2 py-1 text-left border">Total Rooms</th>'
         + '<th class="px-2 py-1 text-left border">Rate Non-AC (₹)</th>'
         + '<th class="px-2 py-1 text-left border">Rate AC (₹)</th>'
-        + '<th class="px-2 py-1 text-left border">No. Booked</th>'
+        + '<th class="px-2 py-1 text-left border">No. Booked (editable)</th>'
         + '<th class="px-2 py-1 text-left border">No. Available</th>'
         + '</tr></thead><tbody>';
       Object.keys(inventoryLocal).forEach(key => {
@@ -511,8 +514,9 @@ if (!authenticated) {
         const baseCap = (ov.available !== undefined)
           ? Math.min(Math.max(0, Number(ov.available)), Number(inv.qty)||0)
           : Number(inv.qty)||0;
-        const booked = counts[key] || 0;
-        const available = Math.max(0, baseCap - booked);
+        const bookedCalc = counts[key] || 0;
+        const bookedShow = (ov.bookedOverride !== undefined && !isNaN(Number(ov.bookedOverride))) ? Number(ov.bookedOverride) : bookedCalc;
+        const available = Math.max(0, baseCap - bookedShow);
         const rateN = isNaN(ov.rateNonAC) ? (Number(inv.rateNonAC)||0) : Number(ov.rateNonAC);
         const rateA = isNaN(ov.rateAC) ? (Number(inv.rateAC)||0) : Number(ov.rateAC);
         html += `<tr>`
@@ -520,7 +524,7 @@ if (!authenticated) {
           + `<td class="px-2 py-1 border">${inv.qty}</td>`
           + `<td class="px-2 py-1 border">${rateN}</td>`
           + `<td class="px-2 py-1 border">${rateA}</td>`
-          + `<td class="px-2 py-1 border">${booked}</td>`
+          + `<td class="px-2 py-1 border"><input type="number" class="summaryBookedInput border rounded px-2 py-1 w-20" data-room="${key}" data-date="${dateISO}" min="0" value="${bookedShow}" /></td>`
           + `<td class="px-2 py-1 border">${available}</td>`
           + `</tr>`;
       });
@@ -554,8 +558,27 @@ if (!authenticated) {
         date: cell.dataset.date,
         available: Number(cell.querySelector('.availInput')?.value) || 0,
         rateNonAC: Number(cell.querySelector('.rateNonACInput')?.value) || 0,
-        rateAC: Number(cell.querySelector('.rateACInput')?.value) || 0
+        rateAC: Number(cell.querySelector('.rateACInput')?.value) || 0,
+        bookedOverride: (cell.querySelector('.bookedOverrideInput')?.value !== undefined && cell.querySelector('.bookedOverrideInput')?.value !== '')
+          ? Number(cell.querySelector('.bookedOverrideInput')?.value) || 0
+          : undefined
       }));
+      // Merge in summary inputs for the selected date (bookedOverride per room for that date)
+      const summaryInputs = Array.from(document.querySelectorAll('.summaryBookedInput'));
+      summaryInputs.forEach(inp => {
+        const room = inp.dataset.room;
+        const date = inp.dataset.date;
+        const valStr = inp.value;
+        const val = (valStr === '' || valStr === undefined) ? undefined : Number(valStr) || 0;
+        // Find matching payload item or add one
+        let item = payload.find(p => p.room === room && p.date === date);
+        if (!item) {
+          item = { room, date, available: 0, rateNonAC: 0, rateAC: 0, bookedOverride: val };
+          payload.push(item);
+        } else {
+          item.bookedOverride = val;
+        }
+      });
       try {
         const res = await fetch('/api/availability-overrides', {
           method: 'PUT',

@@ -1,7 +1,7 @@
 // Per-day availability and rate overrides API
 // Dev-friendly: keeps in-memory cache when DB is not bound
 
-let LOCAL_OVERRIDES = new Map(); // key: `${room}|${date}` -> { available, rateNonAC, rateAC }
+let LOCAL_OVERRIDES = new Map(); // key: `${room}|${date}` -> { available, rateNonAC, rateAC, bookedOverride }
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -49,13 +49,24 @@ export async function onRequest(context) {
           available INTEGER NOT NULL,
           rateNonAC REAL,
           rateAC REAL,
+          bookedOverride INTEGER,
           PRIMARY KEY (room, date)
         )
       `).run();
+      // Ensure bookedOverride column exists when table predated this field
+      const info = await db.prepare('PRAGMA table_info(availability_overrides)').all();
+      const cols = new Set((info.results || []).map((r) => r.name));
+      if (!cols.has('bookedOverride')) {
+        try {
+          await db.prepare('ALTER TABLE availability_overrides ADD COLUMN bookedOverride INTEGER').run();
+        } catch (e) {
+          // ignore if concurrent or not supported
+        }
+      }
 
       const res = start && end
-        ? await db.prepare(`SELECT room, date, available, rateNonAC, rateAC FROM availability_overrides WHERE date >= ? AND date < ? ORDER BY date`).bind(start, end).all()
-        : await db.prepare(`SELECT room, date, available, rateNonAC, rateAC FROM availability_overrides ORDER BY date`).all();
+        ? await db.prepare(`SELECT room, date, available, rateNonAC, rateAC, bookedOverride FROM availability_overrides WHERE date >= ? AND date < ? ORDER BY date`).bind(start, end).all()
+        : await db.prepare(`SELECT room, date, available, rateNonAC, rateAC, bookedOverride FROM availability_overrides ORDER BY date`).all();
       return json(res.results || []);
     }
 
@@ -70,6 +81,7 @@ export async function onRequest(context) {
             available: Number(o.available) || 0,
             rateNonAC: Number(o.rateNonAC) || 0,
             rateAC: Number(o.rateAC) || 0,
+            bookedOverride: (o.bookedOverride !== undefined) ? Number(o.bookedOverride) || 0 : (LOCAL_OVERRIDES.get(key)?.bookedOverride || 0),
           });
         });
         return json({ updated: overrides.length });
@@ -83,15 +95,28 @@ export async function onRequest(context) {
           available INTEGER NOT NULL,
           rateNonAC REAL,
           rateAC REAL,
+          bookedOverride INTEGER,
           PRIMARY KEY (room, date)
         )
       `).run();
+      const info = await db.prepare('PRAGMA table_info(availability_overrides)').all();
+      const cols = new Set((info.results || []).map((r) => r.name));
+      if (!cols.has('bookedOverride')) {
+        try { await db.prepare('ALTER TABLE availability_overrides ADD COLUMN bookedOverride INTEGER').run(); } catch (e) {}
+      }
 
       for (const o of overrides) {
         await db.prepare(`
-          INSERT OR REPLACE INTO availability_overrides (room, date, available, rateNonAC, rateAC)
-          VALUES (?, ?, ?, ?, ?)
-        `).bind(o.room, o.date, Number(o.available) || 0, Number(o.rateNonAC) || 0, Number(o.rateAC) || 0).run();
+          INSERT OR REPLACE INTO availability_overrides (room, date, available, rateNonAC, rateAC, bookedOverride)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `).bind(
+          o.room,
+          o.date,
+          Number(o.available) || 0,
+          Number(o.rateNonAC) || 0,
+          Number(o.rateAC) || 0,
+          (o.bookedOverride !== undefined) ? Number(o.bookedOverride) || 0 : null
+        ).run();
       }
       return json({ updated: overrides.length });
     }
