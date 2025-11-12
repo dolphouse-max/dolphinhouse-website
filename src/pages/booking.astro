@@ -251,6 +251,9 @@ import Layout from "../layouts/Layout.astro";
     const availability = document.getElementById('availability');
     const roomList = document.getElementById('roomList');
 
+    // Run a toggle check on page load to reflect current status immediately
+    (async () => { try { await checkBookingToggle(); } catch {} })();
+
     checkBtn.addEventListener('click', async () => {
       const enabled = await checkBookingToggle();
       if (!enabled) {

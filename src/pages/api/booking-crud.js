@@ -67,6 +67,40 @@ export async function onRequest(context) {
     
     // POST - Create a new booking
     if (method === "POST") {
+      // Respect global booking availability toggle
+      async function isBookingEnabled() {
+        try {
+          if (db) {
+            await db.prepare(`
+              CREATE TABLE IF NOT EXISTS app_settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+              )
+            `).run();
+            const row = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_enabled'`).first();
+            return row ? (row.value === 'true' || row.value === true) : true;
+          } else {
+            // Fallback: call booking-toggle API (in-memory only in dev)
+            const url = new URL('/api/booking-toggle', request.url);
+            const res = await fetch(url.toString(), { cache: 'no-store' });
+            if (!res.ok) return true; // default to enabled if unreachable
+            const j = await res.json();
+            return !!j?.bookingEnabled;
+          }
+        } catch (e) {
+          console.warn('Booking toggle check failed, treating as enabled', e);
+          return true;
+        }
+      }
+
+      const enabled = await isBookingEnabled();
+      if (!enabled) {
+        return new Response(JSON.stringify({ error: 'Bookings are currently paused. Please try again later.' }), {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+
       const data = await request.json();
       
       // Validate required fields (email optional)
