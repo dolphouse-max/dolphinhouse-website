@@ -451,13 +451,25 @@ if (!authenticated) {
     function buildMonthGrid(inventoryLocal, bookings, overridesMap, year, month) {
       const container = document.getElementById('monthGrid'); if (!container) return; const dcount = daysInMonth(year, month);
       const rooms = Object.keys(inventoryLocal).map(k => ({ key: k, label: inventoryLocal[k].label, qty: Number(inventoryLocal[k].qty)||0 }));
-      let html = '<div class="overflow-x-auto"><table class="min-w-full border-collapse"><thead><tr><th class="px-2 py-1 text-left border">Room Type</th>';
+      let html = '<div class="overflow-x-auto"><table class="min-w-full border-collapse"><thead><tr>'
+        + '<th class="px-2 py-1 text-left border">Room Type</th>'
+        + '<th class="px-2 py-1 text-left border">Fields</th>';
       for (let d=1; d<=dcount; d++) html += `<th class="px-1 py-1 border text-xs">${d}</th>`; html += '</tr></thead><tbody>';
-      for (const room of rooms) { html += `<tr><td class="px-2 py-1 border text-sm font-medium">${room.label}</td>`;
+      for (const room of rooms) {
+        // Room label column
+        html += `<tr><td class="px-2 py-1 border text-sm font-medium">${room.label}</td>`;
+        // Fields column with static labels
+        html += `<td class="px-2 py-1 border text-xs text-gray-700 align-top">`
+          + `<div>Total Rooms</div>`
+          + `<div>Rate Non-AC</div>`
+          + `<div>Rate AC</div>`
+          + `<div>No. Booked</div>`
+          + `<div>No. Available</div>`
+          + `</td>`;
+        // Date columns with numeric-only values
         for (let d=1; d<=dcount; d++) {
           const date = dateString(year, month, d);
           const booked = bookedCountsForDate(bookings, date, inventoryLocal)[room.key] || 0;
-          // Treat override.available as the cap BEFORE bookings; then subtract bookings
           const key = `${room.key}|${date}`;
           const ov = overridesMap[key] || {};
           const baseCap = (ov.available !== undefined)
@@ -468,12 +480,14 @@ if (!authenticated) {
           const rateA = isNaN(ov.rateAC) ? (Number(inventoryLocal[room.key].rateAC)||0) : Number(ov.rateAC);
           const bg = (availVal>0) ? '#dcfce7' : '#fee2e2';
           html += `<td class="border px-1 py-1 text-left monthCell" data-room="${room.key}" data-date="${date}" style="background:${bg}">`
-            + `<div class=\"text-[11px] text-gray-700\"><span class=\"font-medium\">Total Rooms:</span> ${room.qty}</div>`
-            + `<div class=\"text-[11px] text-gray-700\"><span class=\"font-medium\">Rate Non-AC:</span> <input type=\"number\" class=\"rateNonACInput border rounded px-1 py-0.5 text-xs w-20 ml-1\" placeholder=\"Non-AC\" value=\"${rateN}\" /></div>`
-            + `<div class=\"text-[11px] text-gray-700\"><span class=\"font-medium\">Rate AC:</span> <input type=\"number\" class=\"rateACInput border rounded px-1 py-0.5 text-xs w-20 ml-1\" placeholder=\"AC\" value=\"${rateA}\" /></div>`
-            + `<div class=\"text-[11px] text-gray-700\"><span class=\"font-medium\">No. Booked:</span> ${booked}</div>`
-            + `<div class=\"text-[11px] text-gray-900\"><span class=\"font-medium\">No. Available:</span> ${availVal}</div>`
-            + `<div class=\"text-[10px] text-gray-600 mt-1\"><span class=\"font-medium\">Sellable (override cap):</span> <input type=\"number\" class=\"availInput border rounded px-1 py-0.5 text-xs w-20 ml-1\" data-room=\"${room.key}\" data-date=\"${date}\" min=\"0\" max=\"${room.qty}\" value=\"${baseCap}\" /></div>`
+            + `<div class=\"text-[11px] text-gray-900\">${room.qty}</div>`
+            + `<div class=\"text-[11px] text-gray-900\">${rateN}</div>`
+            + `<div class=\"text-[11px] text-gray-900\">${rateA}</div>`
+            + `<div class=\"text-[11px] text-gray-900\">${booked}</div>`
+            + `<div class=\"text-[11px] text-gray-900\">${availVal}</div>`
+            + `<input type=\"number\" class=\"rateNonACInput hidden\" value=\"${rateN}\" />`
+            + `<input type=\"number\" class=\"rateACInput hidden\" value=\"${rateA}\" />`
+            + `<input type=\"number\" class=\"availInput hidden\" data-room=\"${room.key}\" data-date=\"${date}\" min=\"0\" max=\"${room.qty}\" value=\"${baseCap}\" />`
             + `</td>`;
         }
         html += '</tr>';
