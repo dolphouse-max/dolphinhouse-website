@@ -1,5 +1,6 @@
-// workers/email/index.js (TEST MODE — no external email sending)
-// Fixed: avoids ORDER BY created_at on knowledge_chunks when column doesn't exist.
+// workers/email/index.js
+// Email bot: logs inbound mail to D1, generates AI reply with Workers AI,
+// and optionally replies via Cloudflare Email Routing when enabled by env.
 
 import { EmailMessage } from "cloudflare:email";
 
@@ -8,6 +9,29 @@ function extractAddress(from) {
   const s = String(from);
   const m = s.match(/<([^>]+)>/);
   return (m && m[1]) || s.trim();
+}
+
+function toTitleCase(s) {
+  return String(s || "")
+    .toLowerCase()
+    .split(/\s+/)
+    .map(w => w ? w[0].toUpperCase() + w.slice(1) : "")
+    .join(" ");
+}
+
+function extractDisplayName(fromHeader, fallbackEmail) {
+  try {
+    const raw = String(fromHeader || "").trim();
+    const m = raw.match(/^\s*"?([^"<]+)"?\s*<[^>]+>/);
+    if (m && m[1]) return toTitleCase(m[1].trim());
+  } catch {}
+  try {
+    const email = String(fallbackEmail || "");
+    const local = email.split("@")[0] || "";
+    const name = local.replace(/[._-]+/g, " ");
+    return toTitleCase(name);
+  } catch {}
+  return "";
 }
 
 async function safeReadRaw(message) {
@@ -37,6 +61,7 @@ function safeExtractChatText(aiRes) {
 export default {
   async email(message, env, ctx) {
     const FROM_ADDR = env.EMAIL_FROM || "contact@dolphinhouse-alibaug.com";
+    const SHOULD_REPLY = String(env.USE_CLOUDFLARE_REPLY || "0") === "1";
 
     try {
       const fromAddr = extractAddress(message.from || message.headers?.get("From")) || null;
@@ -94,10 +119,22 @@ export default {
       }
 
       // RAG / embedding -> Vectorize (safe)
+      const STATIC_CONTEXT = [
+        "Dolphin House Beach Resort is ~200m (2-min walk) from Nagaon Beach entrance.",
+        "Indoor swimming pool with waterfall; open 8:00 AM to 8:00 PM.",
+        "Room tariffs: from ₹2000 (Non-AC) and ₹2300 (AC). Family/deluxe rooms available.",
+        "Free on-site car parking; complimentary high-speed Wi-Fi in rooms and common areas.",
+        "Check-in 12:00 PM; Check-out 10:00 AM. Early/late subject to availability and charges.",
+        "Advance payment confirms booking; balance due at check-in. Payments via UPI/Google Pay/bank transfer.",
+        "Cancellation: ≥7 days full refund; 3–6 days 50% charge; <48 hours or no-show non-refundable.",
+        "Children <5 stay complimentary without extra bed; extra person ≥5 years ₹700/night.",
+        "Contact: WhatsApp +91-8554871073; booking@dolphinhouse-alibaug.com; Nagaon Beach Road, Alibaug."
+      ].join("\n");
       let kbSnippet = "";
       try {
         const qText = `${subject}\n\n${bodyText.substring(0, 800)}`;
-        const embResp = await env.AI.run("@cf/baai/bge-small-en-v1.5", { text: qText });
+        // Use 768-dim model to match Vectorize index configuration
+        const embResp = await env.AI.run("@cf/baai/bge-base-en-v1.5", { text: qText });
 
         try {
           console.log("DEBUG embResp keys:", Object.keys(embResp || {}));
@@ -128,12 +165,17 @@ export default {
         }
 
         const matches = vecRes?.matches || vecRes?.results || [];
-        const ids = matches.map(m => (m && (m.id ?? m.document_id ?? m.doc_id)) || null).filter(Boolean);
-
-        if (ids.length) {
-          const placeholders = ids.map(() => "?").join(",");
-          const rows = (await env.DB.prepare(`SELECT text FROM knowledge_chunks WHERE id IN (${placeholders})`).bind(...ids).all()).results || [];
-          kbSnippet = rows.map(r => r.text || "").join("\n---\n");
+        // Prefer text from index metadata if available; fall back to D1 join
+        const metaTexts = matches.map(m => (m?.metadata?.text || m?.document?.text || "")).filter(Boolean);
+        if (metaTexts.length) {
+          kbSnippet = metaTexts.join("\n---\n");
+        } else {
+          const ids = matches.map(m => (m && (m.id ?? m.document_id ?? m.doc_id)) || null).filter(Boolean);
+          if (ids.length) {
+            const placeholders = ids.map(() => "?").join(",");
+            const rows = (await env.DB.prepare(`SELECT text FROM knowledge_chunks WHERE id IN (${placeholders})`).bind(...ids).all()).results || [];
+            kbSnippet = rows.map(r => r.text || "").join("\n---\n");
+          }
         }
       } catch (e) {
         console.warn("RAG lookup fallback:", e?.message || e);
@@ -154,12 +196,21 @@ export default {
       }
 
       // AI reply
-      const prompt = `You are a helpful and professional assistant for Dolphin House, Alibaug.
-Context:
-${kbSnippet}
-User email:
+      const displayName = extractDisplayName(message.headers?.get("From"), fromAddr);
+      const greeting = displayName ? `Hi ${displayName},` : "Hello,";
+      const mergedContext = [kbSnippet, STATIC_CONTEXT].filter(Boolean).join("\n\n").trim();
+      const prompt = `You are an assistant for Dolphin House Beach Resort, Alibaug.
+Use the CONTEXT facts to answer the user's question precisely. If the context lacks a specific detail, ask ONE clear follow-up question rather than guessing.
+Tone: warm, concise, professional. Include actionable specifics (distance, timings, tariffs) when relevant. End with booking contact: WhatsApp +91-8554871073.
+
+CONTEXT:
+${mergedContext || "(no context)"}
+
+SUBJECT: ${subject}
+EMAIL:
 ${bodyText}
-Compose a short, polite reply.`;
+
+Begin your reply with: "${greeting}" then provide the answer.`;
       let replyText = "Thank you for your email. We'll respond shortly.";
       try {
         const aiRes = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", { prompt });
@@ -168,9 +219,50 @@ Compose a short, polite reply.`;
         console.warn("AI generation warning:", e?.message || e);
       }
 
-      console.log("TEST-MODE generated reply:", replyText);
+      const replySubject = subject?.trim()?.toLowerCase()?.startsWith("re:") ? subject : `Re: ${subject}`;
 
-      // Store outbound in D1 (no sending)
+      // Optionally send an actual email reply via Cloudflare Email Routing
+      if (SHOULD_REPLY && fromAddr) {
+        try {
+          // Compose raw MIME (avoid external deps). Use In-Reply-To for threading.
+          const midDomain = (FROM_ADDR.split("@")[1] || "dolphinhouse-alibaug.com").toLowerCase();
+          const msgId = `<${crypto.randomUUID()}@${midDomain}>`;
+          const dateStr = new Date().toUTCString();
+          console.log("Inbound Message-ID:", messageId || "(none)");
+          const mimeLines = [
+            `Message-ID: ${msgId}`,
+            `Date: ${dateStr}`,
+            `From: ${FROM_ADDR}`,
+            `To: ${fromAddr}`,
+            `Subject: ${replySubject}`,
+            ...(messageId ? [`In-Reply-To: ${messageId}`] : []),
+            ...(messageId ? [`References: ${messageId}`] : []),
+            'MIME-Version: 1.0',
+            'Content-Type: text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding: 8bit',
+            `Reply-To: ${FROM_ADDR}`,
+            '',
+            replyText
+          ];
+          const rawMime = mimeLines.join("\r\n");
+
+          const replyMsg = new EmailMessage(FROM_ADDR, fromAddr, rawMime);
+          console.log("Attempting reply:", {
+            to: fromAddr,
+            subject: replySubject,
+            rawBytes: rawMime.length
+          });
+          await message.reply(replyMsg);
+          console.log("Sent reply to", fromAddr);
+        } catch (sendErr) {
+          console.warn("Cloudflare email reply failed:", sendErr?.message || sendErr);
+          try { console.warn("Reply failure stack:", sendErr?.stack || "(no stack)"); } catch {}
+        }
+      } else {
+        console.log("Reply not sent (SHOULD_REPLY=", SHOULD_REPLY, ") to=", fromAddr);
+      }
+
+      // Store outbound in D1
       try {
         await env.DB.prepare(`
           INSERT INTO emails (
@@ -182,7 +274,7 @@ Compose a short, polite reply.`;
           "outbound",
           FROM_ADDR,
           fromAddr,
-          `Re: ${subject}`,
+          replySubject,
           replyText,
           null,
           messageId || inReplyTo || null,
