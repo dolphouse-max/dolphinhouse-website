@@ -226,7 +226,10 @@ import Layout from "../layouts/Layout.astro";
       dates.forEach(d => {
         const baseQty = inv[rt]?.qty || 0;
         const o = (overrides[rt] && overrides[rt][d]) ? overrides[rt][d] : null;
-        const allowed = o && typeof o.available === 'number' && o.available > 0 ? Math.min(baseQty, o.available) : baseQty;
+        // Respect zero overrides: if an override exists, cap availability to that value (including 0)
+        const hasOverrideAvail = o && typeof o.available === 'number';
+        const overrideCap = hasOverrideAvail ? Math.max(0, Number(o.available)) : baseQty;
+        const allowed = Math.min(baseQty, overrideCap);
         const reserved = countBookedOnDate(bookings, rt, d);
         const avail = Math.max(0, allowed - reserved);
         minAvail = Math.min(minAvail, avail);
