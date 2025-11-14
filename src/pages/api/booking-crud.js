@@ -103,18 +103,43 @@ export async function onRequest(context) {
 
       const data = await request.json();
       
-      // Auto-generate customer_id if missing
+      // Auto-generate customer_id if missing (strictly sequential, fill gaps)
       async function ensureCustomerId() {
         try {
           const has = data.customer_id || data.customerId;
           if (has && String(has).trim()) return; // keep provided value
-          // Generate next sequential ID based on row count
-          const cntRow = await db.prepare('SELECT COUNT(*) AS cnt FROM bookings').first();
-          const nextNum = ((cntRow && (cntRow.cnt || cntRow['COUNT(*)'])) || 0) + 1;
+
+          // Determine which customer ID column exists
+          const info = await db.prepare('PRAGMA table_info(bookings)').all();
+          const cols = new Set((info.results || []).map((r) => r.name));
+          const cCol = cols.has('customer_id') ? 'customer_id' : (cols.has('customerId') ? 'customerId' : 'customer_id');
+
+          // Fetch existing customer IDs
+          let res;
+          try {
+            res = await db.prepare(`SELECT ${cCol} AS cid FROM bookings WHERE ${cCol} IS NOT NULL`).all();
+          } catch (selErr) {
+            // If column missing, default to empty set
+            res = { results: [] };
+          }
+          const used = new Set();
+          for (const row of (res.results || [])) {
+            const val = String(row.cid || '').trim();
+            if (!val) continue;
+            const m = val.match(/^(?:dh)?(\d+)/i);
+            if (m && m[1]) {
+              const n = parseInt(m[1], 10);
+              if (Number.isFinite(n) && n > 0) used.add(n);
+            }
+          }
+
+          // Find the smallest missing positive integer starting from 1
+          let nextNum = 1;
+          while (used.has(nextNum)) nextNum++;
           const cid = `dh${String(nextNum).padStart(8, '0')}`;
           data.customer_id = cid;
         } catch (e) {
-          // Fallback to random if count fails
+          // Fallback to random if anything fails
           const rand = Math.floor(Math.random() * 1e8);
           data.customer_id = `dh${String(rand).padStart(8, '0')}`;
         }
