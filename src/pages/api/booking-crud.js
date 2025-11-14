@@ -103,6 +103,24 @@ export async function onRequest(context) {
 
       const data = await request.json();
       
+      // Auto-generate customer_id if missing
+      async function ensureCustomerId() {
+        try {
+          const has = data.customer_id || data.customerId;
+          if (has && String(has).trim()) return; // keep provided value
+          // Generate next sequential ID based on row count
+          const cntRow = await db.prepare('SELECT COUNT(*) AS cnt FROM bookings').first();
+          const nextNum = ((cntRow && (cntRow.cnt || cntRow['COUNT(*)'])) || 0) + 1;
+          const cid = `dh${String(nextNum).padStart(8, '0')}`;
+          data.customer_id = cid;
+        } catch (e) {
+          // Fallback to random if count fails
+          const rand = Math.floor(Math.random() * 1e8);
+          data.customer_id = `dh${String(rand).padStart(8, '0')}`;
+        }
+      }
+      await ensureCustomerId();
+      
       // Validate required fields (email optional)
       const requiredFields = ["name", "room", "checkin", "checkout", "guests", "nights", "total", "status"];
       for (const field of requiredFields) {
