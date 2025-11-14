@@ -459,13 +459,15 @@ if (!authenticated) {
       for (const room of rooms) {
         // Room label column
         html += `<tr><td class="px-2 py-1 border text-sm font-medium">${room.label}</td>`;
-        // Fields column with static labels
+        // Fields column with static labels (add horizontal separators for readability)
         html += `<td class="px-2 py-1 border text-xs text-gray-700 align-top">`
+          + `<div class="flex flex-col divide-y divide-gray-200">`
           + `<div>Total Rooms</div>`
           + `<div>Rate Non-AC</div>`
           + `<div>Rate AC</div>`
           + `<div>No. Booked</div>`
           + `<div>No. Available</div>`
+          + `</div>`
           + `</td>`;
         // Date columns with numeric-only values
         for (let d=1; d<=dcount; d++) {
@@ -482,11 +484,13 @@ if (!authenticated) {
           const rateA = isNaN(ov.rateAC) ? (Number(inventoryLocal[room.key].rateAC)||0) : Number(ov.rateAC);
           const bg = (availVal>0) ? '#dcfce7' : '#fee2e2';
           html += `<td class="border px-1 py-1 text-left monthCell" data-room="${room.key}" data-date="${date}" style="background:${bg}">`
+            + `<div class=\"flex flex-col divide-y divide-gray-200\">`
             + `<div class=\"text-[11px] text-gray-900\">${room.qty}</div>`
             + `<div class=\"text-[11px] text-gray-900\">${rateN}</div>`
             + `<div class=\"text-[11px] text-gray-900\">${rateA}</div>`
             + `<div class=\"text-[11px] text-gray-900\">${bookedShow}</div>`
             + `<div class=\"text-[11px] text-gray-900\">${availVal}</div>`
+            + `</div>`
             + `<input type=\"number\" class=\"rateNonACInput hidden\" value=\"${rateN}\" />`
             + `<input type=\"number\" class=\"rateACInput hidden\" value=\"${rateA}\" />`
             + `<input type=\"number\" class=\"availInput hidden\" data-room=\"${room.key}\" data-date=\"${date}\" min=\"0\" max=\"${room.qty}\" value=\"${baseCap}\" />`

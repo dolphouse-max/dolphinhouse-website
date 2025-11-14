@@ -63,7 +63,11 @@ $env:CLOUDFLARE_API_TOKEN = "HOOaZhjyHufOBnAOWXxwFd57KSHK4WZoY06L1ec9"
 $env:CLOUDFLARE_ACCOUNT_ID = "e8e9c4e8cbb5cd7137842f51149f8b10"
 Remove-Item Env:CF_API_TOKEN -ErrorAction SilentlyContinue
 Remove-Item Env:CF_ACCOUNT_ID -ErrorAction SilentlyContinue
+=================================================
 
+<a href="/booking" class="hover:text-sky-600 transition">Booking</a>
+
+above line to be added in header.astro after whole booking system is correct
 =========================================
 git add .
 git commit -m "Fix: Pause booking"
