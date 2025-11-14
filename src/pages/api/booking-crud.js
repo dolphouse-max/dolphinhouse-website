@@ -187,6 +187,20 @@ export async function onRequest(context) {
         insertVals.push(data.booking_from || 'Direct');
       }
 
+      // Ensure ac_type column exists and include it in insert
+      if (!cols.has('ac_type')) {
+        try {
+          await db.prepare('ALTER TABLE bookings ADD COLUMN ac_type TEXT').run();
+          cols.add('ac_type');
+        } catch (e) {
+          console.warn('ac_type column add skipped:', String(e?.message || e));
+        }
+      }
+      if (cols.has('ac_type')) {
+        insertCols.push('ac_type');
+        insertVals.push(data.ac_type || null);
+      }
+
       const placeholders = insertVals.map(() => '?').join(', ');
       const sql = `INSERT INTO bookings (${insertCols.join(', ')}) VALUES (${placeholders})`;
       await db.prepare(sql).bind(...insertVals).run();
@@ -230,6 +244,7 @@ export async function onRequest(context) {
         "guests", "nights", "total", "status", "mobile", "customer_id"
       ];
       if (cols.has('booking_from')) updateFields.push('booking_from');
+      if (cols.has('ac_type')) updateFields.push('ac_type');
       
       const updates = [];
       const values = [];

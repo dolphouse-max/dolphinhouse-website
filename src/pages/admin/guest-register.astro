@@ -56,12 +56,18 @@ let total = 0;
 let rooms = [];
 try {
   if (!db) throw new Error('DB binding unavailable');
+  // Discover schema for column names
+  const info = await db.prepare('PRAGMA table_info(bookings)').all();
+  const colset = new Set((info.results || []).map(r => r.name));
+  const createdCol = colset.has('created_at') ? 'created_at' : 'createdAt';
+  const hasAcType = colset.has('ac_type');
+
   const { where, values } = buildWhere();
   const countSql = `SELECT COUNT(*) AS total FROM bookings ${where}`;
   const count = await db.prepare(countSql).bind(...values).first();
   total = (count && (count.total || count['COUNT(*)'])) || 0;
 
-  const selectSql = `SELECT id, customer_id, name, email, mobile, room, checkin, checkout, nights, guests, total, status, createdAt
+  const selectSql = `SELECT id, customer_id, name, email, mobile, room, ${hasAcType ? 'ac_type,' : ''} checkin, checkout, nights, guests, total, status, ${createdCol} AS createdAt
                      FROM bookings ${where}
                      ORDER BY date(checkin) DESC
                      LIMIT ? OFFSET ?`;
@@ -154,7 +160,7 @@ try {
               <td class="px-4 py-2">{r.name || ''}</td>
               <td class="px-4 py-2">{r.mobile || ''}</td>
               <td class="px-4 py-2">{r.email || ''}</td>
-              <td class="px-4 py-2">{r.room || ''}</td>
+              <td class="px-4 py-2">{r.room || ''}{r.ac_type ? ` (${r.ac_type === 'nonac' ? 'Non AC' : 'AC'})` : ''}</td>
               <td class="px-4 py-2">{r.checkin || ''}</td>
               <td class="px-4 py-2">{r.checkout || ''}</td>
               <td class="px-4 py-2">{r.nights || ''}</td>

@@ -594,6 +594,7 @@ if (!authenticated) {
           </td>
           <td class="px-4 py-2">
             <div class="capitalize">${inventory[b.room]?.label || b.room}</div>
+            <div class="text-xs text-gray-500">${b.ac_type === 'nonac' ? 'Non AC' : 'AC'}</div>
             <div class="text-xs text-gray-500">Rooms: ${Number(b.rooms || 1)}</div>
           </td>
           <td class="px-4 py-2">
@@ -708,7 +709,7 @@ if (!authenticated) {
             <div><span class="font-medium">Guest Name:</span> ${booking.name || 'Not provided'}</div>
             <div><span class="font-medium">Mobile:</span> ${booking.mobile || 'Not provided'}</div>
             <div><span class="font-medium">Email:</span> ${booking.email || 'Not provided'}</div>
-            <div><span class="font-medium">Room Type:</span> ${inventory[booking.room]?.label || booking.room}</div>
+            <div><span class="font-medium">Room Type:</span> ${inventory[booking.room]?.label || booking.room} (${booking.ac_type === 'nonac' ? 'Non AC' : 'AC'})</div>
             <div><span class="font-medium">Check-in:</span> ${booking.checkin}</div>
             <div><span class="font-medium">Check-out:</span> ${booking.checkout}</div>
             <div><span class="font-medium">Nights:</span> ${booking.nights}</div>
@@ -853,14 +854,12 @@ if (!authenticated) {
         document.getElementById('guestEmail').value = booking.email || '';
         document.getElementById('guestMobile').value = booking.mobile || '';
         document.getElementById('customerId').value = booking.customer_id || '';
-        // Set default to AC variant for edit (AC/Non-AC not stored)
+        // Select AC/Non-AC variant based on stored ac_type (default AC)
         const roomTypeSelect = document.getElementById('roomType');
-        const acVal = `${booking.room}|ac`;
-        const nonAcVal = `${booking.room}|nonac`;
-        if ([...roomTypeSelect.options].some(o => o.value === acVal)) {
-          roomTypeSelect.value = acVal;
-        } else if ([...roomTypeSelect.options].some(o => o.value === nonAcVal)) {
-          roomTypeSelect.value = nonAcVal;
+        const variant = booking.ac_type === 'nonac' ? 'nonac' : 'ac';
+        const desired = `${booking.room}|${variant}`;
+        if ([...roomTypeSelect.options].some(o => o.value === desired)) {
+          roomTypeSelect.value = desired;
         }
         document.getElementById('guestCount').value = booking.guests;
         document.getElementById('checkinDate').value = booking.checkin.split('T')[0];
@@ -892,7 +891,7 @@ if (!authenticated) {
         const mobile = document.getElementById('guestMobile').value;
         const customer_id = document.getElementById('customerId').value;
         const roomSelection = document.getElementById('roomType').value;
-        const [room] = (roomSelection || '').split('|');
+        const [room, ac_type] = (roomSelection || '').split('|');
         const guests = parseInt(document.getElementById('guestCount').value);
         const checkin = document.getElementById('checkinDate').value;
         const checkout = document.getElementById('checkoutDate').value;
@@ -908,6 +907,7 @@ if (!authenticated) {
           mobile,
           customer_id,
           room,
+          ac_type,
           guests,
           checkin,
           checkout,
