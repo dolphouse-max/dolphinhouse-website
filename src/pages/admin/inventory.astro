@@ -452,16 +452,16 @@ if (!authenticated) {
     function buildMonthGrid(inventoryLocal, bookings, overridesMap, year, month) {
       const container = document.getElementById('monthGrid'); if (!container) return; const dcount = daysInMonth(year, month);
       const rooms = Object.keys(inventoryLocal).map(k => ({ key: k, label: inventoryLocal[k].label, qty: Number(inventoryLocal[k].qty)||0 }));
-      let html = '<div class="overflow-x-auto"><table class="min-w-full border-collapse"><thead><tr>'
-        + '<th class="px-2 py-1 text-left border">Room Type</th>'
-        + '<th class="px-2 py-1 text-left border">Fields</th>';
-      for (let d=1; d<=dcount; d++) html += `<th class="px-1 py-1 border text-xs">${d}</th>`; html += '</tr></thead><tbody>';
+      let html = '<div class="overflow-x-auto"><table class="min-w-full border-collapse table-fixed"><thead><tr>'
+        + '<th class="px-2 py-1 text-left border border-gray-400">Room Type</th>'
+        + '<th class="px-2 py-1 text-left border border-gray-400">Fields</th>';
+      for (let d=1; d<=dcount; d++) html += `<th class="px-1 py-1 border border-gray-400 text-xs">${d}</th>`; html += '</tr></thead><tbody>';
       for (const room of rooms) {
         // Room label column
-        html += `<tr><td class="px-2 py-1 border text-sm font-medium">${room.label}</td>`;
+        html += `<tr><td class="px-2 py-1 border border-gray-400 text-sm font-medium whitespace-normal break-words">${room.label}</td>`;
         // Fields column with static labels (add horizontal separators for readability)
-        html += `<td class="px-2 py-1 border text-xs text-gray-700 align-top">`
-          + `<div class="flex flex-col divide-y divide-gray-200">`
+        html += `<td class="px-2 py-1 border border-gray-400 text-xs text-gray-700 align-top">`
+          + `<div class="flex flex-col divide-y divide-gray-400">`
           + `<div>Total Rooms</div>`
           + `<div>Rate Non-AC</div>`
           + `<div>Rate AC</div>`
@@ -483,13 +483,13 @@ if (!authenticated) {
           const rateN = isNaN(ov.rateNonAC) ? (Number(inventoryLocal[room.key].rateNonAC)||0) : Number(ov.rateNonAC);
           const rateA = isNaN(ov.rateAC) ? (Number(inventoryLocal[room.key].rateAC)||0) : Number(ov.rateAC);
           const bg = (availVal>0) ? '#dcfce7' : '#fee2e2';
-          html += `<td class="border px-1 py-1 text-left monthCell" data-room="${room.key}" data-date="${date}" style="background:${bg}">`
-            + `<div class=\"flex flex-col divide-y divide-gray-200\">`
-            + `<div class=\"text-[11px] text-gray-900\">${room.qty}</div>`
-            + `<div class=\"text-[11px] text-gray-900\">${rateN}</div>`
-            + `<div class=\"text-[11px] text-gray-900\">${rateA}</div>`
-            + `<div class=\"text-[11px] text-gray-900\">${bookedShow}</div>`
-            + `<div class=\"text-[11px] text-gray-900\">${availVal}</div>`
+          html += `<td class="border border-gray-400 px-1 py-1 text-left monthCell" data-room="${room.key}" data-date="${date}" style="background:${bg}">`
+            + `<div class=\"flex flex-col divide-y divide-gray-400\">`
+            + `<div class=\"text-[11px] text-gray-900 whitespace-normal break-words\">${room.qty}</div>`
+            + `<div class=\"text-[11px] text-gray-900 whitespace-normal break-words\">${rateN}</div>`
+            + `<div class=\"text-[11px] text-gray-900 whitespace-normal break-words\">${rateA}</div>`
+            + `<div class=\"text-[11px] text-gray-900 whitespace-normal break-words\">${bookedShow}</div>`
+            + `<div class=\"text-[11px] text-gray-900 whitespace-normal break-words\">${availVal}</div>`
             + `</div>`
             + `<input type=\"number\" class=\"rateNonACInput hidden\" value=\"${rateN}\" />`
             + `<input type=\"number\" class=\"rateACInput hidden\" value=\"${rateA}\" />`
@@ -504,13 +504,13 @@ if (!authenticated) {
     function renderSummary(inventoryLocal, bookings, overridesMap, dateISO) {
       const container = document.getElementById('monthSummary'); if (!container) return;
       const counts = bookedCountsForDate(bookings, dateISO, inventoryLocal);
-      let html = '<div class="overflow-x-auto"><table class="min-w-full border-collapse"><thead><tr>'
-        + '<th class="px-2 py-1 text-left border">Room Type</th>'
-        + '<th class="px-2 py-1 text-left border">Total Rooms</th>'
-        + '<th class="px-2 py-1 text-left border">Rate Non-AC (₹)</th>'
-        + '<th class="px-2 py-1 text-left border">Rate AC (₹)</th>'
-        + '<th class="px-2 py-1 text-left border">No. Booked (editable)</th>'
-        + '<th class="px-2 py-1 text-left border">No. Available</th>'
+      let html = '<div class="overflow-x-auto"><table class="min-w-full border-collapse table-fixed"><thead><tr>'
+        + '<th class="px-2 py-1 text-left border border-gray-400">Room Type</th>'
+        + '<th class="px-2 py-1 text-left border border-gray-400">Total Rooms</th>'
+        + '<th class="px-2 py-1 text-left border border-gray-400">Rate Non-AC (₹)</th>'
+        + '<th class="px-2 py-1 text-left border border-gray-400">Rate AC (₹)</th>'
+        + '<th class="px-2 py-1 text-left border border-gray-400">No. Booked (editable)</th>'
+        + '<th class="px-2 py-1 text-left border border-gray-400">No. Available</th>'
         + '</tr></thead><tbody>';
       Object.keys(inventoryLocal).forEach(key => {
         const inv = inventoryLocal[key];
@@ -522,12 +522,12 @@ if (!authenticated) {
         const rateN = isNaN(ov.rateNonAC) ? (Number(inv.rateNonAC)||0) : Number(ov.rateNonAC);
         const rateA = isNaN(ov.rateAC) ? (Number(inv.rateAC)||0) : Number(ov.rateAC);
         html += `<tr>`
-          + `<td class="px-2 py-1 border">${inv.label}</td>`
-          + `<td class="px-2 py-1 border">${inv.qty}</td>`
-          + `<td class="px-2 py-1 border">${rateN}</td>`
-          + `<td class="px-2 py-1 border">${rateA}</td>`
-          + `<td class="px-2 py-1 border"><input type="number" class="summaryBookedInput border rounded px-2 py-1 w-20" data-room="${key}" data-date="${dateISO}" min="0" max="${inv.qty}" value="${bookedShow}" /></td>`
-          + `<td class="px-2 py-1 border summaryAvailableCell">${available}</td>`
+          + `<td class="px-2 py-1 border border-gray-400 whitespace-normal break-words">${inv.label}</td>`
+          + `<td class="px-2 py-1 border border-gray-400">${inv.qty}</td>`
+          + `<td class="px-2 py-1 border border-gray-400">${rateN}</td>`
+          + `<td class="px-2 py-1 border border-gray-400">${rateA}</td>`
+          + `<td class="px-2 py-1 border border-gray-400"><input type="number" class="summaryBookedInput border border-gray-400 rounded px-2 py-1 w-20" data-room="${key}" data-date="${dateISO}" min="0" max="${inv.qty}" value="${bookedShow}" /></td>`
+          + `<td class="px-2 py-1 border border-gray-400 summaryAvailableCell">${available}</td>`
           + `</tr>`;
       });
       html += '</tbody></table></div>';
