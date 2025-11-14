@@ -452,10 +452,16 @@ if (!authenticated) {
       const roomTypeSelect = document.getElementById('roomType');
       roomTypeSelect.innerHTML = '';
       Object.keys(inventory).forEach(room => {
-        const option = document.createElement('option');
-        option.value = room;
-        option.textContent = inventory[room].label || room;
-        roomTypeSelect.appendChild(option);
+        const label = inventory[room].label || room;
+        const optNonAC = document.createElement('option');
+        optNonAC.value = `${room}|nonac`;
+        optNonAC.textContent = `${label} Non ac`;
+        roomTypeSelect.appendChild(optNonAC);
+
+        const optAC = document.createElement('option');
+        optAC.value = `${room}|ac`;
+        optAC.textContent = `${label} ac`;
+        roomTypeSelect.appendChild(optAC);
       });
     }
     
@@ -847,7 +853,15 @@ if (!authenticated) {
         document.getElementById('guestEmail').value = booking.email || '';
         document.getElementById('guestMobile').value = booking.mobile || '';
         document.getElementById('customerId').value = booking.customer_id || '';
-        document.getElementById('roomType').value = booking.room;
+        // Set default to AC variant for edit (AC/Non-AC not stored)
+        const roomTypeSelect = document.getElementById('roomType');
+        const acVal = `${booking.room}|ac`;
+        const nonAcVal = `${booking.room}|nonac`;
+        if ([...roomTypeSelect.options].some(o => o.value === acVal)) {
+          roomTypeSelect.value = acVal;
+        } else if ([...roomTypeSelect.options].some(o => o.value === nonAcVal)) {
+          roomTypeSelect.value = nonAcVal;
+        }
         document.getElementById('guestCount').value = booking.guests;
         document.getElementById('checkinDate').value = booking.checkin.split('T')[0];
         document.getElementById('checkoutDate').value = booking.checkout.split('T')[0];
@@ -877,7 +891,8 @@ if (!authenticated) {
         const email = document.getElementById('guestEmail').value;
         const mobile = document.getElementById('guestMobile').value;
         const customer_id = document.getElementById('customerId').value;
-        const room = document.getElementById('roomType').value;
+        const roomSelection = document.getElementById('roomType').value;
+        const [room] = (roomSelection || '').split('|');
         const guests = parseInt(document.getElementById('guestCount').value);
         const checkin = document.getElementById('checkinDate').value;
         const checkout = document.getElementById('checkoutDate').value;
@@ -1004,10 +1019,13 @@ if (!authenticated) {
       
       if (checkin && checkout) {
         const nights = calculateNights(checkin, checkout);
-        const roomType = document.getElementById('roomType').value;
-        
-        if (roomType && inventory[roomType]) {
-          const baseRate = inventory[roomType].rateAC || 2000;
+        const roomSelection = document.getElementById('roomType').value;
+        const [roomKey, acType] = (roomSelection || '').split('|');
+        if (roomKey && inventory[roomKey]) {
+          const inv = inventory[roomKey];
+          const baseRate = acType === 'nonac'
+            ? (typeof inv.rateNonAC === 'number' ? inv.rateNonAC : (inv.rateAC || 2000))
+            : (typeof inv.rateAC === 'number' ? inv.rateAC : (inv.rateNonAC || 2000));
           const total = baseRate * nights;
           document.getElementById('totalAmount').value = total;
         }
@@ -1016,6 +1034,8 @@ if (!authenticated) {
     
     checkinInput.addEventListener('change', updateNightsAndTotal);
     checkoutInput.addEventListener('change', updateNightsAndTotal);
+    // Recalculate total when Room Type (AC/Non-AC) changes
+    document.getElementById('roomType').addEventListener('change', updateNightsAndTotal);
 
     // Initial load
     loadData();
