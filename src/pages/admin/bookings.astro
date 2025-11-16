@@ -564,6 +564,9 @@ if (!authenticated) {
               <button class="sms-pending-btn px-2 py-1 text-xs bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200" data-id="${b.id}">
                 📨 Pending SMS
               </button>
+              <button class="sms-msg91-pending-btn px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200" data-id="${b.id}">
+                💬 Reminder (MSG91)
+              </button>
             `;
           }
           // Show Received SMS for approved/payment_submitted/confirmed statuses
@@ -622,6 +625,7 @@ if (!authenticated) {
         const viewCheckinBtn = tr.querySelector('.view-checkin-btn');
         const approveBtn = tr.querySelector('.approve-btn');
         const smsPendingBtn = tr.querySelector('.sms-pending-btn');
+        const smsMsg91PendingBtn = tr.querySelector('.sms-msg91-pending-btn');
         const smsReceivedBtn = tr.querySelector('.sms-received-btn');
         const smsReviewBtn = tr.querySelector('.sms-review-btn');
         
@@ -638,6 +642,9 @@ if (!authenticated) {
 
         if (smsPendingBtn) {
           smsPendingBtn.addEventListener('click', () => sendPaymentNotification(b.id, 'pending'));
+        }
+        if (smsMsg91PendingBtn) {
+          smsMsg91PendingBtn.addEventListener('click', () => sendMsg91PendingReminder(b.id));
         }
         if (smsReceivedBtn) {
           smsReceivedBtn.addEventListener('click', () => sendPaymentNotification(b.id, 'received'));
@@ -738,7 +745,29 @@ if (!authenticated) {
       approvalModal.classList.remove('flex');
       currentBookingForApproval = null;
     }
-    
+
+    // ====================
+    // MSG91 Pending Reminder
+    // ====================
+    async function sendMsg91PendingReminder(bookingId) {
+      try {
+        const res = await fetch('/api/msg91-payment-reminder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ booking_id: bookingId })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          alert('Payment pending reminder sent via MSG91.');
+        } else {
+          alert('Failed to send MSG91 reminder: ' + (data.error || res.statusText));
+        }
+      } catch (err) {
+        console.error('MSG91 reminder error:', err);
+        alert('Error sending MSG91 reminder: ' + err.message);
+      }
+    }
+
     async function confirmApproval() {
       if (!currentBookingForApproval) return;
 
