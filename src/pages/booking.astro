@@ -151,7 +151,18 @@ try {
         return enabled;
       } catch (err) {
         console.warn('booking-toggle check failed', err);
-        return true; // default to enabled if toggle API unreachable
+        // Fail closed: if toggle API is unreachable, keep bookings paused on client
+        const banner = document.getElementById('bookingClosedBanner');
+        const contactPanel = document.getElementById('contactPanel');
+        const checkBtn = document.getElementById('checkBtn');
+        if (banner) banner.classList.remove('hidden');
+        if (contactPanel) contactPanel.classList.remove('hidden');
+        if (checkBtn) {
+          checkBtn.disabled = true;
+          checkBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          checkBtn.textContent = 'Bookings Paused';
+        }
+        return false;
       }
     }
 
