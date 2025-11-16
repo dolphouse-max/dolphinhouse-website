@@ -70,7 +70,7 @@ Remove-Item Env:CF_ACCOUNT_ID -ErrorAction SilentlyContinue
 above line to be added in header.astro after whole booking system is correct
 =========================================
 git add .
-git commit -m "Fix: Pause booking"
+git commit -m "Fix: Download pdf report"
 git push
 
 git add src/pages/booking.astro 

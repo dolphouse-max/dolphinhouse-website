@@ -534,6 +534,26 @@ if (!authenticated) {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const report = document.getElementById('reportArea');
     const logoUrl = '/uploader/logo-512.png';
+    // Helper: convert image URL to data URL to avoid encoding issues
+    async function imageToDataURL(url){
+      return new Promise((resolve, reject)=>{
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL('image/png'));
+          } catch(e){ reject(e); }
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+    // Helper: strip non-ASCII to prevent garbled characters in PDF text
+    const sanitizeText = (s) => String(s || '').replace(/[^\x00-\x7F]/g, '').trim();
     const start = document.getElementById('startDate').value || '—';
     const end = document.getElementById('endDate').value || '—';
     const dateRange = (start !== '—' || end !== '—') ? `${start} → ${end}` : "All Data";
@@ -541,17 +561,20 @@ if (!authenticated) {
     // 1️⃣ Header Page
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(22);
-    pdf.text("🏨 Dolphin House Beach Resort", 20, 40);
+    pdf.text(sanitizeText("Dolphin House Beach Resort"), 20, 40);
     pdf.setFontSize(14);
     pdf.setTextColor(60);
-    pdf.text("Admin Performance Report", 20, 55);
+    pdf.text(sanitizeText("Admin Performance Report"), 20, 55);
     pdf.setFontSize(12);
-    pdf.text(`Date Range: ${dateRange}`, 20, 70);
-    pdf.text(`Generated on: ${new Date().toLocaleString()}`, 20, 80);
-    pdf.addImage(logoUrl, 'PNG', 150, 20, 40, 40);
+    pdf.text(sanitizeText(`Date Range: ${dateRange}`), 20, 70);
+    pdf.text(sanitizeText(`Generated on: ${new Date().toLocaleString()}`), 20, 80);
+    try {
+      const logoData = await imageToDataURL(logoUrl);
+      pdf.addImage(logoData, 'PNG', 150, 20, 40, 40);
+    } catch {}
     pdf.setLineWidth(0.5);
     pdf.line(20, 90, 190, 90);
-    pdf.text("Summary and Analytics Overview", 20, 100);
+    pdf.text(sanitizeText("Summary and Analytics Overview"), 20, 100);
     pdf.addPage();
 
     // 2️⃣ Summary Page
@@ -571,7 +594,8 @@ if (!authenticated) {
         const chartCanvas = await html2canvas(chart, { scale: 2 });
         const imgData = chartCanvas.toDataURL('image/png');
         pdf.addImage(imgData, 'PNG', 10, 20, 190, 110);
-        pdf.text(chart.parentElement.querySelector('h2').innerText, 20, 15);
+        const title = chart.parentElement.querySelector('h2')?.innerText || '';
+        pdf.text(sanitizeText(title), 20, 15);
         if (i < charts.length - 1) pdf.addPage();
       }
     }
@@ -588,7 +612,7 @@ if (!authenticated) {
     for (let i = 1; i <= pageCount; i++) {
       pdf.setPage(i);
       pdf.text(`Page ${i} of ${pageCount}`, 180, 290, { align: "right" });
-      pdf.text("© Dolphin House Beach Resort", 20, 290);
+      pdf.text(sanitizeText("Dolphin House Beach Resort"), 20, 290);
     }
 
     pdf.save(`DolphinHouse_Report_${Date.now()}.pdf`);
