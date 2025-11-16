@@ -1,31 +1,61 @@
----
 import Layout from "../layouts/Layout.astro";
----
+// Server-side: read global booking toggle to render paused state immediately
+const env = Astro.locals?.cloudflare?.env || Astro.locals?.runtime?.env || {};
+let bookingEnabled = true;
+let bookingNotice = '';
+let bookingContact = {};
+try {
+  const db = env.DB;
+  if (db) {
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    `).run();
+    const enabledRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_enabled'`).first();
+    const noticeRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_notice'`).first();
+    const contactRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_contact'`).first();
+    bookingEnabled = enabledRow ? (enabledRow.value === 'true' || enabledRow.value === true) : true;
+    bookingNotice = typeof noticeRow?.value === 'string' ? noticeRow.value : '';
+    try { bookingContact = contactRow?.value ? JSON.parse(contactRow.value) : {}; } catch {}
+  } else {
+    const res = await fetch(new URL('/api/booking-toggle', Astro.request.url).toString(), { cache: 'no-store' });
+    if (res.ok) {
+      const j = await res.json();
+      bookingEnabled = !!j.bookingEnabled;
+      bookingNotice = j.notice || '';
+      bookingContact = j.contact || {};
+    }
+  }
+} catch {}
 
 <Layout title="Booking | Dolphin House" description="Book your stay at Dolphin House Beach Resort, Alibaug. Easy online booking with instant confirmation. Best rates guaranteed for AC rooms, cottages & family suites.">
 
   <section class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
     <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Check Availability & Book</h1>
-    <div id="bookingClosedBanner" class="hidden bg-yellow-100 text-yellow-800 p-3 rounded-md mb-2 text-center font-medium">
-      <span id="bookingNoticeText">Bookings are temporarily paused. Please check back later.</span>
+    <div id="bookingClosedBanner" class={`${!bookingEnabled ? '' : 'hidden'} bg-yellow-100 text-yellow-800 p-3 rounded-md mb-2 text-center font-medium`}>
+      <span id="bookingNoticeText">{bookingNotice && bookingNotice.trim().length > 0 ? bookingNotice : 'Bookings are temporarily paused. Please check back later.'}</span>
     </div>
-    <div id="contactPanel" class="hidden bg-yellow-50 border border-yellow-200 text-gray-800 p-4 rounded-md mb-4">
+    <div id="contactPanel" class={`${!bookingEnabled ? '' : 'hidden'} bg-yellow-50 border border-yellow-200 text-gray-800 p-4 rounded-md mb-4">
       <div class="font-semibold mb-2">Contact us directly to book:</div>
       <ul class="list-disc pl-5 mb-3">
         <li>
-          Call: <a id="contactPhone1" class="text-blue-700 underline" href="tel:+918554871073">+91 8554871073</a>
-          or <a id="contactPhone2" class="text-blue-700 underline" href="tel:+917276171735">+91 7276171735</a>
+          Call: <a id="contactPhone1" class="text-blue-700 underline" href={`tel:${bookingContact.phone1 || '+918554871073'}`}>{bookingContact.phone1 || '+91 8554871073'}</a>
+          {bookingContact.phone2 && (<>
+            {' '}or <a id="contactPhone2" class="text-blue-700 underline" href={`tel:${bookingContact.phone2}`}>{bookingContact.phone2}</a>
+          </>)}
         </li>
         <li>
-          WhatsApp: <a id="contactWhatsAppLink" class="text-blue-700 underline" href="https://wa.me/918554871073" target="_blank" rel="noopener noreferrer">+91 8554871073</a>
+          WhatsApp: <a id="contactWhatsAppLink" class="text-blue-700 underline" href={`https://wa.me/${String((bookingContact.whatsapp || '+918554871073')).replace(/^\+/, '')}`} target="_blank" rel="noopener noreferrer">{bookingContact.whatsapp || '+91 8554871073'}</a>
         </li>
         <li>
-          Email: <a id="contactEmailLink" class="text-blue-700 underline" href="mailto:booking@dolphinhouse-alibaug.com">booking@dolphinhouse-alibaug.com</a>
+          Email: <a id="contactEmailLink" class="text-blue-700 underline" href={`mailto:${bookingContact.email || 'booking@dolphinhouse-alibaug.com'}`}>{bookingContact.email || 'booking@dolphinhouse-alibaug.com'}</a>
         </li>
       </ul>
       <div class="flex gap-2">
-        <a href="tel:+918554871073" class="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700" id="contactCallBtn">Call Now</a>
-        <a href="https://wa.me/918554871073" target="_blank" rel="noopener noreferrer" class="rounded bg-green-600 px-3 py-2 text-white hover:bg-green-700" id="contactWhatsAppBtn">WhatsApp</a>
+        <a href={`tel:${bookingContact.phone1 || '+918554871073'}`} class="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700" id="contactCallBtn">Call Now</a>
+        <a href={`https://wa.me/${String((bookingContact.whatsapp || '+918554871073')).replace(/^\+/, '')}`} target="_blank" rel="noopener noreferrer" class="rounded bg-green-600 px-3 py-2 text-white hover:bg-green-700" id="contactWhatsAppBtn">WhatsApp</a>
         <a href="/contact" class="rounded bg-gray-600 px-3 py-2 text-white hover:bg-gray-700">More Contact Options</a>
       </div>
     </div>
@@ -54,8 +84,8 @@ import Layout from "../layouts/Layout.astro";
         <input id="checkout" type="date" class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
       </label>
       
-      <button id="checkBtn" class="w-full bg-sky-600 text-white py-3 rounded-lg hover:bg-sky-700 transition font-semibold">
-        Check Availability
+      <button id="checkBtn" disabled={!bookingEnabled} class={`w-full ${bookingEnabled ? 'bg-sky-600 hover:bg-sky-700' : 'bg-sky-600 opacity-50 cursor-not-allowed'} text-white py-3 rounded-lg transition font-semibold`}>
+        {bookingEnabled ? 'Check Availability' : 'Bookings Paused'}
       </button>
     </div>
 
