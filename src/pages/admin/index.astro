@@ -117,25 +117,6 @@ if (!authenticated) {
   <!-- Owner Settings: Change User Password -->
   <section id="ownerSettings" class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow mt-4">
     <h2 class="text-2xl font-semibold mb-4">Owner Settings</h2>
-    <p class="text-gray-600 mb-4">Change the user's password.</p>
-    <form id="changePasswordForm" class="space-y-4 max-w-md">
-      <div>
-        <label for="loginId" class="block text-sm font-medium text-gray-700">Login ID</label>
-        <input id="loginId" name="loginId" type="text" required value="owner" pattern="owner" title="Login ID must be owner" class="mt-1 w-full px-3 py-2 border rounded" />
-      </div>
-      <div>
-        <label for="newPassword" class="block text-sm font-medium text-gray-700">New password</label>
-        <input id="newPassword" name="newPassword" type="password" required minlength="6" class="mt-1 w-full px-3 py-2 border rounded" />
-      </div>
-      <div>
-        <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm password</label>
-        <input id="confirmPassword" name="confirmPassword" type="password" required minlength="6" class="mt-1 w-full px-3 py-2 border rounded" />
-      </div>
-      <button type="submit" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Update Password</button>
-      <div id="pwStatus" class="hidden mt-3 p-3 rounded text-sm"></div>
-    </form>
-
-    <hr class="my-8" />
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="p-4 border rounded-lg bg-gray-50">
         <h3 class="text-lg font-semibold mb-2">Global Booking Availability</h3>
@@ -184,51 +165,7 @@ if (!authenticated) {
   </section>
 </AdminLayout>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('changePasswordForm');
-    const statusEl = document.getElementById('pwStatus');
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      statusEl.classList.add('hidden');
-      statusEl.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
-
-      const loginId = document.getElementById('loginId')?.value || 'owner';
-      const newPassword = document.getElementById('newPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      if (newPassword !== confirmPassword) {
-        statusEl.textContent = 'Passwords do not match';
-        statusEl.classList.add('bg-red-100', 'text-red-700');
-        statusEl.classList.remove('hidden');
-        return;
-      }
-
-      try {
-        const res = await fetch('/api/admin-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ login_id: loginId, new_password: newPassword })
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && data.success) {
-          statusEl.textContent = 'Password updated successfully';
-          statusEl.classList.add('bg-green-100', 'text-green-700');
-          statusEl.classList.remove('hidden');
-          form.reset();
-        } else {
-          statusEl.textContent = data.error || 'Failed to update password';
-          statusEl.classList.add('bg-red-100', 'text-red-700');
-          statusEl.classList.remove('hidden');
-        }
-      } catch (err) {
-        statusEl.textContent = err.message || 'Error updating password';
-        statusEl.classList.add('bg-red-100', 'text-red-700');
-        statusEl.classList.remove('hidden');
-      }
-    });
-  });
-</script>
+<!-- Password change section removed as requested -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
