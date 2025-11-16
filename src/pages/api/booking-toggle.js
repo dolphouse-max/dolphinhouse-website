@@ -41,7 +41,8 @@ export async function onRequest(context) {
       const enabledRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_enabled'`).first();
       const noticeRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_notice'`).first();
       const contactRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_contact'`).first();
-      const enabled = enabledRow?.value === 'true' || enabledRow?.value === true;
+      // Default to enabled when no row exists, to match booking APIs
+      const enabled = enabledRow ? (enabledRow.value === 'true' || enabledRow.value === true) : true;
       const notice = typeof noticeRow?.value === 'string' ? noticeRow.value : '';
       let contact = {};
       try { contact = contactRow?.value ? JSON.parse(contactRow.value) : {}; } catch {}
@@ -97,7 +98,7 @@ export async function onRequest(context) {
       const enabledRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_enabled'`).first();
       const noticeRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_notice'`).first();
       const contactRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_contact'`).first();
-      const enabled = enabledRow?.value === 'true' || enabledRow?.value === true;
+      const enabled = enabledRow ? (enabledRow.value === 'true' || enabledRow.value === true) : true;
       const notice = typeof noticeRow?.value === 'string' ? noticeRow.value : '';
       let contact = {};
       try { contact = contactRow?.value ? JSON.parse(contactRow.value) : {}; } catch {}

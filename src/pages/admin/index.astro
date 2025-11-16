@@ -594,11 +594,15 @@ if (!authenticated) {
       btn.classList.toggle('bg-green-600', !enabled);
       btn.classList.toggle('hover:bg-sky-700', enabled);
       btn.classList.toggle('hover:bg-green-700', !enabled);
-      // Show current status message prominently
+      // Show current status message prominently with clear styling
       msg.textContent = enabled ? 'Bookings enabled' : 'Bookings paused';
       msg.classList.remove('hidden');
-      msg.classList.remove('bg-red-100', 'text-red-700');
-      msg.classList.add('bg-green-100', 'text-green-700');
+      msg.classList.remove('bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-800');
+      if (enabled) {
+        msg.classList.add('bg-green-100', 'text-green-700');
+      } else {
+        msg.classList.add('bg-yellow-100', 'text-yellow-800');
+      }
       if (noticeInput && typeof data?.notice === 'string') {
         noticeInput.value = data.notice;
       }
@@ -638,8 +642,12 @@ if (!authenticated) {
       if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       msg.textContent = data.bookingEnabled ? 'Bookings enabled' : 'Bookings paused';
       msg.classList.remove('hidden');
-      msg.classList.remove('bg-red-100', 'text-red-700');
-      msg.classList.add('bg-green-100', 'text-green-700');
+      msg.classList.remove('bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-800');
+      if (data.bookingEnabled) {
+        msg.classList.add('bg-green-100', 'text-green-700');
+      } else {
+        msg.classList.add('bg-yellow-100', 'text-yellow-800');
+      }
       await refreshBookingToggleUI();
     } catch (e) {
       msg.textContent = String(e.message || e);
