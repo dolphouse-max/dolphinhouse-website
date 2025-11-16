@@ -37,9 +37,6 @@ if (!authenticated) {
         <button id="downloadPdfBtn" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg shadow">
           📥 Download PDF Report
         </button>
-        <a href="/admin/change-password" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg shadow">
-          🔐 Change Password
-        </a>
       </div>
     </div>
 
@@ -101,7 +98,8 @@ if (!authenticated) {
     <!-- 🕓 Recent Bookings -->
     <section class="bg-white p-6 rounded-lg shadow border">
       <h2 class="text-xl font-semibold mb-4">🕓 Recent Bookings</h2>
-      <table class="w-full text-sm border-collapse">
+      <div class="overflow-x-auto">
+      <table class="min-w-full text-sm border-collapse">
         <thead>
           <tr class="border-b bg-gray-100 text-left">
             <th class="py-2 px-3">Guest</th>
@@ -112,20 +110,25 @@ if (!authenticated) {
         </thead>
         <tbody id="recentBookings"></tbody>
       </table>
+      </div>
     </section>
   </section>
 
-  <!-- Owner Settings: Change Password -->
+  <!-- Owner Settings: Change User Password -->
   <section id="ownerSettings" class="max-w-6xl mx-auto p-8 bg-white rounded-2xl shadow mt-4">
     <h2 class="text-2xl font-semibold mb-4">Owner Settings</h2>
-    <p class="text-gray-600 mb-4">Change the admin password for login.</p>
+    <p class="text-gray-600 mb-4">Change the user's password.</p>
     <form id="changePasswordForm" class="space-y-4 max-w-md">
       <div>
-        <label for="newPassword" class="block text-sm font-medium text-gray-700">New Password</label>
+        <label for="loginId" class="block text-sm font-medium text-gray-700">Login ID</label>
+        <input id="loginId" name="loginId" type="text" required value="owner" pattern="owner" title="Login ID must be owner" class="mt-1 w-full px-3 py-2 border rounded" />
+      </div>
+      <div>
+        <label for="newPassword" class="block text-sm font-medium text-gray-700">New password</label>
         <input id="newPassword" name="newPassword" type="password" required minlength="6" class="mt-1 w-full px-3 py-2 border rounded" />
       </div>
       <div>
-        <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+        <label for="confirmPassword" class="block text-sm font-medium text-gray-700">Confirm password</label>
         <input id="confirmPassword" name="confirmPassword" type="password" required minlength="6" class="mt-1 w-full px-3 py-2 border rounded" />
       </div>
       <button type="submit" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700">Update Password</button>
@@ -191,6 +194,7 @@ if (!authenticated) {
       statusEl.classList.add('hidden');
       statusEl.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
 
+      const loginId = document.getElementById('loginId')?.value || 'owner';
       const newPassword = document.getElementById('newPassword').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
       if (newPassword !== confirmPassword) {
@@ -204,7 +208,7 @@ if (!authenticated) {
         const res = await fetch('/api/admin-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ new_password: newPassword })
+          body: JSON.stringify({ login_id: loginId, new_password: newPassword })
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.success) {

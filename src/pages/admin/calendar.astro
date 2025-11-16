@@ -13,9 +13,9 @@ if (!ok) {
   <AdminHeader />
 
   <section class="max-w-7xl mx-auto py-8">
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
       <h1 class="text-2xl font-bold">📅 Availability Calendar</h1>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <button id="prevRange" class="px-3 py-1 border rounded">◀ Prev</button>
         <select id="rangeDays" class="border px-2 py-1 rounded">
           <option value="7">7 days</option>
@@ -23,8 +23,8 @@ if (!ok) {
           <option value="30">30 days</option>
         </select>
         <button id="nextRange" class="px-3 py-1 border rounded">Next ▶</button>
-        <input id="fromDate" type="date" class="border px-2 py-1 rounded ml-3" />
-        <button id="refreshBtn" class="ml-2 px-3 py-1 bg-sky-600 text-white rounded">Refresh</button>
+        <input id="fromDate" type="date" class="border px-2 py-1 rounded sm:ml-3" />
+        <button id="refreshBtn" class="sm:ml-2 px-3 py-1 bg-sky-600 text-white rounded">Refresh</button>
       </div>
     </div>
 

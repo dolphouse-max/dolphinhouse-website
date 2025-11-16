@@ -117,6 +117,46 @@ if (!authenticated) {
         <label for="summaryDate" class="text-sm text-gray-700">Summary Date</label>
         <input id="summaryDate" type="date" class="border px-2 py-1 rounded" />
       </div>
+      <!-- Bulk Range Update -->
+      <div id="bulkPanel" class="border border-gray-300 rounded p-3 mb-4 bg-gray-50">
+        <div class="text-sm font-medium mb-2">Bulk Update (apply to date range)</div>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
+          <div>
+            <label for="bulkRoom" class="block text-sm text-gray-700 mb-1">Room</label>
+            <select id="bulkRoom" class="border px-2 py-1 rounded w-full">
+              <option value="all">All Rooms</option>
+            </select>
+          </div>
+          <div>
+            <label for="bulkFrom" class="block text-sm text-gray-700 mb-1">From date</label>
+            <input id="bulkFrom" type="date" class="border px-2 py-1 rounded w-full" />
+          </div>
+          <div>
+            <label for="bulkTo" class="block text-sm text-gray-700 mb-1">To date</label>
+            <input id="bulkTo" type="date" class="border px-2 py-1 rounded w-full" />
+          </div>
+          <div>
+            <label for="bulkAvail" class="block text-sm text-gray-700 mb-1">Set Total Rooms</label>
+            <input id="bulkAvail" type="number" class="border px-2 py-1 rounded w-full" placeholder="leave blank to skip" min="0" />
+          </div>
+          <div>
+            <label for="bulkRateN" class="block text-sm text-gray-700 mb-1">Set Rate Non-AC (₹)</label>
+            <input id="bulkRateN" type="number" class="border px-2 py-1 rounded w-full" placeholder="leave blank to skip" min="0" />
+          </div>
+          <div>
+            <label for="bulkRateA" class="block text-sm text-gray-700 mb-1">Set Rate AC (₹)</label>
+            <input id="bulkRateA" type="number" class="border px-2 py-1 rounded w-full" placeholder="leave blank to skip" min="0" />
+          </div>
+          <div>
+            <label for="bulkBooked" class="block text-sm text-gray-700 mb-1">Set No. Booked</label>
+            <input id="bulkBooked" type="number" class="border px-2 py-1 rounded w-full" placeholder="leave blank to skip" min="0" />
+          </div>
+          <div class="sm:col-span-2 lg:col-span-3">
+            <button id="applyBulkBtn" class="px-3 py-2 bg-indigo-600 text-white rounded">Apply to Range</button>
+          </div>
+        </div>
+        <p class="text-xs text-gray-600 mt-2">Tip: leave a field blank to keep existing values unchanged. Changes are staged in the grid; click "Save Changes" to persist.</p>
+      </div>
       <div id="monthSummary" class="overflow-x-auto mb-4"></div>
       <div id="monthGrid" class="overflow-x-auto"></div>
     </section>
@@ -565,6 +605,129 @@ if (!authenticated) {
           renderSummary(inventoryLocal, bookings, overridesMap, v);
         };
       }
+      // Bulk controls setup
+      setupBulkControls(inventoryLocal, year, month, dcount);
+    }
+
+    function setupBulkControls(inventoryLocal, year, month, dcount) {
+      const roomSel = document.getElementById('bulkRoom');
+      const fromInp = document.getElementById('bulkFrom');
+      const toInp = document.getElementById('bulkTo');
+      if (roomSel) {
+        // Populate room options
+        const existing = Array.from(roomSel.querySelectorAll('option')).map(o => o.value);
+        Object.keys(inventoryLocal).forEach(k => {
+          if (!existing.includes(k)) {
+            const opt = document.createElement('option');
+            opt.value = k;
+            opt.textContent = inventoryLocal[k].label || k;
+            roomSel.appendChild(opt);
+          }
+        });
+      }
+      // Set date bounds to current month
+      const startISO = dateString(year, month, 1);
+      const endISOExclusive = dateString(year, month, dcount + 1);
+      const lastDayISO = dateString(year, month, dcount);
+      if (fromInp) {
+        fromInp.min = startISO;
+        fromInp.max = lastDayISO;
+        if (!fromInp.value) fromInp.value = startISO;
+      }
+      if (toInp) {
+        toInp.min = startISO;
+        toInp.max = lastDayISO;
+        if (!toInp.value) toInp.value = lastDayISO;
+      }
+    }
+
+    function applyBulkUpdate() {
+      const picker = document.getElementById('monthPicker');
+      if (!picker || !picker.value) { alert('Please select a month first.'); return; }
+      const [yStr, mStr] = picker.value.split('-');
+      const year = Number(yStr); const month = Number(mStr);
+      const dcount = daysInMonth(year, month);
+      const startISO = dateString(year, month, 1);
+      const lastDayISO = dateString(year, month, dcount);
+
+      const roomSel = document.getElementById('bulkRoom');
+      const fromInp = document.getElementById('bulkFrom');
+      const toInp = document.getElementById('bulkTo');
+      const availInp = document.getElementById('bulkAvail');
+      const rateNInp = document.getElementById('bulkRateN');
+      const rateAInp = document.getElementById('bulkRateA');
+      const bookedInp = document.getElementById('bulkBooked');
+
+      if (!roomSel || !fromInp || !toInp) { alert('Bulk controls not ready.'); return; }
+      const roomVal = roomSel.value || 'all';
+      const fromISO = fromInp.value;
+      const toISO = toInp.value;
+      if (!fromISO || !toISO) { alert('Please select a valid date range.'); return; }
+      if (fromISO < startISO || toISO > lastDayISO || fromISO > toISO) {
+        alert('Date range must be within the selected month and From ≤ To.');
+        return;
+      }
+
+      // Parse optional fields; undefined means skip
+      const setAvail = (availInp && availInp.value !== '') ? Number(availInp.value) : undefined;
+      const setRateN = (rateNInp && rateNInp.value !== '') ? Number(rateNInp.value) : undefined;
+      const setRateA = (rateAInp && rateAInp.value !== '') ? Number(rateAInp.value) : undefined;
+      const setBooked = (bookedInp && bookedInp.value !== '') ? Number(bookedInp.value) : undefined;
+
+      const cells = Array.from(document.querySelectorAll('.monthCell'));
+      let updated = 0;
+      cells.forEach(cell => {
+        const cellDate = cell.dataset.date;
+        const cellRoom = cell.dataset.room;
+        if (cellDate < fromISO || cellDate > toISO) return;
+        if (roomVal !== 'all' && cellRoom !== roomVal) return;
+
+        const gridDivs = Array.from(cell.querySelectorAll('div > div'));
+        const rateNHidden = cell.querySelector('.rateNonACInput');
+        const rateAHidden = cell.querySelector('.rateACInput');
+        const availHidden = cell.querySelector('.availInput');
+        const bookedHidden = cell.querySelector('.bookedOverrideInput');
+
+        // Total Rooms
+        if (setAvail !== undefined && availHidden) {
+          const maxCap = Number(availHidden.max) || 0;
+          const capped = Math.max(0, Math.min(setAvail, maxCap));
+          availHidden.value = String(capped);
+          if (gridDivs[0]) gridDivs[0].textContent = String(capped);
+        }
+        // Rate Non-AC
+        if (setRateN !== undefined && rateNHidden) {
+          rateNHidden.value = String(Math.max(0, setRateN));
+          if (gridDivs[1]) gridDivs[1].textContent = String(Math.max(0, setRateN));
+        }
+        // Rate AC
+        if (setRateA !== undefined && rateAHidden) {
+          rateAHidden.value = String(Math.max(0, setRateA));
+          if (gridDivs[2]) gridDivs[2].textContent = String(Math.max(0, setRateA));
+        }
+        // No. Booked override
+        let bookedShow = undefined;
+        if (setBooked !== undefined && bookedHidden) {
+          const bval = Math.max(0, setBooked);
+          bookedHidden.value = String(bval);
+          bookedShow = bval;
+          if (gridDivs[3]) gridDivs[3].textContent = String(bval);
+        }
+        // Recompute No. Available display based on current Total Rooms and Booked
+        if (gridDivs[4]) {
+          const baseCap = Number(availHidden?.value || 0);
+          const bookedVal = (bookedShow !== undefined)
+            ? bookedShow
+            : ((bookedHidden && bookedHidden.value !== '') ? Number(bookedHidden.value) : Number(gridDivs[3]?.textContent || 0));
+          const availVal = Math.max(0, baseCap - (Number.isFinite(bookedVal) ? bookedVal : 0));
+          gridDivs[4].textContent = String(availVal);
+          cell.style.backgroundColor = (availVal > 0) ? '#dcfce7' : '#fee2e2';
+        }
+
+        updated += 1;
+      });
+
+      alert(`Staged changes for ${updated} cell(s). Click \"Save Changes\" to persist.`);
     }
     async function saveOverrides() {
       const cells = Array.from(document.querySelectorAll('.monthCell'));
@@ -945,6 +1108,7 @@ if (!authenticated) {
       }
     });
     document.getElementById('saveOverridesBtn')?.addEventListener('click', saveOverrides);
+    document.getElementById('applyBulkBtn')?.addEventListener('click', applyBulkUpdate);
 
   })();
   </script>
