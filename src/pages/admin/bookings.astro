@@ -366,14 +366,8 @@ if (!authenticated) {
         if (bRes.status === 'fulfilled' && bRes.value.ok) {
           bookings = await bRes.value.json();
         } else {
-          console.warn('bookings API failed – using sample data');
-          const today = new Date();
-          const iso = (d) => new Date(d).toISOString().slice(0,10);
-          const addDays = (d,n)=>{const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt;};
-          bookings = [
-            { id: 'local-1', customer_id: 'dh00000001', name: 'Amit Sharma', email: 'amit@example.com', mobile: '9812345678', room: 'standard', checkin: iso(today), checkout: iso(addDays(today,2)), nights: 2, guests: 2, total: 5000, status: 'pending', createdAt: new Date().toISOString() },
-            { id: 'local-2', customer_id: 'dh00000002', name: 'Neha Desai', email: 'neha@example.com', mobile: '9876543210', room: 'deluxe', checkin: iso(addDays(today,1)), checkout: iso(addDays(today,3)), nights: 2, guests: 3, total: 7000, status: 'approved', createdAt: new Date().toISOString() }
-          ];
+          console.warn('bookings API failed – returning empty list');
+          bookings = [];
         }
 
         // inventory
