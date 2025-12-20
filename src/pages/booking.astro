@@ -1,3 +1,4 @@
+---
 import Layout from "../layouts/Layout.astro";
 // Server-side: read global booking toggle to render paused state immediately
 const env = Astro.locals?.cloudflare?.env || Astro.locals?.runtime?.env || {};
@@ -29,6 +30,7 @@ try {
     }
   }
 } catch {}
+---
 
 <Layout title="Booking | Dolphin House" description="Book your stay at Dolphin House Beach Resort, Alibaug. Easy online booking with instant confirmation. Best rates guaranteed for AC rooms, cottages & family suites.">
 
