@@ -2,76 +2,9 @@
 export async function GET({ locals, request }) {
   const env = locals?.cloudflare?.env || locals?.runtime?.env || {};
   const db = env.DB;
-  // Local fallback: generate sample bookings when DB is unavailable
+  // Local fallback: return empty list when DB is unavailable
   if (!db) {
-    const url = new URL(request.url);
-    const start = url.searchParams.get("start");
-    const end = url.searchParams.get("end");
-
-    // Helper to generate ISO date strings
-    const iso = (d) => new Date(d).toISOString().slice(0, 10);
-    const addDays = (d, n) => {
-      const dt = new Date(d);
-      dt.setDate(dt.getDate() + n);
-      return dt;
-    };
-
-    const today = new Date();
-    const startBase = start ? new Date(start) : today;
-    const endBase = end ? new Date(end) : addDays(today, 28);
-    const rooms = [
-      { key: 'standard', label: 'Standard Room', base: 2500 },
-      { key: 'deluxe', label: 'Deluxe Room', base: 3500 },
-      { key: 'family', label: 'Family Room', base: 4000 },
-      { key: 'deluxeFamily', label: 'Deluxe Family Room', base: 5000 }
-    ];
-
-    const statuses = ['pending', 'payment_pending', 'approved', 'confirmed', 'checked_in'];
-    const names = ['Amit', 'Priya', 'Rahul', 'Sneha', 'Vikram', 'Neha', 'Arjun', 'Pooja'];
-
-    const samples = [];
-    let seq = 1;
-    // Create bookings across date range with varied lengths and statuses
-    for (let d = new Date(startBase); d < endBase; d = addDays(d, 2)) {
-      for (const room of rooms) {
-        // roughly 50% fill rate
-        if (Math.random() < 0.5) {
-          const nights = 1 + Math.floor(Math.random() * 3);
-          const checkin = new Date(d);
-          const checkout = addDays(checkin, nights);
-          const status = statuses[Math.floor(Math.random() * statuses.length)];
-          const id = `local-${Date.now()}-${seq++}`;
-          const customerId = `dh${(seq + '').padStart(8, '0').slice(-8)}`;
-          const name = names[Math.floor(Math.random() * names.length)] + ' ' + ['Patil','Sharma','Desai','Iyer','Gupta'][Math.floor(Math.random()*5)];
-          const email = `${name.split(' ')[0].toLowerCase()}@example.com`;
-          const mobile = `98${Math.floor(10000000 + Math.random()*89999999)}`;
-          samples.push({
-            id,
-            customer_id: customerId,
-            name,
-            email,
-            mobile,
-            room: room.key,
-            checkin: iso(checkin),
-            checkout: iso(checkout),
-            nights,
-            guests: 2 + Math.floor(Math.random()*2),
-            total: nights * room.base,
-            status,
-            createdAt: new Date().toISOString()
-          });
-        }
-      }
-    }
-
-    // Filter based on provided range if any: checkout > start AND checkin < end
-    const filtered = samples.filter(b => {
-      if (start && !(new Date(b.checkout) > new Date(start))) return false;
-      if (end && !(new Date(b.checkin) < new Date(end))) return false;
-      return true;
-    });
-
-    return new Response(JSON.stringify(filtered), {
+    return new Response(JSON.stringify([]), {
       headers: { 'Content-Type': 'application/json' }
     });
   }
