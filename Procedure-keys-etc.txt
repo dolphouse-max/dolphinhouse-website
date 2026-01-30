@@ -322,9 +322,17 @@ You are now back up and running. The cloned folder is your new local copy, and y
 If you connected your GitHub/GitLab account: You don't need a command! Simply push your changes to your repository:
 
 git add .
-
-git commit -m "Updated website content"
-
+git commit -m "Deleted all bookings"
 git push origin main
 
 ======================================================================
+
+1) To delete bookings database ........
+
+npx wrangler d1 execute dolphinhouse-admin --remote --command="DELETE FROM bookings;"
+
+2) Reset ID counter ...
+npx wrangler d1 execute dolphinhouse-admin --remote --command="DELETE FROM sqlite_sequence WHERE name='bookings';"
+
+3) To verify its empty ...
+npx wrangler d1 execute dolphinhouse-admin --remote --command="SELECT COUNT(*) FROM bookings;"

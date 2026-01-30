@@ -24,5 +24,29 @@
         { "src": "/gallery/kitchen.webp", "alt": "Kitchen facilities" }
       ]
     }
+    {
+      "title": "Standard Room 1",
+      "images": [
+        { "src": "/gallery/room1.webp", "alt": "Standard Room 1" }
+      ]
+    }
+    {
+      "title": "Standard Room 2",
+      "images": [
+        { "src": "/gallery/room1.webp", "alt": "Standard Room 2" }
+      ]
+    }
+    {
+      "title": "Standard Room 3",
+      "images": [
+        { "src": "/gallery/room1.webp", "alt": "Standard Room 3" }
+      ]
+    }
+    {
+      "title": "Bathroom",
+      "images": [
+        { "src": "/gallery/bathroom.webp", "alt": "Bathroom" }
+      ]
+    }
   ]
 }
