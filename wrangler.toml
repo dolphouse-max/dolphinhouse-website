@@ -24,6 +24,11 @@ binding = "DB"
 database_name = "dolphinhouse-admin"
 database_id = "7fe77243-2caa-46d8-af95-a3f8a234a019"
 
+# R2 Bucket for ID uploads
+[[r2_buckets]]
+binding = "ID_BUCKET"
+bucket_name = "dolphin-id-storage"
+
 # Vectorize indexes (if used by Pages Functions)
 [[vectorize]]
 binding = "VECTORIZE"
