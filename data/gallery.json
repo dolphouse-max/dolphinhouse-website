@@ -33,13 +33,19 @@
     {
       "title": "Standard Room 2",
       "images": [
-        { "src": "/gallery/room1.webp", "alt": "Standard Room 2" }
+        { "src": "/gallery/room2.webp", "alt": "Standard Room 2" }
       ]
     },
     {
       "title": "Standard Room 3",
       "images": [
-        { "src": "/gallery/room1.webp", "alt": "Standard Room 3" }
+        { "src": "/gallery/room3.webp", "alt": "Standard Room 3" }
+      ]
+    },
+    {
+      "title": "Standard Room 4",
+      "images": [
+        { "src": "/gallery/room4.webp", "alt": "Standard Room 4" }
       ]
     },
     {
