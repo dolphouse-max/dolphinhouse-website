@@ -49,6 +49,24 @@
       ]
     },
     {
+      "title": "Family Room for 4 persons",
+      "images": [
+        { "src": "/gallery/room5-1.webp", "alt": "Family Room pic1" }
+      ]
+    },
+    {
+      "title": "Family Room for 4 persons",
+      "images": [
+        { "src": "/gallery/room5-2.webp", "alt": "Family Room pic2" }
+      ]
+    },
+    {
+      "title": "Family Room for 4 persons",
+      "images": [
+        { "src": "/gallery/room5-3.webp", "alt": "Family Room pic3" }
+      ]
+    },
+    {
       "title": "Bathroom",
       "images": [
         { "src": "/gallery/bathroom.webp", "alt": "Bathroom" }
