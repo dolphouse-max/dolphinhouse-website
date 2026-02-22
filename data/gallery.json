@@ -13,9 +13,15 @@
       ]
     },
     {
-      "title": "Dining",
+      "title": "Restaurant",
       "images": [
-        { "src": "/gallery/restaurant.webp", "alt": "Restaurant seating area" }
+        { "src": "/gallery/restaurant11.webp", "alt": "Restaurant seating area" }
+      ]
+    },
+    {
+      "title": "Restaurant",
+      "images": [
+        { "src": "/gallery/restaurant22.webp", "alt": "Restaurant seating area" }
       ]
     },
     {

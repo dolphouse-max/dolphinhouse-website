@@ -112,11 +112,21 @@ const roomCategories = [
               <li>💰 <strong>Tariff:</strong> ₹{room.rateNonAC} (Non-AC) / ₹{room.rateAC} (AC)</li>
             </ul>
           </div>
-          <div class="mt-4 flex justify-between items-center">
-            <a href="/booking" class="inline-block bg-sky-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-sky-700 transition text-sm shadow-md">
-              Book Now
-            </a>
-            <span class="text-gray-400 text-xs italic">+ ₹700 / extra person</span>
+          <div class="mt-4 flex flex-col gap-3">
+            <div class="flex justify-between items-center text-xs text-gray-500">
+               <span>Max Guests: {room.max}</span>
+               <span class="italic">+ ₹700 / extra person</span>
+            </div>
+            <div class="flex gap-2">
+              <a href="/booking" class="flex-1 bg-sky-600 text-white font-semibold py-2 rounded-lg hover:bg-sky-700 transition text-sm shadow-md text-center">
+                Book Now
+              </a>
+              {room.videoUrl && (
+                <a href={room.videoUrl} target="_blank" rel="noopener noreferrer" class="flex-1 border border-sky-600 text-sky-600 font-semibold py-2 rounded-lg hover:bg-sky-50 transition text-sm shadow-sm text-center flex items-center justify-center gap-1">
+                  <span>▶</span> 360° Tour
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>
