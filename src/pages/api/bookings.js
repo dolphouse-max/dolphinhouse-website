@@ -77,22 +77,66 @@ export async function GET({ locals, request }) {
         values.push(end);
       }
       const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-      const sql = `SELECT 
-        id,
-        ${customerIdCol} AS customer_id,
-        name,
-        ${emailCol} AS email,
-        ${mobileCol} AS mobile,
-        ${roomCol} AS room,
-        ${checkinCol} AS checkin,
-        ${checkoutCol} AS checkout,
-        ${nightsCol} AS nights,
-        ${guestsCol} AS guests,
-        ${totalCol} AS total,
-        ${statusCol} AS status,
-        ${bookingFromCol ? `${bookingFromCol} AS booking_from,` : ''}
-        ${createdCol} AS createdAt
-      FROM bookings ${where} ORDER BY date(${checkinCol}) ASC`;
+      
+      // Include new columns in the select - only if they exist
+      const selectCols = [
+        'id',
+        `${customerIdCol} AS customer_id`,
+        'name',
+        `${emailCol} AS email`,
+        `${mobileCol} AS mobile`,
+        `${roomCol} AS room`,
+        `${checkinCol} AS checkin`,
+        `${checkoutCol} AS checkout`,
+        `${nightsCol} AS nights`,
+        `${guestsCol} AS guests`,
+        `${totalCol} AS total`,
+        `${statusCol} AS status`
+      ];
+      
+      // Add new columns only if they exist
+      if (cols.has('rooms_requested') || cols.has('roomsRequested')) {
+        const roomsRequestedCol = cols.has('rooms_requested') ? 'rooms_requested' : 'roomsRequested';
+        selectCols.push(`${roomsRequestedCol} AS rooms_requested`);
+      }
+      if (cols.has('room_type') || cols.has('roomType')) {
+        const roomTypeCol = cols.has('room_type') ? 'room_type' : 'roomType';
+        selectCols.push(`${roomTypeCol} AS room_type`);
+      }
+      if (cols.has('base_total') || cols.has('baseTotal')) {
+        const baseTotalCol = cols.has('base_total') ? 'base_total' : 'baseTotal';
+        selectCols.push(`${baseTotalCol} AS base_total`);
+      }
+      if (cols.has('extra_charge') || cols.has('extraCharge')) {
+        const extraChargeCol = cols.has('extra_charge') ? 'extra_charge' : 'extraCharge';
+        selectCols.push(`${extraChargeCol} AS extra_charge`);
+      }
+      if (cols.has('advance_amount') || cols.has('advanceAmount')) {
+        const advanceAmountCol = cols.has('advance_amount') ? 'advance_amount' : 'advanceAmount';
+        selectCols.push(`${advanceAmountCol} AS advance_amount`);
+      }
+      if (cols.has('payment_id') || cols.has('paymentId')) {
+        const paymentIdCol = cols.has('payment_id') ? 'payment_id' : 'paymentId';
+        selectCols.push(`${paymentIdCol} AS payment_id`);
+      }
+      if (cols.has('lock_id') || cols.has('lockId')) {
+        const lockIdCol = cols.has('lock_id') ? 'lock_id' : 'lockId';
+        selectCols.push(`${lockIdCol} AS lock_id`);
+      }
+      if (cols.has('whatsapp_sent') || cols.has('whatsappSent')) {
+        const whatsappSentCol = cols.has('whatsapp_sent') ? 'whatsapp_sent' : 'whatsappSent';
+        selectCols.push(`${whatsappSentCol} AS whatsapp_sent`);
+      }
+      if (cols.has('email_sent') || cols.has('emailSent')) {
+        const emailSentCol = cols.has('email_sent') ? 'email_sent' : 'emailSent';
+        selectCols.push(`${emailSentCol} AS email_sent`);
+      }
+      
+      if (bookingFromCol) {
+        selectCols.push(`${bookingFromCol} AS booking_from`);
+      }
+      
+      const sql = `SELECT ${selectCols.join(', ')} FROM bookings ${where} ORDER BY date(${checkinCol}) ASC`;
       const res = await db.prepare(sql).bind(...values).all();
       return new Response(JSON.stringify(res.results || []), {
         headers: { "Content-Type": "application/json" },
@@ -100,23 +144,68 @@ export async function GET({ locals, request }) {
     }
 
     // Fetch all bookings when no range params provided
+    // Include new columns - only if they exist
+    const selectCols = [
+      'id',
+      `${customerIdCol} AS customer_id`,
+      'name',
+      `${emailCol} AS email`,
+      `${mobileCol} AS mobile`,
+      `${roomCol} AS room`,
+      `${checkinCol} AS checkin`,
+      `${checkoutCol} AS checkout`,
+      `${nightsCol} AS nights`,
+      `${guestsCol} AS guests`,
+      `${totalCol} AS total`,
+      `${statusCol} AS status`
+    ];
+    
+    // Add new columns only if they exist
+    if (cols.has('rooms_requested') || cols.has('roomsRequested')) {
+      const roomsRequestedCol = cols.has('rooms_requested') ? 'rooms_requested' : 'roomsRequested';
+      selectCols.push(`${roomsRequestedCol} AS rooms_requested`);
+    }
+    if (cols.has('room_type') || cols.has('roomType')) {
+      const roomTypeCol = cols.has('room_type') ? 'room_type' : 'roomType';
+      selectCols.push(`${roomTypeCol} AS room_type`);
+    }
+    if (cols.has('base_total') || cols.has('baseTotal')) {
+      const baseTotalCol = cols.has('base_total') ? 'base_total' : 'baseTotal';
+      selectCols.push(`${baseTotalCol} AS base_total`);
+    }
+    if (cols.has('extra_charge') || cols.has('extraCharge')) {
+      const extraChargeCol = cols.has('extra_charge') ? 'extra_charge' : 'extraCharge';
+      selectCols.push(`${extraChargeCol} AS extra_charge`);
+    }
+    if (cols.has('advance_amount') || cols.has('advanceAmount')) {
+      const advanceAmountCol = cols.has('advance_amount') ? 'advance_amount' : 'advanceAmount';
+      selectCols.push(`${advanceAmountCol} AS advance_amount`);
+    }
+    if (cols.has('payment_id') || cols.has('paymentId')) {
+      const paymentIdCol = cols.has('payment_id') ? 'payment_id' : 'paymentId';
+      selectCols.push(`${paymentIdCol} AS payment_id`);
+    }
+    if (cols.has('lock_id') || cols.has('lockId')) {
+      const lockIdCol = cols.has('lock_id') ? 'lock_id' : 'lockId';
+      selectCols.push(`${lockIdCol} AS lock_id`);
+    }
+    if (cols.has('whatsapp_sent') || cols.has('whatsappSent')) {
+      const whatsappSentCol = cols.has('whatsapp_sent') ? 'whatsapp_sent' : 'whatsappSent';
+      selectCols.push(`${whatsappSentCol} AS whatsapp_sent`);
+    }
+    if (cols.has('email_sent') || cols.has('emailSent')) {
+      const emailSentCol = cols.has('email_sent') ? 'email_sent' : 'emailSent';
+      selectCols.push(`${emailSentCol} AS email_sent`);
+    }
+    
+    if (bookingFromCol) {
+      selectCols.push(`${bookingFromCol} AS booking_from`);
+    }
+    
+    selectCols.push(`${createdCol} AS createdAt`);
+    
     const { results } = await db
-      .prepare(`SELECT 
-        id,
-        ${customerIdCol} AS customer_id,
-        name,
-        ${emailCol} AS email,
-        ${mobileCol} AS mobile,
-        ${roomCol} AS room,
-        ${checkinCol} AS checkin,
-        ${checkoutCol} AS checkout,
-        ${nightsCol} AS nights,
-        ${guestsCol} AS guests,
-        ${totalCol} AS total,
-        ${statusCol} AS status,
-        ${bookingFromCol ? `${bookingFromCol} AS booking_from,` : ''}
-        ${createdCol} AS createdAt
-      FROM bookings ORDER BY ${createdCol} DESC`)
+      .prepare(`SELECT ${selectCols.join(', ')} FROM bookings ORDER BY ${createdCol} DESC`)
       .all();
 
     return new Response(JSON.stringify(results), {

@@ -1,88 +1,196 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import AdminHeader from "../../../components/AdminHeader.astro";
-export async function getStaticPaths() {
-  return [];
+import { isAuthenticated } from '../../../middleware/auth.js';
+
+const ok = await isAuthenticated(Astro);
+if (!ok) {
+  return Astro.redirect('/admin/login');
 }
+
 const id = Astro.params.id;
-let booking = {};
-try {
-  const res = await fetch(Astro.site ? new URL(`/api/bookings?id=${id}`, Astro.site).toString() : `/api/bookings?id=${id}`);
-  booking = await res.json();
-} catch (e) {
-  booking = {};
+let booking = null;
+
+const env = Astro.locals?.cloudflare?.env || Astro.locals?.runtime?.env || {};
+const db = env.DB;
+
+if (db) {
+  try {
+    // Basic fetch with all relevant columns
+    booking = await db.prepare(`
+      SELECT b.*, i.label as room_label 
+      FROM bookings b
+      LEFT JOIN inventory i ON b.room = i.room
+      WHERE b.id = ?
+    `).bind(id).first();
+  } catch (e) {
+    console.error('Database fetch failed', e);
+  }
 }
+
+if (!booking) {
+  // Try fallback by just fetching from bookings if inventory join fails or table schema differs
+  try {
+    booking = await db.prepare("SELECT * FROM bookings WHERE id = ?").bind(id).first();
+  } catch(e) {}
+}
+
+const total = booking?.total || 0;
+const advance = booking?.advance_amount || Math.round(total * 0.5);
+const balance = total - advance;
 ---
-<AdminLayout title={`Invoice ${id}`}>
+<AdminLayout title={booking ? `Invoice ${booking.name}` : 'Invoice'}>
   <AdminHeader />
-  <div class="p-4">
-    <div class="flex justify-between mb-4">
-      <h1 class="text-xl font-bold">Invoice</h1>
+  
+  <div class="p-4 max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6 no-print">
+      <a href="/admin/invoice" class="text-sky-600 hover:underline">← Back to Invoices</a>
       <div class="space-x-2">
-        <button id="printBtn" class="px-3 py-2 border rounded">Print</button>
-        <button id="pdfBtn" class="px-3 py-2 border rounded">Download PDF</button>
+        <button id="printBtn" class="px-4 py-2 bg-gray-100 border rounded hover:bg-gray-200 transition">Print</button>
+        <button id="pdfBtn" class="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 transition">Download PDF</button>
       </div>
     </div>
 
-    <div id="receipt" class="mx-auto bg-white border rounded p-3" style="width: 80mm;">
-      <div class="text-center mb-2">
-        <div class="text-lg font-bold">Dolphin House</div>
-        <div class="text-xs text-gray-600">Nagaon Beach Road, Nagaon, Alibaug</div>
-        <div class="text-xs text-gray-600">GSTIN: NA</div>
+    {booking ? (
+      <div id="receipt" class="mx-auto bg-white border rounded shadow-sm p-6 print:shadow-none print:border-none" style="width: 80mm; min-height: 120mm;">
+        <div class="text-center mb-4">
+          <div class="text-xl font-bold uppercase tracking-wider">Dolphin House</div>
+          <div class="text-xs text-gray-600 mt-1">Nagaon Beach Road, Nagaon, Alibaug</div>
+          <div class="text-xs text-gray-600">Contact: +91-XXXXXXXXXX</div>
+          <div class="text-xs font-semibold mt-2 border-y py-1 uppercase">Tax Invoice</div>
+        </div>
+
+        <div class="text-[10px] space-y-1 mb-4">
+          <div class="flex justify-between">
+            <span class="font-bold">Invoice #:</span>
+            <span class="font-mono">{id}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="font-bold">Date:</span>
+            <span>{new Date(booking.created_at || Date.now()).toLocaleDateString('en-IN')}</span>
+          </div>
+          <hr class="border-dashed" />
+          <div><span class="font-bold">Customer:</span> {booking.name}</div>
+          <div><span class="font-bold">Mobile:</span> {booking.mobile}</div>
+          <div><span class="font-bold">Check-in:</span> {new Date(booking.checkin).toLocaleDateString('en-IN', {day:'2-digit', month:'short'})}</div>
+          <div><span class="font-bold">Check-out:</span> {new Date(booking.checkout).toLocaleDateString('en-IN', {day:'2-digit', month:'short'})}</div>
+          <div class="flex justify-between">
+            <span><span class="font-bold">Nights:</span> {booking.nights}</span>
+            <span><span class="font-bold">Guests:</span> {booking.guests}</span>
+          </div>
+          <div><span class="font-bold">Room:</span> {booking.room_label || booking.room} ({(booking.room_type || '').toUpperCase()})</div>
+        </div>
+
+        <table class="w-full text-[10px] mb-4 border-t border-b border-black">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-1">Description</th>
+              <th class="text-right py-1">Amount</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            <tr>
+              <td class="py-2">
+                Room Charges<br/>
+                <span class="text-[8px] text-gray-500">{booking.rooms_requested || 1} Room(s) × {booking.nights} Night(s)</span>
+              </td>
+              <td class="text-right py-2">₹{(booking.base_total || total).toLocaleString()}</td>
+            </tr>
+            {booking.extra_charge > 0 && (
+              <tr>
+                <td class="py-2">Extra Person Charges</td>
+                <td class="text-right py-2">₹{booking.extra_charge.toLocaleString()}</td>
+              </tr>
+            )}
+          </tbody>
+          <tfoot>
+            <tr class="border-t border-black font-bold">
+              <td class="py-2">Total Amount</td>
+              <td class="text-right py-2">₹{total.toLocaleString()}</td>
+            </tr>
+            <tr class="text-green-700">
+              <td class="py-1 italic">Advance Paid (50%)</td>
+              <td class="text-right py-1">₹{advance.toLocaleString()}</td>
+            </tr>
+            <tr class="border-t border-dashed font-bold text-red-700">
+              <td class="py-2 text-sm">Balance at Resort</td>
+              <td class="text-right py-2 text-sm">₹{balance.toLocaleString()}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div class="text-center text-[9px] mt-6 space-y-1">
+          <div class="font-bold italic">Thank you for staying with us!</div>
+          <div class="text-gray-500">Check-in: 11 AM | Check-out: 10 AM</div>
+          <div class="pt-2 border-t border-gray-100">This is a computer generated invoice</div>
+        </div>
       </div>
-
-      <hr class="my-2" />
-
-      <div class="text-sm">
-        <div><span class="font-semibold">Invoice #</span>: <span class="font-mono">${id}</span></div>
-        <div><span class="font-semibold">Customer</span>: ${booking.name || ''}</div>
-        <div><span class="font-semibold">Mobile</span>: ${booking.mobile || ''}</div>
-        <div><span class="font-semibold">Source</span>: ${booking.booking_from || 'Direct'}</div>
-        <div><span class="font-semibold">Room</span>: ${booking.room || ''}</div>
-        <div><span class="font-semibold">Check-in</span>: ${booking.checkin || ''}</div>
-        <div><span class="font-semibold">Check-out</span>: ${booking.checkout || ''}</div>
-        <div><span class="font-semibold">Nights</span>: ${booking.nights || 1}</div>
-        <div><span class="font-semibold">Guests</span>: ${booking.guests || 1}</div>
+    ) : (
+      <div class="text-center py-20 bg-white border rounded">
+        <div class="text-gray-400 text-5xl mb-4">🔍</div>
+        <h2 class="text-xl font-bold text-gray-700">Booking Not Found</h2>
+        <p class="text-gray-500 mt-2">The invoice with ID "{id}" could not be retrieved.</p>
+        <a href="/admin/invoice" class="mt-6 inline-block text-sky-600 font-semibold">Return to List</a>
       </div>
-
-      <hr class="my-2" />
-
-      <div class="text-sm">
-        <div class="flex justify-between"><span>Room Charges</span><span>₹${(booking.total || 0).toLocaleString()}</span></div>
-        <div class="flex justify-between"><span>Tax</span><span>₹0</span></div>
-        <div class="flex justify-between font-semibold border-t mt-1 pt-1"><span>Total</span><span>₹${(booking.total || 0).toLocaleString()}</span></div>
-      </div>
-
-      <hr class="my-2" />
-
-      <div class="text-center text-xs">Thank you for choosing Dolphin House!</div>
-    </div>
+    )}
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script>
-    document.getElementById('printBtn').addEventListener('click', () => window.print());
+  
+  <script define:vars={{ id }}>
+    document.getElementById('printBtn')?.addEventListener('click', () => window.print());
 
-    document.getElementById('pdfBtn').addEventListener('click', async () => {
+    document.getElementById('pdfBtn')?.addEventListener('click', async () => {
       const { jsPDF } = window.jspdf;
       const receipt = document.getElementById('receipt');
-      const canvas = await html2canvas(receipt, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [80, 150] });
-      // Fit image to width 80mm
-      const pageWidth = 80;
-      const pageHeight = (canvas.height / canvas.width) * pageWidth;
-      pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
-      pdf.save(`invoice-${encodeURIComponent('${id}')}.pdf`);
+      if (!receipt) return;
+
+      const pdfBtn = document.getElementById('pdfBtn');
+      pdfBtn.disabled = true;
+      pdfBtn.textContent = 'Generating...';
+
+      try {
+        const canvas = await html2canvas(receipt, { scale: 3, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+        
+        // 80mm width standard thermal paper size
+        const pdf = new jsPDF({ 
+          orientation: 'portrait', 
+          unit: 'mm', 
+          format: [80, 200] // Long enough to fit content
+        });
+
+        const pageWidth = 80;
+        const pageHeight = (canvas.height / canvas.width) * pageWidth;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight);
+        pdf.save(`invoice-${id}.pdf`);
+      } catch (err) {
+        console.error('PDF creation failed', err);
+        alert('Failed to generate PDF. Please try printing instead.');
+      } finally {
+        pdfBtn.disabled = false;
+        pdfBtn.textContent = 'Download PDF';
+      }
     });
   </script>
 
   <style>
     @media print {
-      @page { size: 80mm auto; margin: 5mm; }
-      body { background: white; }
-      .border, hr { border-color: #e5e7eb; }
+      .no-print { display: none !important; }
+      body { background: white !important; }
+      #receipt { 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        border: none !important; 
+        box-shadow: none !important; 
+        width: 100% !important;
+      }
+      @page { 
+        size: 80mm auto; 
+        margin: 0; 
+      }
     }
   </style>
 </AdminLayout>

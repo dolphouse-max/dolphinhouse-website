@@ -29,7 +29,7 @@ if (!ok) {
     </div>
 
     <div id="calendarWrap" class="overflow-x-auto border rounded-lg bg-white shadow p-4">
-      <div id="calendarGrid" class="inline-grid gap-1 p-2" style="grid-auto-flow:column;"></div>
+      <div id="calendarGrid" class="grid gap-1 p-2"></div>
     </div>
 
     <div id="legend" class="mt-4 text-sm text-gray-600">
@@ -113,6 +113,7 @@ if (!ok) {
       const colTemplate = [`180px`, ...dates.map(()=>`110px`)].join(' ');
       calendarGrid.style.gridTemplateColumns = colTemplate;
       calendarGrid.style.display = 'grid';
+      calendarGrid.style.width = 'max-content';
 
       // header row
       const headLabel = document.createElement('div'); headLabel.className='p-2 font-semibold text-sm'; headLabel.textContent='Room / Date'; calendarGrid.appendChild(headLabel);

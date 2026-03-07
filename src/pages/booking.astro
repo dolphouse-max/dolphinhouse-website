@@ -1,440 +1,725 @@
 ---
 import Layout from "../layouts/Layout.astro";
-// Server-side: read global booking toggle to render paused state immediately
-const env = Astro.locals?.cloudflare?.env || Astro.locals?.runtime?.env || {};
-let bookingEnabled = true;
-let bookingNotice = '';
-let bookingContact = {};
-try {
-  const db = env.DB;
-  if (db) {
-    await db.prepare(`
-      CREATE TABLE IF NOT EXISTS app_settings (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL
-      )
-    `).run();
-    const enabledRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_enabled'`).first();
-    const noticeRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_notice'`).first();
-    const contactRow = await db.prepare(`SELECT value FROM app_settings WHERE key = 'booking_contact'`).first();
-    bookingEnabled = enabledRow ? (enabledRow.value === 'true' || enabledRow.value === true) : true;
-    bookingNotice = typeof noticeRow?.value === 'string' ? noticeRow.value : '';
-    try { bookingContact = contactRow?.value ? JSON.parse(contactRow.value) : {}; } catch {}
-  } else {
-    const res = await fetch(new URL('/api/booking-toggle', Astro.request.url).toString(), { cache: 'no-store' });
-    if (res.ok) {
-      const j = await res.json();
-      bookingEnabled = !!j.bookingEnabled;
-      bookingNotice = j.notice || '';
-      bookingContact = j.contact || {};
-    }
-  }
-} catch {}
+const env = Astro.locals?.cloudflare?.env || Astro.locals?.runtime?.env || (import.meta as any).env || {};
+const RAZORPAY_KEY_ID = env.RAZORPAY_KEY_ID || "";
 ---
 
-<Layout title="Booking | Dolphin House" description="Book your stay at Dolphin House Beach Resort, Alibaug. Easy online booking with instant confirmation. Best rates guaranteed for AC rooms, cottages & family suites.">
+<Layout title="Booking | Dolphin House Beach Resort">
 
-  <section class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
-    <h1 class="text-3xl font-bold mb-4 text-center text-gray-800">Check Availability & Book</h1>
-    <div id="bookingClosedBanner" class={`${!bookingEnabled ? '' : 'hidden'} bg-yellow-100 text-yellow-800 p-3 rounded-md mb-2 text-center font-medium`}>
-      <span id="bookingNoticeText">{bookingNotice && bookingNotice.trim().length > 0 ? bookingNotice : 'Bookings are temporarily paused. Please check back later.'}</span>
-    </div>
-    <div id="contactPanel" class={`${!bookingEnabled ? '' : 'hidden'} bg-yellow-50 border border-yellow-200 text-gray-800 p-4 rounded-md mb-4`}>
-      <div class="font-semibold mb-2">Contact us directly to book:</div>
-      <ul class="list-disc pl-5 mb-3">
-        <li>
-          Call: <a id="contactPhone1" class="text-blue-700 underline" href={`tel:${bookingContact.phone1 || '+918554871073'}`}>{bookingContact.phone1 || '+91 8554871073'}</a>
-          {bookingContact.phone2 && (<>
-            {' '}or <a id="contactPhone2" class="text-blue-700 underline" href={`tel:${bookingContact.phone2}`}>{bookingContact.phone2}</a>
-          </>)}
-        </li>
-        <li>
-          WhatsApp: <a id="contactWhatsAppLink" class="text-blue-700 underline" href={`https://wa.me/${String((bookingContact.whatsapp || '+918554871073')).replace(/^\+/, '')}`} target="_blank" rel="noopener noreferrer">{bookingContact.whatsapp || '+91 8554871073'}</a>
-        </li>
-        <li>
-          Email: <a id="contactEmailLink" class="text-blue-700 underline" href={`mailto:${bookingContact.email || 'booking@dolphinhouse-alibaug.com'}`}>{bookingContact.email || 'booking@dolphinhouse-alibaug.com'}</a>
-        </li>
-      </ul>
-      <div class="flex gap-2">
-        <a href={`tel:${bookingContact.phone1 || '+918554871073'}`} class="rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700" id="contactCallBtn">Call Now</a>
-        <a href={`https://wa.me/${String((bookingContact.whatsapp || '+918554871073')).replace(/^\+/, '')}`} target="_blank" rel="noopener noreferrer" class="rounded bg-green-600 px-3 py-2 text-white hover:bg-green-700" id="contactWhatsAppBtn">WhatsApp</a>
-        <a href="/contact" class="rounded bg-gray-600 px-3 py-2 text-white hover:bg-gray-700">More Contact Options</a>
-      </div>
-    </div>
-    <div id="errorBox" class="hidden bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center"></div>
+<section class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
 
-    <!-- Step 1: Date and Guest Count ONLY -->
-    <div id="bookingFormPanel" class={`${bookingEnabled ? '' : 'hidden'} space-y-4 mb-8`}>
-      <div>
-        <label for="guestCount" class="block text-sm font-medium text-gray-700 mb-1">Number of Guests</label>
-        <input id="guestCount" type="number" min="1" max="10" value="2"
-               class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
-      </div>
-      <div>
-        <label for="roomCount" class="block text-sm font-medium text-gray-700 mb-1">Number of Rooms</label>
-        <input id="roomCount" type="number" min="1" max="10" value="1"
-               class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
-      </div>
-      
-      <label class="block">
-        <span class="text-sm font-medium text-gray-700 mb-1">Check-in</span>
-        <input id="checkin" type="date" class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
-      </label>
-      
-      <label class="block">
-        <span class="text-sm font-medium text-gray-700 mb-1">Check-out</span>
-        <input id="checkout" type="date" class="w-full border px-3 py-2 rounded focus:ring-2 focus:ring-sky-400 focus:outline-none"/>
-      </label>
-      
-      <button id="checkBtn" disabled={!bookingEnabled} class={`w-full ${bookingEnabled ? 'bg-sky-600 hover:bg-sky-700' : 'bg-sky-600 opacity-50 cursor-not-allowed'} text-white py-3 rounded-lg transition font-semibold`}>
-        {bookingEnabled ? 'Check Availability' : 'Bookings Paused'}
+<h1 class="text-3xl font-bold text-center mb-6">
+Check Availability & Book
+</h1>
+
+<div id="errorBox" class="hidden bg-red-100 text-red-700 p-3 rounded mb-4 text-center"></div>
+
+<div id="razorpayKeyId" data-key={RAZORPAY_KEY_ID}></div>
+
+<!-- STEP 1 -->
+<div class="space-y-4 mb-8">
+
+  <div>
+    <label class="block text-sm font-medium mb-1">Number of Guests</label>
+    <input id="guestCount" type="number" min="1" value="2"
+      class="w-full border px-3 py-2 rounded"/>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium mb-1">Number of Rooms</label>
+    <input id="roomCount" type="number" min="1" value="1"
+      class="w-full border px-3 py-2 rounded"/>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium mb-1">Check-in</label>
+    <input id="checkin" type="date"
+      class="w-full border px-3 py-2 rounded"/>
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium mb-1">Check-out</label>
+    <input id="checkout" type="date"
+      class="w-full border px-3 py-2 rounded"/>
+  </div>
+
+  <button id="checkBtn"
+    class="w-full bg-sky-600 text-white py-3 rounded-lg font-semibold">
+    Check Availability
+  </button>
+
+</div>
+
+<!-- STEP 2 -->
+<div id="availabilitySection" class="hidden mt-6">
+  <h2 class="text-xl font-semibold mb-4 text-center">
+    Available Room Types
+  </h2>
+  <div id="roomList" class="grid gap-4"></div>
+</div>
+
+<!-- STEP 3 -->
+<div id="guestFormSection" class="hidden mt-8 border p-6 rounded-xl bg-white shadow">
+  <h3 class="text-xl font-semibold mb-4">Guest Details</h3>
+
+  <div class="space-y-3">
+    <input id="guestName" type="text" placeholder="Full Name"
+      class="w-full border px-3 py-2 rounded"/>
+
+    <div class="relative">
+      <input id="guestMobile" type="tel" placeholder="Mobile Number (10 digits)"
+        class="w-full border px-3 py-2 rounded pr-24"/>
+      <button id="sendOtpBtn" 
+        class="absolute right-1 top-1 bottom-1 bg-sky-100 text-sky-700 px-3 py-1 rounded text-sm font-semibold hover:bg-sky-200 transition disabled:opacity-50">
+        Send OTP
       </button>
     </div>
 
-    <!-- Step 2: Room selection -->
-    <div id="availability" class="hidden mt-8">
-      <h2 class="text-xl font-semibold mb-3 text-gray-800 text-center">Available Room Types</h2>
-      <div id="roomList" class="grid gap-4"></div>
+    <div id="otpSection" class="hidden space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+      <div class="flex gap-2">
+        <input id="otpInput" type="text" placeholder="Enter 6-digit OTP"
+          class="flex-1 border px-3 py-2 rounded text-center tracking-[0.5em] font-mono text-lg"
+          maxlength="6"/>
+        <button id="verifyOtpBtn" 
+          class="bg-sky-600 text-white px-4 py-2 rounded font-semibold hover:bg-sky-700 transition">
+          Verify
+        </button>
+      </div>
+      <div id="otpTimer" class="text-xs text-gray-500 text-center"></div>
     </div>
-  </section>
 
-  <script>
-    function showError(msg) {
-      const box = document.getElementById('errorBox');
-      box.textContent = msg;
-      box.classList.remove('hidden');
-    }
+    <input id="guestEmail" type="email" placeholder="Email (optional)"
+      class="w-full border px-3 py-2 rounded"/>
+  </div>
 
-    // Global booking availability toggle
-    async function checkBookingToggle() {
-      try {
-        const res = await fetch('/api/booking-toggle', { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const enabled = !!data?.bookingEnabled;
-        const banner = document.getElementById('bookingClosedBanner');
-        const noticeEl = document.getElementById('bookingNoticeText');
-        const contactPanel = document.getElementById('contactPanel');
-        const phone1Link = document.getElementById('contactPhone1');
-        const phone2Link = document.getElementById('contactPhone2');
-        const whatsappLink = document.getElementById('contactWhatsAppLink');
-        const emailLink = document.getElementById('contactEmailLink');
-        const callBtn = document.getElementById('contactCallBtn');
-        const waBtn = document.getElementById('contactWhatsAppBtn');
-        const checkBtn = document.getElementById('checkBtn');
-        if (!enabled) {
-          banner.classList.remove('hidden');
-          if (noticeEl) {
-            const defaultMsg = 'Bookings are temporarily paused. Please check back later.';
-            const msg = (typeof data?.notice === 'string' && data.notice.trim().length > 0) ? data.notice.trim() : defaultMsg;
-            noticeEl.textContent = msg;
-          }
-          const c = data?.contact || {};
-          if (phone1Link && c.phone1) { phone1Link.href = `tel:${c.phone1}`; phone1Link.textContent = formatPhone(c.phone1); }
-          if (phone2Link && c.phone2) { phone2Link.href = `tel:${c.phone2}`; phone2Link.textContent = formatPhone(c.phone2); }
-          if (whatsappLink && c.whatsapp) { whatsappLink.href = `https://wa.me/${stripPlus(c.whatsapp)}`; whatsappLink.textContent = formatPhone(c.whatsapp); }
-          if (emailLink && c.email) { emailLink.href = `mailto:${c.email}`; emailLink.textContent = c.email; }
-          if (callBtn && c.phone1) { callBtn.href = `tel:${c.phone1}`; }
-          if (waBtn && c.whatsapp) { waBtn.href = `https://wa.me/${stripPlus(c.whatsapp)}`; }
-          contactPanel.classList.remove('hidden');
-          checkBtn.disabled = true;
-          checkBtn.classList.add('opacity-50', 'cursor-not-allowed');
-          checkBtn.textContent = 'Bookings Paused';
-        } else {
-          banner.classList.add('hidden');
-          if (noticeEl) {
-            noticeEl.textContent = '';
-          }
-          contactPanel.classList.add('hidden');
-          checkBtn.disabled = false;
-          checkBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-          checkBtn.textContent = 'Check Availability';
-        }
-        return enabled;
-      } catch (err) {
-        console.warn('booking-toggle check failed', err);
-        // Fail closed: if toggle API is unreachable, keep bookings paused on client
-        const banner = document.getElementById('bookingClosedBanner');
-        const contactPanel = document.getElementById('contactPanel');
-        const checkBtn = document.getElementById('checkBtn');
-        if (banner) banner.classList.remove('hidden');
-        if (contactPanel) contactPanel.classList.remove('hidden');
-        if (checkBtn) {
-          checkBtn.disabled = true;
-          checkBtn.classList.add('opacity-50', 'cursor-not-allowed');
-          checkBtn.textContent = 'Bookings Paused';
-        }
-        return false;
-      }
-    }
+  <button id="payAdvanceBtn"
+    class="w-full bg-green-600 text-white py-3 rounded-lg mt-5 font-semibold opacity-50 cursor-not-allowed" disabled>
+    Verify Mobile to Continue
+  </button>
+</div>
 
-    function stripPlus(s) { return String(s || '').replace(/^\+/, ''); }
-    function formatPhone(s) {
-      const t = String(s || '');
-      return t;
-    }
+  <!-- STEP 4: BOOKING SUMMARY -->
+<div id="summarySection" class="hidden mt-8 border p-6 rounded-xl bg-gray-50 shadow">
 
-    // Fetch bookings within a date range to reduce data volume
-    async function fetchBookingsRange(startISO, endISO) {
-      try {
-        const res = await fetch(`/api/bookings?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
-        if (!res.ok) throw new Error(`Server returned ${res.status}`);
-        return await res.json();
-      } catch (err) {
-        console.warn('⚠️ bookings API unavailable:', err);
-        showError("We're unable to load current bookings – showing estimated availability.");
-        return [];
-      }
-    }
+  <h3 class="text-xl font-semibold mb-4">Review Your Booking</h3>
 
-    async function fetchInventory() {
-      try {
-        const res = await fetch('/api/inventory');
-        if (!res.ok) throw new Error(`Server returned ${res.status}`);
-        const j = await res.json();
-        // Normalize array to object keyed by room for downstream lookups
-        if (Array.isArray(j)) {
-          const obj = {};
-          j.forEach(it => { if (it?.room) obj[it.room] = it; });
-          return obj;
-        }
-        return j;
-      } catch (err) {
-        console.warn('⚠️ inventory API unavailable:', err);
-        showError("Inventory service is temporarily unavailable – using sample data for now.");
-        return {
-          standard: { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2500 },
-          deluxe: { label: "Deluxe Room", qty: 3, rateNonAC: 3000, rateAC: 3500 },
-          suite: { label: "Suite Room", qty: 2, rateNonAC: 4500, rateAC: 5000 }
-        };
-      }
-    }
+  <div id="summaryContent" class="space-y-2 text-sm"></div>
 
-    function rangesOverlap(aStart, aEnd, bStart, bEnd) {
-      return (aStart < bEnd) && (bStart < aEnd);
-    }
+  <div class="mt-6 flex gap-3">
+    <button id="cancelBookingBtn"
+      class="w-1/2 bg-gray-400 text-white py-3 rounded-lg font-semibold">
+      Cancel
+    </button>
 
-    function isoDate(d) {
-      const dt = (d instanceof Date) ? d : new Date(d);
-      const y = dt.getFullYear();
-      const m = String(dt.getMonth() + 1).padStart(2,'0');
-      const day = String(dt.getDate()).padStart(2,'0');
-      return `${y}-${m}-${day}`;
-    }
+    <button id="confirmPaymentBtn"
+      class="w-1/2 bg-green-600 text-white py-3 rounded-lg font-semibold">
+      Proceed to Payment
+    </button>
+  </div>
 
-    function dateRange(startISO, endISO) {
-      // end is exclusive; returns list of YYYY-MM-DD
-      const dates = [];
-      const start = new Date(startISO);
-      const end = new Date(endISO);
-      for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
-        dates.push(isoDate(d));
-      }
-      return dates;
-    }
+</div>
+</section>
 
-    async function fetchOverrides(startISO, endISO) {
-      try {
-        const res = await fetch(`/api/availability-overrides?start=${encodeURIComponent(startISO)}&end=${encodeURIComponent(endISO)}`);
-        if (!res.ok) throw new Error(`Overrides API returned ${res.status}`);
-        const arr = await res.json();
-        // Normalize to map: overrides[room][date] = { available, rateNonAC, rateAC }
-        const map = {};
-        arr.forEach(o => {
-          if (!map[o.room]) map[o.room] = {};
-          map[o.room][o.date] = { available: Number(o.available)||0, rateNonAC: Number(o.rateNonAC)||0, rateAC: Number(o.rateAC)||0 };
-        });
-        return map;
-      } catch (err) {
-        console.warn('⚠️ overrides API unavailable:', err);
-        return {};
-      }
-    }
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-    function countBookedOnDate(bookings, roomType, dateYMD) {
-      const dayStart = new Date(dateYMD);
-      const dayEnd = new Date(dateYMD); dayEnd.setDate(dayEnd.getDate() + 1);
-      let c = 0;
-      bookings.forEach(b => {
-        if (b.room !== roomType || b.status === 'cancelled') return;
-        const bi = new Date(b.checkin), bo = new Date(b.checkout);
-        if (rangesOverlap(dayStart, dayEnd, bi, bo)) c++;
-      });
-      return c;
-    }
+<script>
 
-    function availableRoomsWithOverrides(inv, overrides, bookings, rt, ci, co) {
-      const dates = dateRange(ci, co);
-      let minAvail = Infinity;
-      dates.forEach(d => {
-        const baseQty = inv[rt]?.qty || 0;
-        const o = (overrides[rt] && overrides[rt][d]) ? overrides[rt][d] : null;
-        // Respect zero overrides: if an override exists, cap availability to that value (including 0)
-        const hasOverrideAvail = o && typeof o.available === 'number';
-        const overrideCap = hasOverrideAvail ? Math.max(0, Number(o.available)) : baseQty;
-        const allowed = Math.min(baseQty, overrideCap);
-        const reserved = countBookedOnDate(bookings, rt, d);
-        const avail = Math.max(0, allowed - reserved);
-        minAvail = Math.min(minAvail, avail);
-      });
-      return minAvail === Infinity ? 0 : minAvail;
-    }
-
-    function computeTotalWithOverrides(inv, overrides, rt, type, ci, co) {
-      const dates = dateRange(ci, co);
-      let total = 0;
-      dates.forEach(d => {
-        const o = overrides[rt]?.[d];
-        const defaultRate = type === 'ac' ? (inv[rt]?.rateAC || 0) : (inv[rt]?.rateNonAC || 0);
-        const overrideRate = type === 'ac' ? (o?.rateAC || 0) : (o?.rateNonAC || 0);
-        const rate = overrideRate > 0 ? overrideRate : defaultRate;
-        total += rate;
-      });
-      return total;
-    }
-
-    const checkBtn = document.getElementById('checkBtn');
-    const availability = document.getElementById('availability');
-    const roomList = document.getElementById('roomList');
-
-    // Run a toggle check on page load to reflect current status immediately
-    (async () => { try { await checkBookingToggle(); } catch {} })();
-
-    checkBtn.addEventListener('click', async () => {
-      const enabled = await checkBookingToggle();
-      if (!enabled) {
-        showError('Bookings are currently paused by the resort.');
-        return;
-      }
-      const guests = parseInt(document.getElementById('guestCount').value);
-      const roomsRequested = parseInt(document.getElementById('roomCount').value) || 1;
-      const checkin = document.getElementById('checkin').value;
-      const checkout = document.getElementById('checkout').value;
-
-      // Only validate dates (no name/email validation)
-      if (!checkin || !checkout || new Date(checkin) >= new Date(checkout)) {
-        alert('Please choose valid check-in and check-out dates.');
-        return;
-      }
-
-      const inv = await fetchInventory();
-      const bookings = await fetchBookingsRange(checkin, checkout);
-      const overrides = await fetchOverrides(checkin, checkout);
-
-      roomList.innerHTML = '';
-      Object.keys(inv).forEach(rt => {
-        const avail = availableRoomsWithOverrides(inv, overrides, bookings, rt, checkin, checkout);
-        const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
-        const estTotalNonAC = computeTotalWithOverrides(inv, overrides, rt, 'nonac', checkin, checkout);
-        const estTotalAC = computeTotalWithOverrides(inv, overrides, rt, 'ac', checkin, checkout);
-        const avgNonAC = nights > 0 ? Math.round(estTotalNonAC / nights) : (inv[rt]?.rateNonAC || 0);
-        const avgAC = nights > 0 ? Math.round(estTotalAC / nights) : (inv[rt]?.rateAC || 0);
-        const div = document.createElement('div');
-        div.className = "border p-4 rounded-lg flex justify-between items-center bg-gray-50 hover:bg-white shadow-sm";
-        div.innerHTML = `
-          <div>
-            <div class="text-lg font-semibold">${inv[rt].label}</div>
-            <div class="text-sm text-gray-600">Avg for selected dates: ₹${avgNonAC} / night (Non-AC) | ₹${avgAC} / night (AC)</div>
-            <div class="text-xs text-gray-500">Pricing reflects Monthly Availability Editor overrides when present</div>
-            <div class="text-sm text-gray-500">Available: ${avail}</div>
-          </div>
-          <div class="flex gap-2">
-            <button ${avail===0?'disabled':''} data-rt="${rt}" data-type="nonac"
-              class="bg-sky-500 text-white px-4 py-2 rounded-md hover:bg-sky-600 disabled:opacity-40 selectRoom">
-              Book Non-AC
-            </button>
-            <button ${avail===0?'disabled':''} data-rt="${rt}" data-type="ac"
-              class="bg-teal-500 text-white px-4 py-2 rounded-md hover:bg-teal-600 disabled:opacity-40 selectRoom">
-              Book AC
-            </button>
-          </div>`;
-        roomList.appendChild(div);
-      });
-
-      availability.classList.remove('hidden');
-
-      document.querySelectorAll('.selectRoom').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const enabled = await checkBookingToggle();
-          if (!enabled) {
-            showError('Bookings are currently paused by the resort.');
-            return;
-          }
-          const rt = btn.dataset.rt;
-          const type = btn.dataset.type;
-          const totalPerRoom = computeTotalWithOverrides(inv, overrides, rt, type, checkin, checkout);
-          const nights = (new Date(checkout) - new Date(checkin)) / 86400000;
-          const roomsRequested = parseInt(document.getElementById('roomCount').value) || 1;
-
-          // Validate requested rooms against availability for selected room type
-          const currentAvail = availableRoomsWithOverrides(inv, overrides, bookings, rt, checkin, checkout);
-          if (roomsRequested < 1) {
-            showError('Please select at least 1 room.');
-            return;
-          }
-          if (roomsRequested > currentAvail) {
-            showError(`Only ${currentAvail} room(s) available for ${inv[rt].label} on selected dates.`);
-            return;
-          }
-
-          const total = totalPerRoom * roomsRequested;
-
-          try {
-            // No prompts — create a booking and proceed to pay page
-            const name = "";
-            const email = "";
-            const res = await fetch('/api/bookings', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                name,
-                email,
-                room: rt,
-                checkin, 
-                checkout, 
-                guests, 
-                nights, 
-                total, 
-                status: 'payment_pending'
-              })
-            });
-            
-            if (!res.ok) {
-              const error = await res.json();
-              showError(error.error || 'Failed to create booking. Please try again.');
-              return;
-            }
-            
-            const data = await res.json();
-            
-            if (data.success && data.id && data.customerId) {
-              // Pass booking details to payment page
-              const params = new URLSearchParams({
-                bookingId: data.id,
-                customerId: data.customerId,
-                room: rt,
-                roomLabel: inv[rt].label,
-                acType: type,
-                checkin,
-                checkout,
-                guests: guests.toString(),
-              nights: nights.toString(),
-              total: total.toString(),
-              rooms: roomsRequested.toString()
-            });
-            window.location.href = `/pay?${params.toString()}`;
-            } else {
-              showError('Booking created but no ID returned. Please contact support.');
-            }
-          } catch (err) {
-            console.error('Booking submission error:', err);
-            showError('Network error. Please check your connection and try again.');
-          }
-        });
-      });
+// Test if button exists and add event listener
+document.addEventListener('DOMContentLoaded', function() {
+  const payBtn = document.getElementById('payAdvanceBtn');
+  console.log('Pay Advance button found:', !!payBtn);
+  
+  if (payBtn) {
+    console.log('Adding event listener to pay button');
+    payBtn.addEventListener('click', function() {
+      console.log('Button clicked via addEventListener');
     });
-    // Initial toggle check on page load
-    checkBookingToggle();
-  </script>
+  } else {
+    console.error('Pay Advance button NOT found during DOMContentLoaded');
+  }
+});
+
+if (document.getElementById('payAdvanceBtn')) {
+  console.log('Pay Advance button found in main script');
+} else {
+  console.error('Pay Advance button NOT found in main script');
+}
+
+let selectedData=null;
+let guestData=null;
+let expiryInterval=null;
+let currentLockId=null;
+const EXPIRY_SECONDS=300; // 5 minutes
+
+let isMobileVerified = false;
+let otpResendTimer = 0;
+let otpTimerInterval = null;
+
+const errorBox=document.getElementById('errorBox');
+
+function showError(msg){
+  if (errorBox) {
+    errorBox.textContent=msg;
+    errorBox.classList.remove('hidden');
+    errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } else {
+    alert(msg);
+  }
+}
+
+function rangesOverlap(aStart,aEnd,bStart,bEnd){
+  return (aStart < bEnd) && (bStart < aEnd);
+}
+
+async function fetchInventory(){
+  const res=await fetch('/api/inventory');
+  return await res.json();
+}
+
+async function fetchBookings(start,end){
+  const res=await fetch(`/api/bookings?start=${start}&end=${end}`);
+  return await res.json();
+}
+
+function countBooked(bookings,room,ci,co){
+  let c=0;
+  const active=new Set(['approved','confirmed','checked_in','payment_pending']);
+  bookings.forEach(b=>{
+    if(!active.has(String(b.status).toLowerCase())) return;
+    if(b.room!==room) return;
+    if(rangesOverlap(new Date(ci),new Date(co),new Date(b.checkin),new Date(b.checkout))){
+      c++;
+    }
+  });
+  return c;
+}
+
+function calculateTotal(room,type,guests,nights,roomsRequested){
+
+  const baseRate = type==="ac" ? room.rateAC : room.rateNonAC;
+  const baseTotal = baseRate * nights * roomsRequested;
+
+  let extraCharge=0;
+
+  if(room.occupancy && guests>room.occupancy){
+    const extraPersons = guests-room.occupancy;
+    extraCharge = extraPersons * room.extraPerson * nights * roomsRequested;
+  }
+
+  return {
+    baseTotal,
+    extraCharge,
+    grandTotal: baseTotal+extraCharge
+  };
+}
+
+function startExpiryTimer(expiryDateStr) {
+  if (expiryInterval) clearInterval(expiryInterval);
+  
+  const expiryTime = expiryDateStr ? new Date(expiryDateStr).getTime() : Date.now() + EXPIRY_SECONDS * 1000;
+
+  const timerEl = document.getElementById('expiryTimer') || document.createElement('div');
+  timerEl.id = "expiryTimer";
+  timerEl.className = "text-red-600 font-semibold mt-3 p-3 bg-red-50 rounded-lg text-center border border-red-100";
+  
+  const summaryContent = document.getElementById('summaryContent');
+  if (summaryContent && !document.getElementById('expiryTimer')) {
+    summaryContent.appendChild(timerEl);
+  }
+
+  expiryInterval = setInterval(() => {
+    const now = Date.now();
+    const timeLeft = Math.floor((expiryTime - now) / 1000);
+    
+    const min = Math.floor(timeLeft / 60);
+    const sec = timeLeft % 60;
+    
+    if (timeLeft <= 0) {
+      clearInterval(expiryInterval);
+      timerEl.textContent = "Session expired. Please restart.";
+      alert("Your booking session has expired. Please start again.");
+      location.reload();
+      return;
+    }
+    
+    timerEl.textContent = `Complete payment within ${min}:${sec.toString().padStart(2, '0')}`;
+  }, 1000);
+}
+
+document.getElementById('checkBtn').addEventListener('click',async()=>{
+
+  errorBox.classList.add('hidden');
+
+  const guests=parseInt(document.getElementById('guestCount').value);
+  const roomsRequested=parseInt(document.getElementById('roomCount').value);
+  const checkin=document.getElementById('checkin').value;
+  const checkout=document.getElementById('checkout').value;
+
+  if(!checkin || !checkout || new Date(checkin)>=new Date(checkout)){
+    showError("Please select valid dates.");
+    return;
+  }
+
+  const inventory=await fetchInventory();
+  const bookings=await fetchBookings(checkin,checkout);
+
+  const roomList=document.getElementById('roomList');
+  roomList.innerHTML='';
+
+  inventory.forEach(room => {
+    const rt = room.room; // Actual room ID from database
+    const booked=countBooked(bookings,rt,checkin,checkout);
+    const available=Math.max(0,room.qty-booked);
+    const nights=(new Date(checkout)-new Date(checkin))/86400000;
+
+    const div=document.createElement('div');
+    div.className="border p-4 rounded bg-gray-50";
+
+    div.innerHTML=`
+      <div class="text-lg font-semibold">${room.label}</div>
+      <div class="text-sm">Available: ${available}</div>
+      <div class="flex gap-2 mt-3">
+        <button class="bg-sky-600 text-white px-3 py-2 rounded acBtn">Book AC (₹${room.rateAC})</button>
+        <button class="bg-gray-600 text-white px-3 py-2 rounded nonacBtn">Book Non-AC (₹${room.rateNonAC})</button>
+      </div>
+    `;
+
+    if(available<=0){
+      div.querySelectorAll('button').forEach(b=>{
+        b.disabled=true;
+        b.classList.add('opacity-40');
+      });
+    }
+
+    function selectRoom(type){
+
+      const pricing=calculateTotal(room,type,guests,nights,roomsRequested);
+
+      selectedData={
+        room:rt,
+        label:room.label,
+        type,
+        checkin,
+        checkout,
+        guests,
+        nights,
+        roomsRequested,
+        ...pricing
+      };
+
+      document.getElementById('guestFormSection').classList.remove('hidden');
+      window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});
+    }
+
+    div.querySelector('.acBtn').addEventListener('click',()=>selectRoom("ac"));
+    div.querySelector('.nonacBtn').addEventListener('click',()=>selectRoom("nonac"));
+
+    roomList.appendChild(div);
+
+  });
+
+  document.getElementById('availabilitySection').classList.remove('hidden');
+
+});
+
+// OTP Logic
+const sendOtpBtn = document.getElementById('sendOtpBtn');
+const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+const mobileInput = document.getElementById('guestMobile');
+const otpInput = document.getElementById('otpInput');
+const otpSection = document.getElementById('otpSection');
+const otpTimerEl = document.getElementById('otpTimer');
+const payBtn = document.getElementById('payAdvanceBtn');
+
+function startOtpResendTimer() {
+  otpResendTimer = 60;
+  sendOtpBtn.disabled = true;
+  
+  if (otpTimerInterval) clearInterval(otpTimerInterval);
+  
+  otpTimerInterval = setInterval(() => {
+    otpResendTimer--;
+    if (otpResendTimer <= 0) {
+      clearInterval(otpTimerInterval);
+      sendOtpBtn.textContent = 'Resend OTP';
+      sendOtpBtn.disabled = false;
+      otpTimerEl.textContent = '';
+    } else {
+      otpTimerEl.textContent = `Resend available in ${otpResendTimer}s`;
+    }
+  }, 1000);
+}
+
+sendOtpBtn.addEventListener('click', async () => {
+  const mobile = mobileInput.value.trim();
+  
+  if (!/^[6-9][0-9]{9}$/.test(mobile)) {
+    showError("Please enter a valid 10-digit mobile number.");
+    return;
+  }
+
+  try {
+    sendOtpBtn.textContent = 'Sending...';
+    sendOtpBtn.disabled = true;
+    
+    const res = await fetch('/api/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobile })
+    });
+    
+    const data = await res.json();
+    
+    if (data.success) {
+      otpSection.classList.remove('hidden');
+      otpInput.focus();
+      startOtpResendTimer();
+    } else {
+      showError(data.error || "Failed to send OTP.");
+      sendOtpBtn.disabled = false;
+      sendOtpBtn.textContent = 'Send OTP';
+    }
+  } catch (err) {
+    console.error('OTP Send error:', err);
+    showError("Failed to send OTP. Please try again.");
+    sendOtpBtn.disabled = false;
+    sendOtpBtn.textContent = 'Send OTP';
+  }
+});
+
+verifyOtpBtn.addEventListener('click', async () => {
+  const mobile = mobileInput.value.trim();
+  const otp = otpInput.value.trim();
+  
+  if (otp.length !== 6) {
+    showError("Please enter the 6-digit OTP.");
+    return;
+  }
+
+  try {
+    verifyOtpBtn.textContent = 'Verifying...';
+    verifyOtpBtn.disabled = true;
+    
+    const res = await fetch('/api/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mobile, otp })
+    });
+    
+    const data = await res.json();
+    
+    if (data.success) {
+      isMobileVerified = true;
+      otpSection.classList.add('hidden');
+      mobileInput.disabled = true;
+      sendOtpBtn.classList.add('hidden');
+      
+      // Update the pay button
+      payBtn.disabled = false;
+      payBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      payBtn.textContent = 'Confirm & Pay 50% Advance';
+      
+      // Add a success badge next to mobile
+      const successBadge = document.createElement('span');
+      successBadge.className = "absolute right-3 top-2 text-green-600 font-bold";
+      successBadge.textContent = "✓ Verified";
+      mobileInput.parentElement.appendChild(successBadge);
+      
+    } else {
+      showError(data.error || "Invalid OTP.");
+      verifyOtpBtn.disabled = false;
+      verifyOtpBtn.textContent = 'Verify';
+    }
+  } catch (err) {
+    console.error('OTP Verify error:', err);
+    showError("Failed to verify OTP. Please try again.");
+    verifyOtpBtn.disabled = false;
+    verifyOtpBtn.textContent = 'Verify';
+  }
+});
+
+async function createBookingLock(selectedData, guestData){
+  try{
+    const response=await fetch('/api/booking-locks',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        room:selectedData.room,
+        checkin:selectedData.checkin,
+        checkout:selectedData.checkout,
+        guests:selectedData.guests,
+        roomsRequested:selectedData.roomsRequested,
+        roomType:selectedData.type,
+        customerName:guestData.name,
+        customerMobile:guestData.mobile,
+        customerEmail:guestData.email,
+        // Add pricing data for the "pending" booking record
+        total:selectedData.grandTotal,
+        baseTotal:selectedData.baseTotal,
+        extraCharge:selectedData.extraCharge,
+        advanceAmount:Math.round((selectedData.grandTotal || 0) * 0.5),
+        nights:selectedData.nights
+      })
+    });
+    
+    const result=await response.json();
+    
+    if(response.ok){
+      currentLockId=result.lockId;
+      // Store the bookingId if returned (for subsequent update during payment)
+      selectedData.bookingId = result.bookingId;
+      return {success:true, lockId:result.lockId, bookingId:result.bookingId, expiry:result.lockExpiry};
+    }else{
+      return {success:false, error:result.error};
+    }
+  }catch(err){
+    console.error('Lock creation failed:', err);
+    return {success:false, error:'Failed to create booking lock'};
+  }
+}
+
+async function releaseBookingLock(){
+  if(currentLockId){
+    try{
+      await fetch(`/api/booking-locks?lockId=${currentLockId}`,{method:'DELETE'});
+      currentLockId=null;
+    }catch(err){
+      console.error('Lock release failed:', err);
+    }
+  }
+}
+
+document.getElementById('payAdvanceBtn').addEventListener('click',async()=>{
+
+  console.log('Pay Advance button clicked');
+  console.log('selectedData:', selectedData);
+
+  const name=document.getElementById('guestName').value;
+  const mobile=document.getElementById('guestMobile').value;
+  const email=document.getElementById('guestEmail').value;
+
+  console.log('Guest data:', {name, mobile, email});
+
+  if (!isMobileVerified) {
+    showError("Please verify your mobile number with OTP first.");
+    return;
+  }
+
+  if(!name || !mobile){
+    showError("Name and Mobile required.");
+    return;
+  }
+
+  if(!selectedData){
+    showError("Please select a room first.");
+    return;
+  }
+
+  guestData={name,mobile,email};
+
+  console.log('Creating booking lock...');
+
+  const btn = document.getElementById('payAdvanceBtn') as HTMLButtonElement;
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Creating lock...';
+  }
+
+  try {
+    // Create temporary lock before showing summary
+    const lockResult=await createBookingLock(selectedData,guestData);
+    
+    console.log('Lock result:', lockResult);
+    
+    if(!lockResult.success){
+      showError(lockResult.error);
+      return;
+    }
+
+    const advance = Math.round((selectedData.grandTotal || 0) * 0.5);
+
+    const summary = document.getElementById('summaryContent');
+    if (!summary) {
+      console.error('Summary element NOT found');
+      return;
+    }
+
+    summary.innerHTML = `
+      <div class="mb-4 p-3 bg-sky-50 border border-sky-100 rounded-lg">
+        <span class="text-xs text-gray-500 uppercase font-bold tracking-wider">Booking ID</span>
+        <div class="font-mono text-lg text-sky-700">${lockResult.bookingId.substring(0, 8).toUpperCase()}</div>
+      </div>
+      <div><strong>Guest:</strong> ${name}</div>
+      <div><strong>Mobile:</strong> ${mobile}</div>
+      <div><strong>Email:</strong> ${email || '-'}</div>
+      <hr class="my-2"/>
+      <div><strong>Room:</strong> ${selectedData.label} (${(selectedData.type || '').toUpperCase()})</div>
+      <div><strong>Check-in:</strong> ${selectedData.checkin}</div>
+      <div><strong>Check-out:</strong> ${selectedData.checkout}</div>
+      <div><strong>Nights:</strong> ${selectedData.nights}</div>
+      <div><strong>Rooms:</strong> ${selectedData.roomsRequested}</div>
+      <div><strong>Base Amount:</strong> ₹${selectedData.baseTotal}</div>
+      <div><strong>Extra Person:</strong> ₹${selectedData.extraCharge}</div>
+      <div class="font-bold text-lg mt-2">Grand Total: ₹${selectedData.grandTotal}</div>
+      <div class="text-green-700 font-semibold">Advance (50%): ₹${advance}</div>
+      <button id="editBookingBtn" class="mt-3 text-blue-600 underline">Edit Booking</button>
+    `;
+
+    selectedData.advance = advance;
+
+    const summarySection = document.getElementById('summarySection');
+    if (summarySection) {
+      summarySection.classList.remove('hidden');
+      summarySection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    const editBtn = document.getElementById('editBookingBtn');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        if (summarySection) summarySection.classList.add('hidden');
+      });
+    }
+
+    startExpiryTimer(lockResult.expiry);
+  } catch (err) {
+    console.error('Pay Advance button error:', err);
+    showError('An error occurred. Please try again.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Confirm & Pay 50% Advance';
+    }
+  }
+});
+
+document.getElementById('cancelBookingBtn').addEventListener('click',async()=>{
+  clearInterval(expiryInterval);
+  // Releasing lock will also clean up the associated pending booking 
+  // because releaseBookingLock calls DELETE /api/booking-locks?lockId=...
+  // and our new DELETE handler should handle it.
+  await releaseBookingLock();
+  location.reload();
+});
+
+document.getElementById('confirmPaymentBtn').addEventListener('click',async()=>{
+
+  clearInterval(expiryInterval);
+
+  try{
+
+    const orderRes = await fetch('/api/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: selectedData.advance })
+    });
+
+    const order = await orderRes.json();
+    
+    if (!orderRes.ok) {
+      console.error("Order creation failed:", order);
+      showError(`Payment system error: ${order.error || 'Failed to create order'}`);
+      return;
+    }
+
+    const rzpKeyIdEl = document.getElementById('razorpayKeyId');
+    const rzpKeyId = rzpKeyIdEl ? rzpKeyIdEl.dataset.key : "";
+
+    if (!rzpKeyId) {
+      console.error("Razorpay Key ID missing");
+      showError("Payment configuration error: Key ID missing");
+      return;
+    }
+
+    const options = {
+      key: rzpKeyId,
+      amount: order.amount,
+      currency: "INR",
+      name: "Dolphin House Beach Resort",
+      description: "50% Advance Booking",
+      order_id: order.id,
+      prefill: {
+        name: guestData.name,
+        email: guestData.email,
+        contact: guestData.mobile
+      },
+      handler: async function (response) {
+
+        const verifyRes = await fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            bookingData: {
+              ...selectedData,
+              ...guestData
+            }
+          })
+        });
+
+        const result = await verifyRes.json();
+
+        if (result.success) {
+          // Send notifications
+          await sendNotifications(result.bookingId, 'payment_confirmed');
+          window.location.href = `/thank-you?bookingId=${result.bookingId}`;
+        } else {
+          showError("Payment verification failed.");
+          await releaseBookingLock();
+        }
+      }
+    };
+
+    const rzp = new (window as any).Razorpay(options);
+    
+    rzp.on('payment.failed', function (response: any) {
+      console.error("Razorpay payment failed:", response.error);
+      showError(`Payment failed: ${response.error.description}`);
+    });
+
+    rzp.open();
+
+  } catch (err) {
+    console.error("Payment button error:", err);
+    showError("Payment process failed. Please try again.");
+    await releaseBookingLock();
+  }
+
+});
+
+async function sendNotifications(bookingId, trigger){
+  try{
+    // Send WhatsApp notification
+    if(guestData.mobile){
+      await fetch('/api/notifications',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          bookingId,
+          type:'whatsapp',
+          trigger
+        })
+      });
+    }
+    
+    // Send Email notification
+    if(guestData.email){
+      await fetch('/api/notifications',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          bookingId,
+          type:'email',
+          trigger
+        })
+      });
+    }
+  }catch(err){
+    console.error('Notification sending failed:', err);
+  }
+}
+
+</script>
 
 </Layout>
