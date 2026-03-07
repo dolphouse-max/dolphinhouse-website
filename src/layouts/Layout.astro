@@ -3,42 +3,99 @@ import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import "../styles/global.css";
 import ChatWidget from '../components/ChatWidget.astro';
-const { 
+
+const siteUrl = "https://dolphinhouse-alibaug.com";
+const {
   title = "Dolphin House Beach Resort",
-  description = "Stay at Dolphin House Beach Resort — luxury AC cottages, swimming pool, restaurant & Wi-Fi, just 2 minutes from Nagaon Beach, Alibaug. Book direct for best rates!"
+  description = "Stay at Dolphin House Beach Resort near Nagaon Beach, Alibaug with AC rooms, family stays, an indoor pool, restaurant, and direct booking.",
+  image = "/uploader/dolphinhouse-front-4.webp",
+  canonical,
+  ogType = "website",
+  robots = "index,follow"
 } = Astro.props;
+
 const GA_ID = import.meta.env.PUBLIC_GA_ID;
+const canonicalUrl = canonical || new URL(Astro.url.pathname, siteUrl).toString();
+const ogImage = image.startsWith("http") ? image : new URL(image, siteUrl).toString();
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": ["Hotel", "LodgingBusiness", "LocalBusiness"],
+  "name": "Dolphin House Beach Resort",
+  "description": "Beach resort in Nagaon, Alibaug, just 2 minutes from the beach with AC rooms, family stays, indoor pool, and restaurant.",
+  "url": siteUrl,
+  "image": [
+    `${siteUrl}/uploader/dolphinhouse-front-4.webp`,
+    `${siteUrl}/uploader/hotel-front-1.webp`,
+    `${siteUrl}/uploader/swimming-pool1.webp`
+  ],
+  "telephone": "+91-8554871073",
+  "email": "contact@dolphinhouse-alibaug.com",
+  "priceRange": "INR 2900-4500",
+  "checkinTime": "12:00",
+  "checkoutTime": "10:00",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Nagaon Beach Road",
+    "addressLocality": "Nagaon",
+    "addressRegion": "Maharashtra",
+    "postalCode": "402204",
+    "addressCountry": "IN"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 18.5830,
+    "longitude": 72.9028
+  },
+  "starRating": {
+    "@type": "Rating",
+    "ratingValue": "3",
+    "bestRating": "5"
+  },
+  "amenityFeature": [
+    { "@type": "LocationFeatureSpecification", "name": "Free Wi-Fi", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Indoor Pool", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Restaurant", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Air Conditioning", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Family Rooms", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Car Parking", "value": true }
+  ],
+  "sameAs": [
+    "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
+    "https://www.facebook.com/DolphiHouseAlibaug/",
+    "https://www.instagram.com/dolphin_house_alibaug/"
+  ]
+};
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="description" content={description} />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonicalUrl} />
     <meta name="facebook-domain-verification" content="4phmk6dq04mx39056cbh5ux59b5ft8" />
-    <!-- 🌐 Open Graph Meta Tags -->
-<meta property="og:type" content="hotel" />
-<meta property="og:title" content="Dolphin House Beach Resort | Luxury Stay at Nagaon Beach, Alibaug" />
-<meta property="og:description" content="Stay at Dolphin House Beach Resort — luxury AC cottages, swimming pool, restaurant & Wi-Fi, just 2 minutes from Nagaon Beach, Alibaug. Book direct for best rates!" />
-<meta property="og:image" content="https://dolphinhouse-website.pages.dev/uploader/dolphinhouse-front-4.webp" />
-<meta property="og:url" content="https://dolphinhouse-website.pages.dev/" />
-<meta property="og:site_name" content="Dolphin House Beach Resort" />
-<meta property="og:locale" content="en_IN" />
 
-<!-- 🐦 Twitter Card Meta Tags -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Dolphin House Beach Resort | Alibaug" />
-<meta name="twitter:description" content="Luxury resort at Nagaon Beach with AC rooms, pool, Wi-Fi & restaurant. Book your stay today!" />
-<meta name="twitter:image" content="https://dolphinhouse-website.pages.dev/uploader/hotel-front-1.webp" />
-<meta name="twitter:site" content="@dolphinhousealibaug" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:site_name" content="Dolphin House Beach Resort" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/webp" />
 
-<!-- 💬 WhatsApp Preview Optimization -->
-<meta name="theme-color" content="#0284c7" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:image:type" content="image/webp" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:site" content="@dolphinhousealibaug" />
 
+    <meta name="theme-color" content="#0284c7" />
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)}></script>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     {GA_ID && (
@@ -46,7 +103,7 @@ const GA_ID = import.meta.env.PUBLIC_GA_ID;
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
         <script is:inline>
           window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);} 
+          function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
           gtag('config', "${GA_ID}");
         </script>
