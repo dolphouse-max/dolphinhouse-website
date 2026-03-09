@@ -1,0 +1,255 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const groupActivities = [
+  {
+    title: "Dolphin Sightseeing Trips",
+    timing: "Best from 7 AM to 9 AM",
+    description: "Head out on a small local boat into the Arabian Sea and watch dolphins surface close to the shore while the water is calm."
+  },
+  {
+    title: "Banana Boat & Bumper Rides",
+    timing: "Ideal for groups",
+    description: "These rides are loud, fast, and reliably fun for friends, cousins, and family groups looking for a shared activity."
+  },
+  {
+    title: "Parasailing",
+    timing: "Best in fair weather",
+    description: "Get a panoramic view of the coastline, the water sports zone, and the historic belt around Revdanda."
+  },
+  {
+    title: "The Nagaon Night Walk",
+    timing: "Best after dinner",
+    description: "A long walk by the beach remains one of the simplest and most memorable group rituals in Nagaon."
+  },
+  {
+    title: "Jet Skiing",
+    timing: "Good for beginners and teens",
+    description: "Professional operators are commonly available, making this one of the easiest adventure activities to try for first-timers."
+  }
+];
+
+const diningHighlights = [
+  "Konkani Fish Thali",
+  "Popati in winter season",
+  "Sol Kadhi",
+  "Fresh Surmai fry"
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Which beach is better for families in Alibaug?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For most families, Nagaon Beach is the better choice because it has a longer and flatter shoreline, shallower water, more shade, and easier access to water sports."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the best group activities in Nagaon?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Popular group activities in Nagaon include dolphin sightseeing, banana boat rides, bumper rides, parasailing, jet skiing, and evening beach walks."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where should large families stay in Nagaon?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Large families usually benefit from spacious family rooms near the beach with easy dining access and direct booking support. Dolphin House Beach Resort in Nagaon is positioned for that kind of stay."
+      }
+    }
+  ]
+};
+---
+
+<Layout
+  title="Alibaug for Families & Groups (2026) | Nagaon Beach Travel Guide"
+  description="Read the 2026 guide to Alibaug for families and groups. Compare Nagaon Beach vs Alibaug Beach, discover group activities, Konkani food, and where to stay near the beach."
+  image="/uploader/nagaon-beach.webp"
+  faqSchema={faqSchema}
+>
+  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-700 via-cyan-600 to-teal-500 px-6 py-16 text-white shadow-2xl">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_35%)]"></div>
+    <div class="relative max-w-4xl">
+      <p class="text-sm uppercase tracking-[0.28em] text-white/80">2026 Edition</p>
+      <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
+        The Master Guide: Alibaug for Families &amp; Groups
+      </h1>
+      <p class="mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
+        Planning a family holiday or group trip to Alibaug starts with one decision: stay close to the right beach. This guide compares the major options, maps out the best shared activities, and helps you choose a practical base in Nagaon.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/rooms" class="btn-light">See Family Rooms</a>
+        <a href="/booking" class="rounded-full border border-white/70 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-sky-700">
+          Plan Your Stay
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Why Families Choose Alibaug</h2>
+      <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
+        <p>
+          While many travelers think of Alibaug as a quick coastal escape for couples, its strongest appeal is often for larger families and friend groups. Wide beaches, old forts, local seafood, and easy day plans make it a practical destination for people traveling together.
+        </p>
+        <p>
+          The real advantage comes once you move beyond the busiest town stretch. The outskirts around Nagaon offer a slower rhythm where children have room to play, elders can sit comfortably under the shade of Suru trees, and the group does not spend the whole day navigating noise and traffic.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-white rounded-3xl border border-gray-100 shadow-sm">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Nagaon Beach vs. Alibaug Beach</h2>
+      <p class="mt-4 max-w-3xl text-gray-600">
+        If this is your first visit, this comparison matters more than any hotel filter. The beach you choose shapes the entire trip.
+      </p>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
+        <article class="rounded-3xl border border-gray-200 bg-gray-50 p-7">
+          <h3 class="text-2xl font-bold text-gray-900">Alibaug Beach</h3>
+          <p class="mt-4 text-gray-700 leading-relaxed">
+            Best for a short visit focused on the Kolaba Fort area and the main town experience. It works well if you want a quick one-hour stop, sunset views, and local buzz.
+          </p>
+          <ul class="mt-5 space-y-2 text-gray-600">
+            <li>Good for: Kolaba Fort access and short town visits</li>
+            <li>Beach character: black sand and heavier footfall</li>
+            <li>Tradeoff: can feel crowded and noisy for families</li>
+          </ul>
+        </article>
+
+        <article class="rounded-3xl border border-sky-200 bg-sky-50 p-7">
+          <h3 class="text-2xl font-bold text-sky-900">Nagaon Beach</h3>
+          <p class="mt-4 text-gray-700 leading-relaxed">
+            The better fit for most families and groups. Nagaon offers a long, flat stretch of sand, gentler water conditions, and a more relaxed setting for children, picnics, and longer beach time.
+          </p>
+          <ul class="mt-5 space-y-2 text-gray-600">
+            <li>Good for: family stays, longer visits, and water sports</li>
+            <li>Beach character: cleaner, flatter, and more spacious</li>
+            <li>Advantage: natural shade and easier group movement</li>
+          </ul>
+        </article>
+      </div>
+      <p class="mt-8 text-base leading-relaxed text-gray-700">
+        If you are deciding where to base your stay, our
+        <a href="/why-smart-travelers-choose-nagaon" class="font-semibold text-sky-700 hover:underline">Nagaon over Alibaug city guide</a>
+        explains the booking-side difference in more detail, including beach access, noise levels, and family comfort.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">Top 5 Group Activities in Nagaon</h2>
+      <p class="mt-4 max-w-3xl text-gray-600">
+        Nagaon has become the water sports hub of Alibaug, which makes it especially useful for mixed-age groups that want both active and relaxed options in one place.
+      </p>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {groupActivities.map((activity) => (
+          <article class="rounded-3xl bg-white p-6 shadow-md ring-1 ring-gray-100">
+            <p class="text-sm font-semibold uppercase tracking-wide text-sky-600">{activity.timing}</p>
+            <h3 class="mt-3 text-2xl font-bold text-gray-900">{activity.title}</h3>
+            <p class="mt-4 text-gray-600 leading-relaxed">{activity.description}</p>
+          </article>
+        ))}
+      </div>
+      <p class="mt-8 text-base leading-relaxed text-gray-700">
+        If dolphin sightseeing is your main priority, read our
+        <a href="/dolphin-watching-alibaug-guide" class="font-semibold text-sky-700 hover:underline">honest guide to dolphin watching in Alibaug</a>
+        before you choose an operator. It explains why deep-sea timing matters and sets more realistic expectations than generic activity lists.
+      </p>
+    </div>
+  </section>
+
+  <section class="section bg-amber-50 rounded-3xl border border-amber-100">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Authentic Konkani Dining</h2>
+      <p class="mt-4 text-gray-700 leading-relaxed">
+        A proper Alibaug trip is incomplete without a local Konkani meal. For groups, the best experiences usually come from agro-tourism setups and local resorts that serve fresh, home-style food instead of generic menu items.
+      </p>
+      <p class="mt-4 text-gray-700 leading-relaxed">
+        If your group wants a memorable lunch or dinner, keep an eye out for seasonal and regional dishes rather than standard restaurant fare.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-3">
+        {diningHighlights.map((item) => (
+          <span class="rounded-full border border-amber-200 bg-white px-4 py-2 text-sm font-semibold text-amber-900">
+            {item}
+          </span>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Where to Stay: The Expert Choice</h2>
+      <div class="rounded-[2rem] border border-sky-100 bg-sky-50 p-8 shadow-sm">
+        <p class="text-lg leading-relaxed text-gray-700">
+          For larger families and friend groups, a basic hotel room usually creates more friction than comfort. You need enough space, quick beach access, and a place that can handle meal preferences and group logistics without making the stay feel rigid.
+        </p>
+        <p class="mt-4 text-lg leading-relaxed text-gray-700">
+          Our practical recommendation for 2026 is <strong>Dolphin House Beach Resort in Nagaon</strong>. The property is a short walk from the beach and water sports zone, making it easier to manage kids, group schedules, and multiple short outings during the day.
+        </p>
+        <p class="mt-4 text-lg leading-relaxed text-gray-700">
+          If you are comparing options, start with our <a href="/rooms" class="font-semibold text-sky-700 hover:underline">family room choices</a> and then use <a href="/booking" class="font-semibold text-sky-700 hover:underline">direct booking</a> to discuss rates and meal planning for your group.
+        </p>
+        <p class="mt-4 text-lg leading-relaxed text-gray-700">
+          For larger reunions, friend circles, or office teams, see our <a href="/group-corporate-bookings" class="font-semibold text-sky-700 hover:underline">group and corporate booking packages</a> for multi-room pricing and meal-plan support.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl rounded-3xl bg-gray-900 px-8 py-12 text-white">
+      <h2 class="text-3xl font-bold">Plan the Rest of Your Alibaug Trip</h2>
+      <p class="mt-4 max-w-3xl text-white/80">
+        If you want to keep researching before booking, explore nearby attractions, compare room types, or read more about the resort before finalizing your dates.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/attractions" class="btn-light">Things to Do Nearby</a>
+        <a href="/about" class="rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">
+          About Dolphin House
+        </a>
+        <a href="/" class="rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">
+          Back to Homepage
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "The Master Guide: Alibaug for Families & Groups (2026 Edition)",
+      "description": "A practical 2026 guide to Alibaug for families and groups, including the Nagaon vs Alibaug Beach comparison, activities, food, and lodging advice.",
+      "author": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
+        }
+      },
+      "mainEntityOfPage": "https://dolphinhouse-alibaug.com/alibaug-family-group-guide-2026",
+      "image": "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp",
+      "datePublished": "2026-03-09",
+      "dateModified": "2026-03-09"
+    }
+  </script>
+</Layout>

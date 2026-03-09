@@ -1,0 +1,209 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const reasons = [
+  {
+    title: "Cleaner Waters, Safer Shores",
+    description: "Nagaon Beach is flatter, cleaner, and generally better suited to families than the more crowded Alibaug city beachfront. The shallower water and broader shoreline make it easier for children to enjoy the beach with less stress."
+  },
+  {
+    title: "The Suru Tree Canopy",
+    description: "Unlike exposed city stretches, Nagaon has long sections lined with tall Suru trees. That natural shade changes the experience completely, especially for picnics, afternoon breaks, and elders who want to enjoy the coast without constant sun."
+  },
+  {
+    title: "Adventure at Your Doorstep",
+    description: "Nagaon is the practical hub for Jet Skiing, Parasailing, Banana Boat, and Bumper Rides. Staying at Dolphin House means you are only a short walk from the beach activity zone instead of coordinating transport from the city."
+  }
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Why do many travelers choose Nagaon over Alibaug city?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Many travelers prefer Nagaon because the beach is calmer, flatter, cleaner, and better for families, while also being closer to the main water sports area."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Nagaon Beach better for families than Alibaug Beach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "For most families, yes. Nagaon Beach usually offers more open space, safer-feeling shallow water, and a quieter setting than the busier Alibaug city beachfront."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where should I stay if I want beach access and water sports in Alibaug?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Staying in Nagaon is often the most practical choice if beach access and water sports are priorities. Dolphin House Beach Resort is a short walk from the activity zone and offers family-friendly room options."
+      }
+    }
+  ]
+};
+---
+
+<Layout
+  title="Why Smart Travelers Choose Nagaon Over Alibaug City"
+  description="See why smart travelers stay in Nagaon instead of Alibaug city. Compare beaches, water sports access, family comfort, and direct booking at Dolphin House Beach Resort."
+  image="/uploader/nagaon-beach.webp"
+  faqSchema={faqSchema}
+>
+  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-900 via-teal-700 to-sky-600 px-6 py-16 text-white shadow-2xl">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]"></div>
+    <div class="relative max-w-4xl">
+      <p class="text-sm uppercase tracking-[0.28em] text-white/75">Stay Comparison</p>
+      <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
+        Why Smart Travelers Choose Nagaon Over Alibaug City
+      </h1>
+      <p class="mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
+        Travelers who stay in Alibaug city often spend their trip dealing with traffic, crowd density, and beach areas that feel busy rather than relaxing. Nagaon offers a cleaner, quieter, and more useful coastal base for families and groups.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/booking" class="btn-light">Check Availability</a>
+        <a href="/rooms" class="rounded-full border border-white/70 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-teal-800">
+          View Family Rooms
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Escape the Crowds, Experience the Coast</h2>
+      <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
+        <p>
+          Many first-time visitors book a hotel in Alibaug city because it sounds like the obvious choice. Then they arrive to find traffic bottlenecks, busier roads, and a main-town beach experience that feels more rushed than restful.
+        </p>
+        <p>
+          At Dolphin House, we recommend what repeat visitors learn quickly: the better coastal stay is usually in Nagaon. It gives you easier beach time, more breathing room, and faster access to the activities people actually come for.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-white rounded-3xl border border-gray-100 shadow-sm">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">3 Reasons Nagaon Wins Every Time</h2>
+      <div class="mt-10 grid gap-6 md:grid-cols-3">
+        {reasons.map((reason) => (
+          <article class="rounded-3xl border border-sky-100 bg-sky-50 p-7">
+            <h3 class="text-2xl font-bold text-sky-900">{reason.title}</h3>
+            <p class="mt-4 leading-relaxed text-gray-700">{reason.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">See the Difference Before You Book</h2>
+      <div class="mt-10 grid gap-8 lg:grid-cols-2">
+        <figure class="overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-gray-100">
+          <img
+            src="/uploader/Room-9.webp"
+            alt="Super Deluxe Family Room at Dolphin House Beach Resort in Nagaon Alibaug"
+            class="h-80 w-full object-cover"
+            width="1600"
+            height="1086"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption class="p-6 text-gray-700">
+            <strong class="text-gray-900">Family-sized comfort at Dolphin House.</strong> Our Super Deluxe Family Room is built for travelers who want everyone together without squeezing into standard city rooms.
+          </figcaption>
+        </figure>
+
+        <figure class="overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-gray-100">
+          <img
+            src="/uploader/nagaon-beach.webp"
+            alt="Nagaon Beach shoreline near Dolphin House Beach Resort"
+            class="h-80 w-full object-cover"
+            width="1600"
+            height="1067"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption class="p-6 text-gray-700">
+            <strong class="text-gray-900">The Nagaon shoreline advantage.</strong> More space, easier beach access, and a calmer atmosphere make this area better suited to relaxing stays and family outings.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-amber-50 rounded-3xl border border-amber-100">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Authentic Ghar-Guti Hospitality</h2>
+      <p class="mt-4 text-lg leading-relaxed text-gray-700">
+        In the city, many stays feel transactional. In Nagaon, the experience can still feel personal. Dolphin House focuses on the kind of stay that works for real families: fresh food, space to stay together, and beach access that does not require daily transport planning.
+      </p>
+      <div class="mt-8 grid gap-5 md:grid-cols-3">
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-amber-100">
+          <h3 class="text-xl font-bold text-gray-900">Freshly Caught Seafood</h3>
+          <p class="mt-3 text-gray-600 leading-relaxed">Prepared with familiar coastal flavors and traditional family-style cooking.</p>
+        </div>
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-amber-100">
+          <h3 class="text-xl font-bold text-gray-900">Family-Sized Comfort</h3>
+          <p class="mt-3 text-gray-600 leading-relaxed">Our Super Deluxe Family Rooms are designed to keep larger groups together more comfortably.</p>
+        </div>
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-amber-100">
+          <h3 class="text-xl font-bold text-gray-900">Direct Beach Access</h3>
+          <p class="mt-3 text-gray-600 leading-relaxed">No constant rickshaw or car dependency. The beach activity zone is close enough to reach on foot.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-12 text-white">
+      <h2 class="text-3xl font-bold">Ready for a Cleaner, Quieter Alibaug Stay?</h2>
+      <p class="mt-4 max-w-3xl text-white/80">
+        Book direct for the best rates and a smoother stay setup. If you want the Nagaon advantage without the city chaos, start with room availability and compare the space that best fits your group.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/booking" class="btn-light">Check Availability &amp; Book Direct</a>
+        <a href="/rooms" class="rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">
+          Compare Room Types
+        </a>
+        <a href="/alibaug-family-group-guide-2026" class="rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">
+          Family Travel Guide
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Why Smart Travelers Choose Nagaon Over Alibaug City",
+      "description": "A high-conversion local guide explaining why Nagaon is often a better base than Alibaug city for beach stays, water sports, and family travel.",
+      "author": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
+        }
+      },
+      "mainEntityOfPage": "https://dolphinhouse-alibaug.com/why-smart-travelers-choose-nagaon",
+      "image": [
+        "https://dolphinhouse-alibaug.com/uploader/Room-9.webp",
+        "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp"
+      ],
+      "datePublished": "2026-03-09",
+      "dateModified": "2026-03-09"
+    }
+  </script>
+</Layout>

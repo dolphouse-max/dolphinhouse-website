@@ -1,0 +1,171 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const spottingTips = [
+  {
+    title: "Take a Deep-Sea Boat Ride",
+    description: "Most proper dolphin tours head out from Alibaug Jetty or Murud-Janjira and travel roughly 2 to 3 kilometers into deeper water where sightings are more realistic."
+  },
+  {
+    title: "Go Early in the Morning",
+    description: "The best window is usually 7:00 AM to 8:30 AM, when the sea is calmer and motor noise from beach activity is still low."
+  },
+  {
+    title: "Visit in the Right Season",
+    description: "November to February generally offers clearer conditions, better visibility, and stronger chances of spotting dolphins following fish closer to the coast."
+  },
+  {
+    title: "Watch the Birds",
+    description: "Experienced local fishermen often track diving seabirds because dolphins may be below them, pushing schools of fish toward the surface."
+  }
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Can you see dolphins directly from Nagaon Beach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Usually no. Dolphins are rarely seen close to the Nagaon shoreline, so most successful sightings require a boat ride into deeper Arabian Sea waters."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the best time for dolphin watching in Alibaug?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Early morning, especially between 7:00 AM and 8:30 AM, is generally the best time because the sea is calmer and there is less tourist activity."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which season is best for dolphin spotting near Alibaug?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "November through February is usually the strongest season for dolphin watching because water conditions are clearer and marine activity is easier to track."
+      }
+    }
+  ]
+};
+---
+
+<Layout
+  title="Dolphin Watching in Alibaug | Honest Guide from Nagaon"
+  description="Read an honest local guide to dolphin watching in Alibaug. Learn where sightings really happen, the best timing, season, and why Nagaon is still the best base for your trip."
+  image="/uploader/nagaon-beach.webp"
+  faqSchema={faqSchema}
+>
+  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 via-sky-800 to-cyan-600 px-6 py-16 text-white shadow-2xl">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_32%)]"></div>
+    <div class="relative max-w-4xl">
+      <p class="text-sm uppercase tracking-[0.28em] text-white/75">Local Guide</p>
+      <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
+        The Honest Guide to Dolphin Watching in Alibaug
+      </h1>
+      <p class="mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
+        Dolphin watching is one of the most misunderstood Alibaug activities. This guide keeps expectations realistic, explains where sightings actually happen, and shows how to plan the trip the right way.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/booking" class="btn-light">Book Your Stay</a>
+        <a href="/attractions" class="rounded-full border border-white/70 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-sky-700">
+          Explore Nearby Activities
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">The Truth About Dolphins at Nagaon Beach</h2>
+      <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
+        <p>
+          Dolphin House Beach Resort was named after these remarkable animals because they represent the natural beauty of the Konkan coast. That said, it is better to be direct with visitors than to oversell the experience: you will rarely see dolphins jumping close to the shore at Nagaon Beach.
+        </p>
+        <p>
+          Dolphins are far more likely to be found where they naturally move and feed, which means deeper and cleaner waters in the Arabian Sea. If dolphin spotting is a serious goal for your trip, planning the outing correctly matters more than choosing a random beach package.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-white rounded-3xl border border-gray-100 shadow-sm">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">How to Actually Spot Dolphins</h2>
+      <p class="mt-4 max-w-3xl text-gray-600">
+        The local advantage is not just knowing that dolphins exist near the coast. It is knowing how to improve your odds without wasting a morning.
+      </p>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
+        {spottingTips.map((tip) => (
+          <article class="rounded-3xl border border-sky-100 bg-sky-50 p-7">
+            <h3 class="text-2xl font-bold text-sky-900">{tip.title}</h3>
+            <p class="mt-4 leading-relaxed text-gray-700">{tip.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Why Dolphin House is the Right Base Camp</h2>
+      <div class="rounded-[2rem] border border-cyan-100 bg-cyan-50 p-8 shadow-sm">
+        <p class="text-lg leading-relaxed text-gray-700">
+          Even though the dolphins stay offshore, <strong>Nagaon remains one of the best places to stay</strong> if dolphin watching is part of your Alibaug plan. The beach area is calmer than the busier town center, which makes it easier to rest properly and start early the next day.
+        </p>
+        <p class="mt-4 text-lg leading-relaxed text-gray-700">
+          Our team can help point guests toward reliable local operators familiar with the right timing and typical routes. That local coordination matters because random tourist timing often leads to poor results.
+        </p>
+        <p class="mt-4 text-lg leading-relaxed text-gray-700">
+          Dolphin House is also a short walk from the Nagaon beach activity zone, so your day can start quickly without extra transfers. If you are planning the full stay, compare our <a href="/rooms" class="font-semibold text-sky-700 hover:underline">room options</a> or go directly to <a href="/booking" class="font-semibold text-sky-700 hover:underline">booking</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-slate-900 rounded-3xl text-white">
+    <div class="container max-w-5xl py-4">
+      <h2 class="text-3xl font-bold">Plan a Smarter Nagaon Trip</h2>
+      <p class="mt-4 max-w-3xl text-white/80">
+        If you are building a full Alibaug itinerary, pair this guide with our family travel guide and nearby attractions page so you can choose the right beach, activities, and room type together.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/alibaug-family-group-guide-2026" class="btn-light">Family & Group Guide</a>
+        <a href="/attractions" class="rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-slate-900">
+          See Attractions
+        </a>
+        <a href="/" class="rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-slate-900">
+          Visit Homepage
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "The Honest Guide to Dolphin Watching in Alibaug",
+      "description": "An honest local guide explaining where dolphin sightings actually happen near Alibaug, the best time and season, and why Nagaon is still a smart place to stay.",
+      "author": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
+        }
+      },
+      "mainEntityOfPage": "https://dolphinhouse-alibaug.com/dolphin-watching-alibaug-guide",
+      "image": "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp",
+      "datePublished": "2026-03-09",
+      "dateModified": "2026-03-09"
+    }
+  </script>
+</Layout>

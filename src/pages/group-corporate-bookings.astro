@@ -1,0 +1,362 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const packages = [
+  {
+    type: "Corporate Offsite",
+    inclusions: "AC stay, breakfast, meeting space, and team-building aid",
+    bestFor: "Small business teams (10-15 pax)"
+  },
+  {
+    type: "Family Reunion",
+    inclusions: "AC stay, all meals, bonfire, and late check-out",
+    bestFor: "Large extended families (15-25 pax)"
+  },
+  {
+    type: "Friends' Weekend",
+    inclusions: "AC stay, breakfast, and a water sports coordinator",
+    bestFor: "College groups and adventure seekers"
+  }
+];
+
+const activities = [
+  "Water sports combos with Jet Skiing, Banana Boat, and Parasailing",
+  "Beach Olympics support for volleyball or tug-of-war",
+  "Night bonfire setup with music and snacks",
+  "Customized group meal plans with seafood and vegetarian thalis"
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Do you offer Corporate Offsite in Alibaug packages?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Dolphin House offers corporate offsite packages for small teams, including AC stay options, breakfast, meeting space support, and team-building coordination."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is Dolphin House a family resort for groups in Nagaon?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Dolphin House is designed for larger family and group stays with Super Deluxe Family Rooms, group meals, and easy access to Nagaon Beach."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I get a quote for a group booking?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can call, WhatsApp, email, or submit the inquiry form on the Group & Corporate Bookings page. Mention your group size, dates, and package type for a customized quote."
+      }
+    }
+  ]
+};
+---
+
+<Layout
+  title="Corporate Offsite in Alibaug | Family Resort for Groups in Nagaon"
+  description="Plan a Corporate Offsite in Alibaug or book a family resort for groups in Nagaon. Explore group packages, meal plans, beach access, and direct inquiry at Dolphin House."
+  image="/uploader/room-9.webp"
+  faqSchema={faqSchema}
+>
+  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-900 via-teal-700 to-emerald-600 px-6 py-16 text-white shadow-2xl">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.2),transparent_34%)]"></div>
+    <div class="relative max-w-4xl">
+      <p class="text-sm uppercase tracking-[0.28em] text-white/75">Group Packages</p>
+      <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
+        Group &amp; Corporate Bookings at Dolphin House
+      </h1>
+      <p class="mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
+        Planning a getaway for a large family or a professional team should not feel chaotic. Dolphin House specializes in stress-free group stays with beach proximity, flexible room planning, and authentic Konkani hospitality in Nagaon.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="#groupInquiryForm" class="btn-light">Get a Group Quote</a>
+        <a href="/rooms" class="rounded-full border border-white/70 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-teal-800">
+          View Room Layouts
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Why Choose Dolphin House for Your Group?</h2>
+      <div class="mt-8 grid gap-6 md:grid-cols-3">
+        <article class="rounded-3xl border border-sky-100 bg-sky-50 p-7">
+          <h3 class="text-2xl font-bold text-sky-900">Flexible Room Configurations</h3>
+          <p class="mt-4 leading-relaxed text-gray-700">
+            Our Super Deluxe Family Rooms can comfortably host 4 to 5 guests, giving large families and teams a better balance between togetherness and comfort.
+          </p>
+        </article>
+        <article class="rounded-3xl border border-sky-100 bg-sky-50 p-7">
+          <h3 class="text-2xl font-bold text-sky-900">Beach Proximity</h3>
+          <p class="mt-4 leading-relaxed text-gray-700">
+            Being just a 2-minute walk from Nagaon Beach means your group can access morning walks, water sports, and beach time without transport coordination overhead.
+          </p>
+        </article>
+        <article class="rounded-3xl border border-sky-100 bg-sky-50 p-7">
+          <h3 class="text-2xl font-bold text-sky-900">Authentic Dining</h3>
+          <p class="mt-4 leading-relaxed text-gray-700">
+            We offer customized group meal plans with unlimited home-cooked seafood and vegetarian thalis tailored to the group’s preferences.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">See What Makes Group Stays Work Here</h2>
+      <div class="mt-10 grid gap-8 lg:grid-cols-2">
+        <figure class="overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-gray-100">
+          <img
+            src="/uploader/dining3.webp"
+            alt="Dining area at Dolphin House for group meal plans in Nagaon"
+            class="h-80 w-full object-cover"
+            width="1600"
+            height="1067"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption class="p-6 text-gray-700">
+            <strong class="text-gray-900">Dining built for shared meals.</strong> Group thalis and meal coordination are a major part of making family reunions and team stays run smoothly.
+          </figcaption>
+        </figure>
+
+        <figure class="overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-gray-100">
+          <img
+            src="/uploader/room-9.webp"
+            alt="Large Super Deluxe Family Room layout at Dolphin House"
+            class="h-80 w-full object-cover"
+            width="1600"
+            height="1086"
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption class="p-6 text-gray-700">
+            <strong class="text-gray-900">Large room layouts for group comfort.</strong> Our Super Deluxe Family Rooms help you keep more of the group together instead of scattering everyone across tight standard rooms.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-white rounded-3xl border border-gray-100 shadow-sm">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">Exclusive Group Packages (Min. 10 Guests)</h2>
+      <div class="mt-8 overflow-x-auto">
+        <table class="min-w-full overflow-hidden rounded-2xl border border-sky-100">
+          <thead class="bg-sky-700 text-white">
+            <tr>
+              <th class="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide">Package Type</th>
+              <th class="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide">Inclusions</th>
+              <th class="px-5 py-4 text-left text-sm font-bold uppercase tracking-wide">Best For</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white">
+            {packages.map((pkg, index) => (
+              <tr class={index % 2 === 0 ? "bg-white" : "bg-sky-50/50"}>
+                <td class="px-5 py-4 text-base font-semibold text-gray-900">{pkg.type}</td>
+                <td class="px-5 py-4 text-gray-700">{pkg.inclusions}</td>
+                <td class="px-5 py-4 text-gray-700">{pkg.bestFor}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-amber-50 rounded-3xl border border-amber-100">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Team Building &amp; Adventure Activities</h2>
+      <p class="mt-4 text-lg leading-relaxed text-gray-700">
+        Nagaon is the adventure capital of Alibaug, which makes it a strong fit for both corporate offsites and friend groups. We can help coordinate local operators so your group spends more time doing activities and less time trying to organize them.
+      </p>
+      <div class="mt-8 grid gap-4 md:grid-cols-2">
+        {activities.map((item) => (
+          <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-amber-100">
+            <p class="text-gray-800">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-12 text-white">
+      <h2 class="text-3xl font-bold">How to Book Your Group Stay</h2>
+      <p class="mt-4 max-w-3xl text-white/80">
+        We offer special discounted rates for bookings of 3 or more rooms. For a customized quote, call, WhatsApp, email, or send the inquiry form below and mention "Group Booking" in your message.
+      </p>
+      <div class="mt-8 grid gap-4 md:grid-cols-3">
+        <a href="tel:+918554871073" class="rounded-2xl border border-white/15 bg-white/5 p-5 transition hover:bg-white/10">
+          <div class="text-sm uppercase tracking-wide text-white/60">Call / WhatsApp</div>
+          <div class="mt-2 text-xl font-bold">+91-8554871073</div>
+        </a>
+        <a href="mailto:contact@dolphinhouse-alibaug.com" class="rounded-2xl border border-white/15 bg-white/5 p-5 transition hover:bg-white/10">
+          <div class="text-sm uppercase tracking-wide text-white/60">Email</div>
+          <div class="mt-2 text-xl font-bold break-all">contact@dolphinhouse-alibaug.com</div>
+        </a>
+        <a href="/booking" class="rounded-2xl border border-white/15 bg-white/5 p-5 transition hover:bg-white/10">
+          <div class="text-sm uppercase tracking-wide text-white/60">Direct Booking</div>
+          <div class="mt-2 text-xl font-bold">General Booking Page</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="groupInquiryForm" class="section">
+    <div class="container max-w-4xl rounded-[2rem] border border-sky-100 bg-white p-8 shadow-xl">
+      <h2 class="text-3xl font-bold text-gray-900">Group Inquiry Form</h2>
+      <p class="mt-3 text-gray-600">
+        This form sends the lead directly to your email inbox. Share your group size, dates, and package type, and we will reply with a customized quote.
+      </p>
+
+      <div id="groupInquirySuccess" class="mt-6 hidden rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800"></div>
+      <div id="groupInquiryError" class="mt-6 hidden rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700"></div>
+
+      <form id="groupInquiryFormEl" class="mt-8 grid gap-5 md:grid-cols-2">
+        <div>
+          <label for="groupNameInput" class="mb-2 block text-sm font-semibold text-gray-700">Group / Company Name</label>
+          <input id="groupNameInput" name="groupName" type="text" class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" placeholder="Patel Family Reunion / ABC Tech" />
+        </div>
+        <div>
+          <label for="contactNameInput" class="mb-2 block text-sm font-semibold text-gray-700">Contact Name</label>
+          <input id="contactNameInput" name="name" type="text" required class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" placeholder="Your full name" />
+        </div>
+        <div>
+          <label for="phoneInput" class="mb-2 block text-sm font-semibold text-gray-700">Mobile Number</label>
+          <input id="phoneInput" name="phone" type="tel" required class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" placeholder="10-digit mobile number" />
+        </div>
+        <div>
+          <label for="emailInput" class="mb-2 block text-sm font-semibold text-gray-700">Email Address</label>
+          <input id="emailInput" name="email" type="email" class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" placeholder="you@example.com" />
+        </div>
+        <div>
+          <label for="groupSizeInput" class="mb-2 block text-sm font-semibold text-gray-700">Expected Group Size</label>
+          <input id="groupSizeInput" name="groupSize" type="number" min="10" required class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" placeholder="15" />
+        </div>
+        <div>
+          <label for="roomsNeededInput" class="mb-2 block text-sm font-semibold text-gray-700">Rooms Needed</label>
+          <input id="roomsNeededInput" name="roomsNeeded" type="number" min="1" class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" placeholder="4" />
+        </div>
+        <div>
+          <label for="checkinInput" class="mb-2 block text-sm font-semibold text-gray-700">Preferred Check-in</label>
+          <input id="checkinInput" name="checkin" type="date" class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" />
+        </div>
+        <div>
+          <label for="checkoutInput" class="mb-2 block text-sm font-semibold text-gray-700">Preferred Check-out</label>
+          <input id="checkoutInput" name="checkout" type="date" class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" />
+        </div>
+        <div class="md:col-span-2">
+          <label for="packageTypeInput" class="mb-2 block text-sm font-semibold text-gray-700">Package Type</label>
+          <select id="packageTypeInput" name="packageType" required class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400">
+            <option value="">Select a package</option>
+            <option value="Corporate Offsite">Corporate Offsite</option>
+            <option value="Family Reunion">Family Reunion</option>
+            <option value="Friends' Weekend">Friends' Weekend</option>
+            <option value="Custom Group Booking">Custom Group Booking</option>
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label for="messageInput" class="mb-2 block text-sm font-semibold text-gray-700">Message</label>
+          <textarea id="messageInput" name="message" rows="6" required class="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none transition focus:border-sky-400" placeholder='Mention "Group Booking" and share your dates, meal preferences, and any meeting or activity needs.'></textarea>
+        </div>
+        <div class="md:col-span-2">
+          <button id="groupInquirySubmit" type="submit" class="w-full rounded-full bg-sky-600 px-6 py-4 text-lg font-bold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60">
+            Send Group Inquiry
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <script is:inline>
+    const groupForm = document.getElementById("groupInquiryFormEl");
+    const submitBtn = document.getElementById("groupInquirySubmit");
+    const successBox = document.getElementById("groupInquirySuccess");
+    const errorBox = document.getElementById("groupInquiryError");
+    const checkinInput = document.getElementById("checkinInput");
+    const checkoutInput = document.getElementById("checkoutInput");
+
+    const today = new Date().toISOString().split("T")[0];
+    checkinInput?.setAttribute("min", today);
+    checkoutInput?.setAttribute("min", today);
+
+    checkinInput?.addEventListener("change", (event) => {
+      checkoutInput?.setAttribute("min", event.target.value || today);
+    });
+
+    groupForm?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      successBox?.classList.add("hidden");
+      errorBox?.classList.add("hidden");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending...";
+
+      const formData = new FormData(groupForm);
+      const payload = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch("/api/group-inquiry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || "Could not send your inquiry.");
+        }
+
+        successBox.textContent = `Inquiry sent successfully. Reference ID: ${result.inquiryId}. We will contact you soon.`;
+        successBox.classList.remove("hidden");
+        groupForm.reset();
+        checkinInput?.setAttribute("min", today);
+        checkoutInput?.setAttribute("min", today);
+        successBox.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch (error) {
+        errorBox.textContent = error.message || "Something went wrong. Please call or WhatsApp +91-8554871073.";
+        errorBox.classList.remove("hidden");
+        errorBox.scrollIntoView({ behavior: "smooth", block: "center" });
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Send Group Inquiry";
+      }
+    });
+  </script>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Group & Corporate Bookings at Dolphin House",
+      "description": "Plan a Corporate Offsite in Alibaug or a family resort group stay in Nagaon with Dolphin House. Explore packages, dining, beach access, and inquiry options.",
+      "author": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
+        }
+      },
+      "mainEntityOfPage": "https://dolphinhouse-alibaug.com/group-corporate-bookings",
+      "image": [
+        "https://dolphinhouse-alibaug.com/uploader/dining3.webp",
+        "https://dolphinhouse-alibaug.com/uploader/room-9.webp"
+      ],
+      "datePublished": "2026-03-09",
+      "dateModified": "2026-03-09"
+    }
+  </script>
+</Layout>
