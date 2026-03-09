@@ -14,7 +14,7 @@ const facilityIcons = {
 const facilities = Object.keys(facilityIcons);
 ---
 
-<Layout title="Beach Resort in Nagaon, Alibaug | Pool, Rooms & Family Stay" description="Book Dolphin House Beach Resort near Nagaon Beach, Alibaug for AC rooms, deluxe family stays, an indoor pool, restaurant, and direct booking just 2 minutes from the beach." image="/uploader/dolphinhouse-front-4.webp" ogType="hotel">
+<Layout title="Hotels in Alibaug | Dolphin House Beach Resort Nagaon | Pool & AC Rooms" description="Book Dolphin House Beach Resort near Nagaon Beach, Alibaug for AC rooms, deluxe family stays, an indoor pool, restaurant, and direct booking just 2 minutes from the beach." image="/uploader/dolphinhouse-front-4.webp" ogType="hotel">
 
   <!-- 🏖 Hero Section -->
   <section class="hero relative mb-20 overflow-hidden">
@@ -25,17 +25,47 @@ const facilities = Object.keys(facilityIcons);
       alt="Dolphin House Beach Resort exterior near Nagaon Beach Alibaug"
       decoding="async" fetchpriority="high" class="hero-img" width="876" height="584" />
     <div class="hero-overlay">
-      <h1 class="hero-title">
-        Dolphin House Beach Resort
-      </h1>
+     <h1 class="hero-title text-4xl md:text-5xl font-extrabold uppercase tracking-tight leading-tight">
+          Hotels in Alibaug: <span class="block text-sky-300">Dolphin House Beach Resort, Nagaon</span>
+    </h1>
       <p class="hero-sub">Luxury Cottages & Rooms at Nagaon Beach, Alibaug</p>
     </div>
   </section>
+  <section class="container py-10 border-b border-gray-100">
 
+  <div class="flex flex-wrap justify-center gap-8 items-center text-center">
+
+    <div class="px-6 py-4 bg-white rounded-xl shadow-sm border border-gray-100">
+
+      <span class="block text-3xl font-bold text-sky-600">4.1/5</span>
+
+      <span class="text-sm text-gray-500 font-medium">Google Rating</span>
+
+    </div>
+
+    <div class="px-6 py-4 bg-white rounded-xl shadow-sm border border-gray-100">
+
+      <span class="block text-3xl">🛡️</span>
+
+      <span class="text-sm text-gray-500 font-medium">Secure Direct Booking</span>
+
+    </div>
+
+    <div class="px-6 py-4 bg-white rounded-xl shadow-sm border border-gray-100">
+
+      <span class="block text-3xl">🍛</span>
+
+      <span class="text-sm text-gray-500 font-medium">Authentic Home Food</span>
+
+    </div>
+
+  </div>
+
+</section>
   <!-- 🌴 About -->
   <section class="section">
     <div class="container text-center">
-      <h2 class="heading">Experience Paradise at Nagaon Beach</h2>
+      <h2 class="heading">Dolphin House: Your Luxury Resort in Alibaug Near Nagaon Beach</h2>
       <p class="subtext">
         Nestled just 2 minutes from the sea, Dolphin House is your gateway to peace, comfort, and
         tropical bliss. Enjoy luxury cottages, delicious dining, and the most serene beach in Alibaug.
@@ -220,7 +250,7 @@ const facilities = Object.keys(facilityIcons);
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Hotel",
+  "@type": ["Hotel", "Resort", "LodgingBusiness"],
   "name": "Dolphin House Beach Resort",
   "image": [
     "https://dolphinhouse-alibaug.com/uploader/dolphinhouse-front-4.webp",
@@ -229,12 +259,14 @@ const facilities = Object.keys(facilityIcons);
   ],
   "description": "Luxury beach resort at Nagaon Beach, Alibaug with AC cottages, swimming pool, restaurant, and free Wi-Fi. Just 2 minutes from the beach!",
   "url": "https://dolphinhouse-alibaug.com/",
+  "hasMenu": "https://dolphinhouse-alibaug.com/menu",
   "priceRange": "₹₹₹",
   "starRating": {
     "@type": "Rating",
-    "ratingValue": "4.7",
+    "ratingValue": "4.1",
     "bestRating": "5"
-  },
+    "reviewCount": "567"
+    },
   "checkinTime": "12:00",
   "checkoutTime": "10:00",
   "address": {
@@ -253,13 +285,18 @@ const facilities = Object.keys(facilityIcons);
   "telephone": "+91-8554871073",
   "email": "contact@dolphinhouse-alibaug.com",
   "amenityFeature": [
-    { "@type": "LocationFeatureSpecification", "name": "Free Wi-Fi", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Free High Speed Wi-Fi", "value": true },
     { "@type": "LocationFeatureSpecification", "name": "Air Conditioning", "value": true },
-    { "@type": "LocationFeatureSpecification", "name": "Swimming Pool", "value": true },
-    { "@type": "LocationFeatureSpecification", "name": "Restaurant", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Indoor Swimming Pool", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "In House Multicuisine Restaurant", "value": true },
     { "@type": "LocationFeatureSpecification", "name": "Parking", "value": true },
     { "@type": "LocationFeatureSpecification", "name": "Generator Backup", "value": true }
   ],
+  "areaServed": [
+    { "@type": "Place", "name": "Alibaug" },
+    { "@type": "Place", "name": "Nagaon Beach" }
+  ]
+
   "sameAs": [
     "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
     "https://www.facebook.com/DolphiHouseAlibaug/",
