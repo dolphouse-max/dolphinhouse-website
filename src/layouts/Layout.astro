@@ -11,12 +11,14 @@ const {
   image = "/uploader/dolphinhouse-front-4.webp",
   canonical,
   ogType = "website",
-  robots = "index,follow"
+  robots = "index,follow",
+  faqSchema = null // New prop for page-specific FAQs
 } = Astro.props;
 
 const GA_ID = import.meta.env.PUBLIC_GA_ID;
 const canonicalUrl = canonical || new URL(Astro.url.pathname, siteUrl).toString();
 const ogImage = image.startsWith("http") ? image : new URL(image, siteUrl).toString();
+
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": ["Hotel", "LodgingBusiness", "LocalBusiness"],
@@ -30,7 +32,7 @@ const organizationSchema = {
   ],
   "telephone": "+91-8554871073",
   "email": "contact@dolphinhouse-alibaug.com",
-  "priceRange": "INR 2900-4500",
+  "priceRange": "INR 2500-6000", // Updated to include Super Deluxe pricing
   "checkinTime": "12:00",
   "checkoutTime": "10:00",
   "address": {
@@ -48,7 +50,7 @@ const organizationSchema = {
   },
   "starRating": {
     "@type": "Rating",
-    "ratingValue": "3",
+    "ratingValue": "4", // Updated based on your strong Google performance
     "bestRating": "5"
   },
   "amenityFeature": [
@@ -57,10 +59,10 @@ const organizationSchema = {
     { "@type": "LocationFeatureSpecification", "name": "Restaurant", "value": true },
     { "@type": "LocationFeatureSpecification", "name": "Air Conditioning", "value": true },
     { "@type": "LocationFeatureSpecification", "name": "Family Rooms", "value": true },
-    { "@type": "LocationFeatureSpecification", "name": "Car Parking", "value": true }
+    { "@type": "LocationFeatureSpecification", "name": "Car Parking", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "2 Min Walk to Beach", "value": true }
   ],
   "sameAs": [
-    "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
     "https://www.facebook.com/DolphiHouseAlibaug/",
     "https://www.instagram.com/dolphin_house_alibaug/"
   ]
@@ -71,6 +73,19 @@ const organizationSchema = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    
+    {GA_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+        <script is:inline define:vars={{ GA_ID }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', GA_ID);
+        </script>
+      </>
+    )}
+
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="robots" content={robots} />
@@ -95,20 +110,14 @@ const organizationSchema = {
     <meta name="twitter:site" content="@dolphinhousealibaug" />
 
     <meta name="theme-color" content="#0284c7" />
+    
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)}></script>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-
-    {GA_ID && (
-      <>
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
-        <script is:inline>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', "${GA_ID}");
-        </script>
-      </>
+    
+    {faqSchema && (
+      <script type="application/ld+json" set:html={JSON.stringify(faqSchema)}></script>
     )}
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body class="min-h-screen flex flex-col bg-gray-50 text-gray-900">
     <Header />

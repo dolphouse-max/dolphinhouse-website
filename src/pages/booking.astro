@@ -2,11 +2,53 @@
 import Layout from "../layouts/Layout.astro";
 const env = Astro.locals?.cloudflare?.env || Astro.locals?.runtime?.env || (import.meta as any).env || {};
 const RAZORPAY_KEY_ID = env.RAZORPAY_KEY_ID || "";
+
+// SEO FAQ Schema specifically for the Booking Page
+const bookingFaq = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{
+    "@type": "Question",
+    "name": "What is the advance payment for booking at Dolphin House?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "We require a 50% advance payment via our secure Razorpay gateway to confirm your room. The remaining balance can be paid at the resort during check-in."
+    }
+  }, {
+    "@type": "Question",
+    "name": "How far is Dolphin House from Nagaon Beach?",
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Dolphin House is located just a 2-minute walk (approx 200 meters) from the main Nagaon Beach."
+    }
+  }]
+};
 ---
 
-<Layout title="Book Rooms in Nagaon Alibaug | Dolphin House Beach Resort" description="Check availability and book rooms at Dolphin House Beach Resort near Nagaon Beach, Alibaug. Secure your stay with direct booking and instant payment options." image="/uploader/hotel-front-1.webp" ogType="hotel">
+<Layout 
+  title="Book Rooms in Nagaon Alibaug | Dolphin House Beach Resort - Best Rates" 
+  description="Check availability and book rooms at Dolphin House Beach Resort near Nagaon Beach, Alibaug. Secure your stay with direct booking and instant payment options." 
+  image="/uploader/hotel-front-1.webp" 
+  ogType="hotel"
+  faqSchema={bookingFaq}
+>
 
 <section class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg mt-10 mb-20">
+
+  <div class="flex justify-around items-center py-4 bg-sky-50 rounded-t-xl border-b border-sky-100 -mt-8 -mx-8 mb-8">
+    <div class="text-center">
+      <span class="block text-xl">🛡️</span>
+      <span class="text-[10px] font-bold uppercase text-sky-800 tracking-tighter text-wrap">Secure Payment</span>
+    </div>
+    <div class="text-center">
+      <span class="block text-xl">🌊</span>
+      <span class="text-[10px] font-bold uppercase text-sky-800 tracking-tighter">2 Min to Beach</span>
+    </div>
+    <div class="text-center">
+      <span class="block text-xl">⭐</span>
+      <span class="text-[10px] font-bold uppercase text-sky-800 tracking-tighter">4.1/5 Google Rating</span>
+    </div>
+  </div>
 
 <h1 class="text-3xl font-bold text-center mb-6">
 Check Availability & Book
@@ -16,7 +58,6 @@ Check Availability & Book
 
 <div id="razorpayKeyId" data-key={RAZORPAY_KEY_ID}></div>
 
-<!-- STEP 1 -->
 <div class="space-y-4 mb-8">
 
   <div>
@@ -50,7 +91,6 @@ Check Availability & Book
 
 </div>
 
-<!-- STEP 2 -->
 <div id="availabilitySection" class="hidden mt-6">
   <h2 class="text-xl font-semibold mb-4 text-center">
     Available Room Types
@@ -58,7 +98,6 @@ Check Availability & Book
   <div id="roomList" class="grid gap-4"></div>
 </div>
 
-<!-- STEP 3 -->
 <div id="guestFormSection" class="hidden mt-8 border p-6 rounded-xl bg-white shadow">
   <h3 class="text-xl font-semibold mb-4">Guest Details</h3>
 
@@ -98,8 +137,7 @@ Check Availability & Book
   </button>
 </div>
 
-  <!-- STEP 4: BOOKING SUMMARY -->
-<div id="summarySection" class="hidden mt-8 border p-6 rounded-xl bg-gray-50 shadow">
+  <div id="summarySection" class="hidden mt-8 border p-6 rounded-xl bg-gray-50 shadow">
 
   <h3 class="text-xl font-semibold mb-4">Review Your Booking</h3>
 
@@ -122,7 +160,14 @@ Check Availability & Book
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-<script>
+<script is:inline>
+
+// Date restrictions to improve UX
+const today = new Date().toISOString().split('T')[0];
+document.getElementById('checkin').setAttribute('min', today);
+document.getElementById('checkin').addEventListener('change', (e) => {
+    document.getElementById('checkout').setAttribute('min', e.target.value);
+});
 
 // Test if button exists and add event listener
 document.addEventListener('DOMContentLoaded', function() {
@@ -201,9 +246,9 @@ function calculateTotal(room,type,guests,nights,roomsRequested){
 
   let extraCharge=0;
 
-  if(room.occupancy && guests>room.occupancy){
-    const extraPersons = guests-room.occupancy;
-    extraCharge = extraPersons * room.extraPerson * nights * roomsRequested;
+  if(room.occupancy && guests > (room.occupancy * roomsRequested)){
+    const extraPersons = guests - (room.occupancy * roomsRequested);
+    extraCharge = extraPersons * room.extraPerson * nights;
   }
 
   return {
@@ -267,7 +312,7 @@ document.getElementById('checkBtn').addEventListener('click',async()=>{
   roomList.innerHTML='';
 
   inventory.forEach(room => {
-    const rt = room.room; // Actual room ID from database
+    const rt = room.room; 
     const booked=countBooked(bookings,rt,checkin,checkout);
     const available=Math.max(0,room.qty-booked);
     const nights=(new Date(checkout)-new Date(checkin))/86400000;
@@ -284,7 +329,7 @@ document.getElementById('checkBtn').addEventListener('click',async()=>{
       </div>
     `;
 
-    if(available<=0){
+    if(available < roomsRequested){
       div.querySelectorAll('button').forEach(b=>{
         b.disabled=true;
         b.classList.add('opacity-40');
@@ -414,12 +459,10 @@ verifyOtpBtn.addEventListener('click', async () => {
       mobileInput.disabled = true;
       sendOtpBtn.classList.add('hidden');
       
-      // Update the pay button
       payBtn.disabled = false;
       payBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       payBtn.textContent = 'Confirm & Pay 50% Advance';
       
-      // Add a success badge next to mobile
       const successBadge = document.createElement('span');
       successBadge.className = "absolute right-3 top-2 text-green-600 font-bold";
       successBadge.textContent = "✓ Verified";
@@ -453,7 +496,6 @@ async function createBookingLock(selectedData, guestData){
         customerName:guestData.name,
         customerMobile:guestData.mobile,
         customerEmail:guestData.email,
-        // Add pricing data for the "pending" booking record
         total:selectedData.grandTotal,
         baseTotal:selectedData.baseTotal,
         extraCharge:selectedData.extraCharge,
@@ -466,7 +508,6 @@ async function createBookingLock(selectedData, guestData){
     
     if(response.ok){
       currentLockId=result.lockId;
-      // Store the bookingId if returned (for subsequent update during payment)
       selectedData.bookingId = result.bookingId;
       return {success:true, lockId:result.lockId, bookingId:result.bookingId, expiry:result.lockExpiry};
     }else{
@@ -491,14 +532,9 @@ async function releaseBookingLock(){
 
 document.getElementById('payAdvanceBtn').addEventListener('click',async()=>{
 
-  console.log('Pay Advance button clicked');
-  console.log('selectedData:', selectedData);
-
   const name=document.getElementById('guestName').value;
   const mobile=document.getElementById('guestMobile').value;
   const email=document.getElementById('guestEmail').value;
-
-  console.log('Guest data:', {name, mobile, email});
 
   if (!isMobileVerified) {
     showError("Please verify your mobile number with OTP first.");
@@ -517,19 +553,14 @@ document.getElementById('payAdvanceBtn').addEventListener('click',async()=>{
 
   guestData={name,mobile,email};
 
-  console.log('Creating booking lock...');
-
-  const btn = document.getElementById('payAdvanceBtn') as HTMLButtonElement;
+  const btn = document.getElementById('payAdvanceBtn');
   if (btn) {
     btn.disabled = true;
     btn.textContent = 'Creating lock...';
   }
 
   try {
-    // Create temporary lock before showing summary
     const lockResult=await createBookingLock(selectedData,guestData);
-    
-    console.log('Lock result:', lockResult);
     
     if(!lockResult.success){
       showError(lockResult.error);
@@ -539,10 +570,7 @@ document.getElementById('payAdvanceBtn').addEventListener('click',async()=>{
     const advance = Math.round((selectedData.grandTotal || 0) * 0.5);
 
     const summary = document.getElementById('summaryContent');
-    if (!summary) {
-      console.error('Summary element NOT found');
-      return;
-    }
+    if (!summary) return;
 
     summary.innerHTML = `
       <div class="mb-4 p-3 bg-sky-50 border border-sky-100 rounded-lg">
@@ -594,9 +622,6 @@ document.getElementById('payAdvanceBtn').addEventListener('click',async()=>{
 
 document.getElementById('cancelBookingBtn').addEventListener('click',async()=>{
   clearInterval(expiryInterval);
-  // Releasing lock will also clean up the associated pending booking 
-  // because releaseBookingLock calls DELETE /api/booking-locks?lockId=...
-  // and our new DELETE handler should handle it.
   await releaseBookingLock();
   location.reload();
 });
@@ -606,7 +631,6 @@ document.getElementById('confirmPaymentBtn').addEventListener('click',async()=>{
   clearInterval(expiryInterval);
 
   try{
-
     const orderRes = await fetch('/api/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -616,19 +640,12 @@ document.getElementById('confirmPaymentBtn').addEventListener('click',async()=>{
     const order = await orderRes.json();
     
     if (!orderRes.ok) {
-      console.error("Order creation failed:", order);
       showError(`Payment system error: ${order.error || 'Failed to create order'}`);
       return;
     }
 
     const rzpKeyIdEl = document.getElementById('razorpayKeyId');
     const rzpKeyId = rzpKeyIdEl ? rzpKeyIdEl.dataset.key : "";
-
-    if (!rzpKeyId) {
-      console.error("Razorpay Key ID missing");
-      showError("Payment configuration error: Key ID missing");
-      return;
-    }
 
     const options = {
       key: rzpKeyId,
@@ -643,7 +660,6 @@ document.getElementById('confirmPaymentBtn').addEventListener('click',async()=>{
         contact: guestData.mobile
       },
       handler: async function (response) {
-
         const verifyRes = await fetch('/api/verify-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -651,17 +667,13 @@ document.getElementById('confirmPaymentBtn').addEventListener('click',async()=>{
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_order_id: response.razorpay_order_id,
             razorpay_signature: response.razorpay_signature,
-            bookingData: {
-              ...selectedData,
-              ...guestData
-            }
+            bookingData: { ...selectedData, ...guestData }
           })
         });
 
         const result = await verifyRes.json();
 
         if (result.success) {
-          // Send notifications
           await sendNotifications(result.bookingId, 'payment_confirmed');
           window.location.href = `/thank-you?bookingId=${result.bookingId}`;
         } else {
@@ -671,17 +683,15 @@ document.getElementById('confirmPaymentBtn').addEventListener('click',async()=>{
       }
     };
 
-    const rzp = new (window as any).Razorpay(options);
+    const rzp = new window.Razorpay(options);
     
-    rzp.on('payment.failed', function (response: any) {
-      console.error("Razorpay payment failed:", response.error);
+    rzp.on('payment.failed', function (response) {
       showError(`Payment failed: ${response.error.description}`);
     });
 
     rzp.open();
 
   } catch (err) {
-    console.error("Payment button error:", err);
     showError("Payment process failed. Please try again.");
     await releaseBookingLock();
   }
@@ -690,29 +700,19 @@ document.getElementById('confirmPaymentBtn').addEventListener('click',async()=>{
 
 async function sendNotifications(bookingId, trigger){
   try{
-    // Send WhatsApp notification
     if(guestData.mobile){
       await fetch('/api/notifications',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          bookingId,
-          type:'whatsapp',
-          trigger
-        })
+        body:JSON.stringify({ bookingId, type:'whatsapp', trigger })
       });
     }
     
-    // Send Email notification
     if(guestData.email){
       await fetch('/api/notifications',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          bookingId,
-          type:'email',
-          trigger
-        })
+        body:JSON.stringify({ bookingId, type:'email', trigger })
       });
     }
   }catch(err){
