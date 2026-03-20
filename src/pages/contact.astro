@@ -1,7 +1,8 @@
 ---
 import Layout from "../layouts/Layout.astro";
----
 
+const googleMapsUrl = "https://www.google.com/maps/search/?api=1&query=18.5830,72.9028";
+---
 <Layout title="Contact Dolphin House Beach Resort | Nagaon, Alibaug" description="Get directions, phone numbers, WhatsApp, and email for Dolphin House Beach Resort near Nagaon Beach, Alibaug. Ask about rooms, rates, and availability." image="/uploader/dolphinhouse-front-4.webp">
 
   <!-- 🌴 Hero Section -->
@@ -61,7 +62,7 @@ import Layout from "../layouts/Layout.astro";
           class="inline-flex items-center gap-2 bg-green-500 text-white px-5 py-3 rounded-full font-semibold hover:bg-green-600 transition transform hover:scale-105">
           💬 WhatsApp
         </a>
-        <a href="https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8" target="_blank"
+        <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer"
           class="inline-flex items-center gap-2 bg-sky-600 text-white px-5 py-3 rounded-full font-semibold hover:bg-sky-700 transition transform hover:scale-105">
           📍 Google Maps
         </a>
@@ -116,16 +117,12 @@ import Layout from "../layouts/Layout.astro";
     "geo": { "@type": "GeoCoordinates", "latitude": "18.5830", "longitude": "72.9028" },
     "openingHours": "Mo-Su 08:00-22:00",
     "sameAs": [
-      "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
+      "https://www.google.com/maps/search/?api=1&query=18.5830,72.9028",
       "https://www.facebook.com/dolphinhousealibaug/",
       "https://www.instagram.com/dolphin_house_alibaug/"
     ],
-    "hasMap": "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8"
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=18.5830,72.9028"
   }
   </script>
 
 </Layout>
-
-
-
-
