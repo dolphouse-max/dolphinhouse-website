@@ -1,27 +1,62 @@
 ---
 import Layout from "../layouts/Layout.astro";
-// Load structured gallery data with categories and captions
 import galleryData from "../../data/gallery.json";
 
 type ImageItem = { src: string; alt: string };
 type Section = { title: string; images: ImageItem[] };
 
 const sections: Section[] = (galleryData as any)?.sections || [];
+
+const makeCaption = (sectionTitle: string, alt: string) => {
+  const lower = alt.toLowerCase();
+
+  if (sectionTitle.toLowerCase().includes("pool")) return "Indoor swimming pool";
+  if (sectionTitle.toLowerCase().includes("resort")) return "Resort exterior";
+  if (sectionTitle.toLowerCase().includes("restaurant")) return "Restaurant and dining area";
+  if (sectionTitle.toLowerCase().includes("kitchen")) return "Resort kitchen";
+  if (sectionTitle.toLowerCase().includes("bathroom")) return "Attached bathroom";
+  if (lower.includes("deluxe family room with pool view")) return "Deluxe family room with pool view";
+  if (lower.includes("deluxe family suite interior")) return "Deluxe family suite interior";
+  if (lower.includes("balcony and poolside")) return "Balcony and poolside view";
+  if (lower.includes("family room")) return "Family room";
+  if (lower.includes("standard ac room")) return "Standard AC room";
+  if (lower.includes("standard room interior")) return "Standard room interior";
+  if (lower.includes("affordable room")) return "Affordable room";
+  if (lower.includes("guest room interior")) return "Guest room interior";
+
+  return sectionTitle;
+};
 ---
 
-<Layout title="Photo Gallery | Dolphin House Beach Resort Alibaug" description="Browse photos of rooms, deluxe family stays, bathrooms, the indoor pool, restaurant, and resort spaces at Dolphin House near Nagaon Beach, Alibaug." image="/uploader/room-9.webp">
-  <section class="mb-8">
-    <h1 class="text-3xl font-semibold">Photo Gallery</h1>
-    <p class="text-gray-600 mt-2">Explore our resort — rooms, pool, restaurant, and nearby attractions.</p>
+<Layout title="Dolphin House Beach Resort Photos | Nagaon Alibaug Rooms, Pool & Beach" description="Browse photos of rooms, deluxe family stays, bathrooms, the indoor pool, restaurant, and resort spaces at Dolphin House near Nagaon Beach, Alibaug." image="/uploader/room-9.webp">
+  <section class="mb-8 max-w-5xl mx-auto">
+    <h1 class="text-3xl md:text-4xl font-semibold">Dolphin House Beach Resort Photos – Nagaon Alibaug</h1>
+    <p class="text-gray-600 mt-3 text-lg leading-relaxed">
+      Looking for Dolphin House Beach Resort photos? Explore real images of our rooms, family cottages, indoor swimming pool, and surroundings near Nagaon Beach Alibaug. These photos give you a clear idea of the stay experience before booking.
+    </p>
+    <p class="text-gray-600 mt-3 leading-relaxed">
+      Looking for details? Explore our
+      <a href="/rooms" class="text-sky-600 font-semibold hover:underline">rooms in Nagaon Alibaug</a>,
+      <a href="/beach-resort-in-nagaon-alibaug" class="text-sky-600 font-semibold hover:underline">beach resort near Nagaon Beach</a>, and
+      <a href="/resort-with-swimming-pool-alibaug" class="text-sky-600 font-semibold hover:underline">resort with swimming pool in Alibaug</a>.
+    </p>
   </section>
 
   {sections?.length ? (
     sections.map((section, sIndex) => (
-      <section class="mb-10">
+      <section class="mb-10 max-w-6xl mx-auto">
         <h2 class="text-2xl font-semibold mb-4">{section.title}</h2>
+        {section.title.toLowerCase() === "pool" && (
+          <div class="mb-6 rounded-3xl border border-cyan-100 bg-cyan-50 p-6">
+            <h3 class="text-xl font-semibold text-cyan-950 mb-2">Indoor Swimming Pool at Dolphin House Resort</h3>
+            <p class="text-gray-700 leading-relaxed">
+              Our indoor swimming pool with waterfall is one of the most loved features by guests. It offers a clean and relaxing space for families, couples, and kids to unwind after a day at Nagaon Beach.
+            </p>
+          </div>
+        )}
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {section.images.map((img, iIndex) => (
-            <figure class="rounded-lg overflow-hidden bg-white shadow-sm">
+            <figure class="rounded-lg overflow-hidden bg-white shadow-sm border border-gray-100">
               <img
                 src={img.src}
                 alt={img.alt}
@@ -30,7 +65,7 @@ const sections: Section[] = (galleryData as any)?.sections || [];
                 decoding="async"
                 class="w-full h-full object-cover aspect-[4/3]"
               />
-              <figcaption class="text-sm text-gray-600 px-3 py-2">{img.alt}</figcaption>
+              <figcaption class="text-sm text-gray-600 px-3 py-2">{makeCaption(section.title, img.alt)}</figcaption>
             </figure>
           ))}
         </div>
@@ -39,4 +74,32 @@ const sections: Section[] = (galleryData as any)?.sections || [];
   ) : (
     <p class="text-gray-500">No images found yet. Populate <code class="px-1 py-0.5 bg-gray-100 rounded">data/gallery.json</code> and redeploy.</p>
   )}
+
+  <section class="max-w-5xl mx-auto mt-14 rounded-3xl border border-amber-100 bg-amber-50 p-8 text-center">
+    <h2 class="text-3xl font-bold text-amber-950 mb-4">Why View Our Resort Photos Before Booking?</h2>
+    <p class="text-lg text-gray-700 leading-relaxed max-w-4xl mx-auto">
+      These real images help you understand room size, cleanliness, amenities, and overall resort atmosphere. Guests often check photos before booking a beach resort in Nagaon Alibaug, making this gallery an important part of your decision.
+    </p>
+  </section>
+
+  <section class="max-w-5xl mx-auto mt-10 rounded-3xl bg-gray-900 px-8 py-12 text-white text-center">
+    <h2 class="text-3xl font-bold mb-4">Seen our rooms and facilities?</h2>
+    <p class="text-lg text-white/80 max-w-3xl mx-auto leading-relaxed">
+      Book your stay at Dolphin House Beach Resort in Nagaon Alibaug and enjoy a comfortable stay just minutes from the beach.
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-4">
+      <a href="/rooms" class="btn-light">View Rooms &amp; Tariffs</a>
+      <a href="/contact" class="rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Contact for Direct Booking</a>
+    </div>
+  </section>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ImageGallery",
+      "name": "Dolphin House Beach Resort Photo Gallery",
+      "url": "https://dolphinhouse-alibaug.com/gallery",
+      "about": "Photos of rooms, swimming pool, and beach resort in Nagaon Alibaug"
+    }
+  </script>
 </Layout>

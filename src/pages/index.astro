@@ -12,9 +12,54 @@ const facilityIcons = {
   'Indoor swimming pool with waterfall': '🏊',
 };
 const facilities = Object.keys(facilityIcons);
+
+const faqs = [
+  {
+    question: "How far is Dolphin House Beach Resort from Nagaon Beach?",
+    answer:
+      "Dolphin House Beach Resort is located just a 2-minute walk (around 200 meters) from the main Nagaon Beach entrance, making it convenient for quick beach access and a peaceful stay."
+  },
+  {
+    question: "Does Dolphin House have a swimming pool?",
+    answer:
+      "Yes, Dolphin House has an indoor swimming pool with a waterfall feature for in-house guests."
+  },
+  {
+    question: "What are the room tariffs at Dolphin House?",
+    answer:
+      "Room rates start from around Γé╣2000 for Non-AC rooms and Γé╣2300 for AC rooms, with family and deluxe room options also available."
+  },
+  {
+    question: "Do you provide parking facilities?",
+    answer:
+      "Yes, we offer free on-site car parking for guests staying at the resort."
+  },
+  {
+    question: "How can I make a booking?",
+    answer:
+      "You can book directly through our website booking page or contact us on WhatsApp for quick assistance and confirmation."
+  },
+  {
+    question: "Is Wi-Fi available at the resort?",
+    answer:
+      "Yes, complimentary Wi-Fi is available for guests at Dolphin House."
+  }
+];
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map((faq) => ({
+    "@type": "Question",
+    "name": faq.question,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": faq.answer
+    }
+  }))
+};
 ---
 
-<Layout title="Hotels in Alibaug | Dolphin House Beach Resort Nagaon | Pool & AC Rooms" description="Book Dolphin House Beach Resort near Nagaon Beach, Alibaug for AC rooms, deluxe family stays, an indoor pool, restaurant, and direct booking just 2 minutes from the beach." image="/uploader/dolphinhouse-front-4.webp" ogType="hotel">
+<Layout title="Beach Resort in Nagaon Alibaug with Swimming Pool | Dolphin House" description="Dolphin House Beach Resort: Best budget stay in Nagaon, Alibaug. Clean rooms with a private swimming pool near Nagaon Beach. Perfect for families!" image="/uploader/dolphinhouse-front-4.webp" ogType="hotel" faqSchema={faqSchema}>
 
   <!-- 🏖 Hero Section -->
   <section class="hero relative mb-20 overflow-hidden">
@@ -26,42 +71,32 @@ const facilities = Object.keys(facilityIcons);
       decoding="async" fetchpriority="high" class="hero-img" width="876" height="584" />
     <div class="hero-overlay">
      <h1 class="hero-title text-4xl md:text-5xl font-extrabold uppercase tracking-tight leading-tight">
-          Hotels in Alibaug: <span class="block text-sky-300">Dolphin House Beach Resort, Nagaon</span>
+          Best Beach Resort in Nagaon Alibaug with Swimming Pool: <span class="block text-sky-300">Dolphin House</span>
     </h1>
       <p class="hero-sub">Luxury Cottages & Rooms at Nagaon Beach, Alibaug</p>
     </div>
   </section>
-  <section class="container py-10 border-b border-gray-100">
+  <p class="text-gray-600 mt-4 max-w-3xl mx-auto">
+  Looking for the best beach resort in Nagaon Alibaug? Dolphin House Beach Resort offers AC rooms, family cottages, an indoor swimming pool, and direct booking just 2 minutes from Nagaon Beach. Perfect for weekend getaways from Mumbai and Pune, our resort combines comfort, affordability, and prime beach location.
+  </p>
+  <section class="container py-8 bg-gray-50 rounded-2xl my-10 border border-gray-200">
+    <div class="flex flex-wrap justify-center gap-10 items-center text-center">
+      <div class="max-w-[150px]">
+        <img src="/gallery/dolphin-house-ratings.webp" alt="Justdial Users Choice Award 2026 Dolphin House" class="rounded-lg shadow-md mb-2" />
+        <span class="text-xs font-bold text-gray-600 uppercase">Users' Choice 2026</span>
+      </div>
 
-  <div class="flex flex-wrap justify-center gap-8 items-center text-center">
+      <div class="px-6 py-4">
+        <span class="block text-3xl font-bold text-sky-600">4.1/5 ⭐</span>
+        <span class="text-sm text-gray-500 font-medium">Google Reviews</span>
+      </div>
 
-    <div class="px-6 py-4 bg-white rounded-xl shadow-sm border border-gray-100">
-
-      <span class="block text-3xl font-bold text-sky-600">4.1/5</span>
-
-      <span class="text-sm text-gray-500 font-medium">Google Rating</span>
-
+      <div class="px-6 py-4">
+        <span class="block text-3xl">🏊‍♂️</span>
+        <span class="text-sm text-gray-500 font-medium">Indoor Pool & Waterfall</span>
+      </div>
     </div>
-
-    <div class="px-6 py-4 bg-white rounded-xl shadow-sm border border-gray-100">
-
-      <span class="block text-3xl">🛡️</span>
-
-      <span class="text-sm text-gray-500 font-medium">Secure Direct Booking</span>
-
-    </div>
-
-    <div class="px-6 py-4 bg-white rounded-xl shadow-sm border border-gray-100">
-
-      <span class="block text-3xl">🍛</span>
-
-      <span class="text-sm text-gray-500 font-medium">Authentic Home Food</span>
-
-    </div>
-
-  </div>
-
-</section>
+  </section>
   <!-- 🌴 About -->
   <section class="section">
     <div class="container text-center">
@@ -73,6 +108,7 @@ const facilities = Object.keys(facilityIcons);
       <p class="text-gray-600 mt-4 text-base max-w-3xl mx-auto">
         Guests looking for the best resort near Nagaon Beach, Alibaug choose Dolphin House for family-friendly rooms, direct booking, and a peaceful stay close to the shore.
       </p>
+      <a href="/rooms">AC rooms in Nagaon Alibaug</a>
       <p class="text-gray-600 mt-3 text-base max-w-3xl mx-auto">
         If you want a resort with swimming pool in Nagaon, Dolphin House offers indoor pool access, in-house dining, and easy beach access in one place.
       </p>
@@ -162,6 +198,24 @@ const facilities = Object.keys(facilityIcons);
     </p>
   </section>
 
+  <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-sky-50 p-6 shadow-sm">
+    <h2 class="text-2xl font-bold text-sky-950 mb-3">Looking for a Beach Resort in Nagaon Alibaug?</h2>
+    <p class="text-gray-700 leading-relaxed">
+      If you want a stay close to the shoreline with AC rooms, family cottages, and a swimming pool, read our
+      <a href="/beach-resort-in-nagaon-alibaug" class="font-bold text-sky-600 hover:underline">complete beach resort in Nagaon Alibaug guide</a>
+      to see why Dolphin House is a strong fit for families, couples, and groups.
+    </p>
+  </section>
+
+  <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
+    <h2 class="text-2xl font-bold text-cyan-950 mb-3">Want a Resort with Swimming Pool in Alibaug?</h2>
+    <p class="text-gray-700 leading-relaxed">
+      If pool access matters as much as beach access, read our
+      <a href="/resort-with-swimming-pool-alibaug" class="font-bold text-sky-600 hover:underline">resort with swimming pool in Alibaug guide</a>
+      to see why Dolphin House is a strong choice for families and weekend travelers.
+    </p>
+  </section>
+
   <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
     <h2 class="text-2xl font-bold text-gray-900 mb-3">Coming with Family, Friends, or a Team?</h2>
     <p class="text-gray-700 leading-relaxed">
@@ -184,7 +238,7 @@ const facilities = Object.keys(facilityIcons);
             src="/uploader/hotel-front-1-480x320.webp"
             srcset="/uploader/hotel-front-1-480x320.webp 480w, /uploader/hotel-front-1-960x640.webp 960w"
             sizes="(min-width: 768px) 480px, 100vw"
-            alt="Resort front view at Dolphin House Beach Resort Alibaug" loading="lazy" class="card-img" width="960" height="640" />
+            alt="Dolphin House Beach Resort in Nagaon Alibaug with swimming pool and cottages" loading="lazy" class="card-img" width="960" height="640" />
           <div class="card-overlay">
             <h3 class="card-title">Resort View</h3>
           </div>
@@ -264,7 +318,7 @@ const facilities = Object.keys(facilityIcons);
   "starRating": {
     "@type": "Rating",
     "ratingValue": "4.1",
-    "bestRating": "5"
+    "bestRating": "5",
     "reviewCount": "567"
     },
   "checkinTime": "12:00",
@@ -295,7 +349,7 @@ const facilities = Object.keys(facilityIcons);
   "areaServed": [
     { "@type": "Place", "name": "Alibaug" },
     { "@type": "Place", "name": "Nagaon Beach" }
-  ]
+  ],
 
   "sameAs": [
     "https://maps.app.goo.gl/kF8bQHT1DqMRtEhV8",
@@ -314,7 +368,7 @@ const facilities = Object.keys(facilityIcons);
       ],
       "offers": {
         "@type": "Offer",
-        "price": "₹2300–2600",
+        "price": "₹2600",
         "priceCurrency": "INR",
         "availability": "https://schema.org/InStock"
       }
@@ -334,7 +388,41 @@ const facilities = Object.keys(facilityIcons);
 }
 </script>
 
+  <section class="section">
+    <div class="container max-w-4xl mx-auto">
+      <div class="text-center">
+        <h2 class="heading">Frequently Asked Questions</h2>
+        <p class="subtext">
+          Quick answers about beach distance, pool access, booking, tariffs, parking, and Wi-Fi at Dolphin House.
+        </p>
+      </div>
+
+      <div class="mt-10 space-y-4">
+        {faqs.map((faq) => (
+          <details class="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-lg font-semibold text-gray-900">
+              <span>{faq.question}</span>
+              <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
+            </summary>
+            <p class="mt-4 leading-relaxed text-gray-600">{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+
+      <p class="mt-6 text-center text-sm text-gray-500">
+        Need more details? Visit our <a href="/faq" class="font-semibold text-sky-600 hover:underline">full FAQ page</a>.
+      </p>
+    </div>
+  </section>
+
 </Layout>
+
+
+
+
+
+
+
 
 
 
