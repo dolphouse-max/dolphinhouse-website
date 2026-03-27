@@ -1,0 +1,31 @@
+---
+interface Props {
+  title: string;
+  class?: string;
+  detailsClass?: string;
+  bodyClass?: string;
+}
+
+const {
+  title,
+  class: sectionClass = "",
+  detailsClass = "",
+  bodyClass = ""
+} = Astro.props;
+---
+
+<section class={sectionClass}>
+  <details
+    data-mobile-collapsible
+    open
+    class={`mobile-collapsible ${detailsClass}`.trim()}
+  >
+    <summary class="mobile-collapsible__summary md:hidden">
+      <span>{title}</span>
+      <span class="mobile-collapsible__icon" aria-hidden="true">+</span>
+    </summary>
+    <div class={bodyClass}>
+      <slot />
+    </div>
+  </details>
+</section>

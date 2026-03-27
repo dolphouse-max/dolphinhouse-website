@@ -1,5 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import MobileCollapsibleSection from "../components/MobileCollapsibleSection.astro";
+import MobileCollapsibleEnhancer from "../components/MobileCollapsibleEnhancer.astro";
 
 const facilityIcons = {
   'Air-conditioned rooms & cottages': '❄️',
@@ -59,7 +61,7 @@ const faqSchema = {
 };
 ---
 
-<Layout title="Beach Resort in Nagaon Alibaug with Swimming Pool | Dolphin House" description="Dolphin House Beach Resort: Best budget stay in Nagaon, Alibaug. Clean rooms with a private swimming pool near Nagaon Beach. Perfect for families!" image="/uploader/dolphinhouse-front-4.webp" ogType="hotel" faqSchema={faqSchema}>
+<Layout title="Best Beach Resort in Nagaon Alibaug (Near Beach + Pool) | Dolphin House" description="Dolphin House Beach Resort: Best budget stay in Nagaon, Alibaug. Clean rooms with a private swimming pool near Nagaon Beach. Perfect for families!" image="/uploader/dolphinhouse-front-4.webp" ogType="hotel" faqSchema={faqSchema}>
 
   <!-- 🏖 Hero Section -->
   <section class="hero relative mb-20 overflow-hidden">
@@ -76,12 +78,25 @@ const faqSchema = {
       <p class="hero-sub">Luxury Cottages & Rooms at Nagaon Beach, Alibaug</p>
     </div>
   </section>
-  <p class="text-gray-600 mt-4 max-w-3xl mx-auto">
-  Looking for the best beach resort in Nagaon Alibaug? Dolphin House Beach Resort offers AC rooms, family cottages, an indoor swimming pool, and direct booking just 2 minutes from Nagaon Beach. Perfect for weekend getaways from Mumbai and Pune, our resort combines comfort, affordability, and prime beach location.
-  </p>
-  <section class="container py-8 bg-gray-50 rounded-2xl my-10 border border-gray-200">
-    <div class="flex flex-wrap justify-center gap-10 items-center text-center">
-      <div class="max-w-[150px]">
+
+  <MobileCollapsibleSection
+    title="Best Resort in Nagaon Alibaug Near Beach"
+    class="container my-10 rounded-2xl border border-gray-200 bg-gray-50 py-8"
+    bodyClass="px-6"
+  >
+    <p class="mt-3 text-lg font-semibold text-yellow-500">
+⭐ Rated 4.1/5 | 500+ Guests | 3 min walk to beach
+    </p>
+    <h2 class="mt-4">Best Resort in Nagaon Alibaug Near Beach</h2>
+    <p>
+      Dolphin House is one of the best beach resorts in Alibaug,Maharashtra, India (Not in Goa), located near Nagaon Beach.
+      If you are searching for a resort in Alibaug with swimming pool, family rooms, and beach access,
+      this is a perfect choice for weekend trips from Mumbai and Pune.
+    </p>
+    <p class="mt-4 text-gray-700">
+      Travelers comparing a <strong>resort in alibaug</strong>, a <strong>beach resort alibaug</strong>, a <strong>nagaon beach resort</strong>, or a <strong>resort with swimming pool alibaug</strong> will find Dolphin House combines beach proximity, family-friendly rooms, and indoor pool comfort in one stay.
+    </p>
+    <div class="flex flex-wrap justify-center gap-10 items-center text-center"> 
         <img src="/gallery/dolphin-house-ratings.webp" alt="Justdial Users Choice Award 2026 Dolphin House" class="rounded-lg shadow-md mb-2" />
         <span class="text-xs font-bold text-gray-600 uppercase">Users' Choice 2026</span>
       </div>
@@ -96,9 +111,10 @@ const faqSchema = {
         <span class="text-sm text-gray-500 font-medium">Indoor Pool & Waterfall</span>
       </div>
     </div>
-  </section>
+  </MobileCollapsibleSection>
+
   <!-- 🌴 About -->
-  <section class="section">
+  <MobileCollapsibleSection title="Dolphin House: Your Luxury Resort in Alibaug Near Nagaon Beach" class="section">
     <div class="container text-center">
       <h2 class="heading">Dolphin House: Your Luxury Resort in Alibaug Near Nagaon Beach</h2>
       <p class="subtext">
@@ -121,10 +137,10 @@ const faqSchema = {
         Nagaon Beach is a hidden gem famous for clean sands and exciting water sports like parasailing, jet-skiing, and banana rides.
       </p>
     </div>
-  </section>
+  </MobileCollapsibleSection>
 
 
-  <section class="section">
+  <MobileCollapsibleSection title="Experience the Magic of Nagaon Beach, Alibaug" class="section">
     <div class="container max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 items-center">
       <div>
         <h2 class="heading">Experience the Magic of Nagaon Beach, Alibaug</h2>
@@ -158,9 +174,12 @@ const faqSchema = {
         />
       </div>
     </div>
-  </section>
+  </MobileCollapsibleSection>
 
-  <section class="bg-sky-50 p-6 rounded-2xl border border-sky-100 my-10 max-w-5xl mx-auto">
+  <MobileCollapsibleSection
+    title="Expert Alibaug Travel Tips"
+    class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-sky-50 p-6"
+  >
     <h2 class="text-2xl font-bold text-sky-900 mb-3">Expert Alibaug Travel Tips</h2>
     <p class="text-gray-700 leading-relaxed">
       Make the most of your trip! Whether you are visiting for a weekend or a long vacation, knowing the local secrets makes all the difference. For a complete list of sightseeing spots, hidden beaches, and a guide to the best
@@ -169,63 +188,63 @@ const faqSchema = {
       </a>,
       check out our dedicated travel portal. It's your one-stop shop for planning every detail of your Nagaon and Alibaug stay.
     </p>
-  </section>
+  </MobileCollapsibleSection>
 
-  <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+  <MobileCollapsibleSection title="Planning for a Family or Group Trip?" class="my-10 max-w-5xl mx-auto rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
     <h2 class="text-2xl font-bold text-gray-900 mb-3">Planning for a Family or Group Trip?</h2>
     <p class="text-gray-700 leading-relaxed">
       If you are comparing beaches, deciding what to do with kids, or choosing the right stay for a larger group, read our
       <a href="/alibaug-family-group-guide-2026" class="font-bold text-sky-600 hover:underline">Alibaug families and groups guide</a>
       for a practical 2026 overview of Nagaon Beach, activities, local food, and stay planning.
     </p>
-  </section>
+  </MobileCollapsibleSection>
 
-  <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
+  <MobileCollapsibleSection title="Want to See Dolphins in Alibaug?" class="my-10 max-w-5xl mx-auto rounded-2xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
     <h2 class="text-2xl font-bold text-cyan-950 mb-3">Want to See Dolphins in Alibaug?</h2>
     <p class="text-gray-700 leading-relaxed">
       Most visitors are told they can spot dolphins right from the beach, but that is rarely how it works. Read our
       <a href="/dolphin-watching-alibaug-guide" class="font-bold text-sky-600 hover:underline">honest dolphin watching guide</a>
       to learn the best season, timing, and boat strategy for a real sighting.
     </p>
-  </section>
+  </MobileCollapsibleSection>
 
-  <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
+  <MobileCollapsibleSection title="Why Stay in Nagaon Instead of Alibaug City?" class="my-10 max-w-5xl mx-auto rounded-2xl border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
     <h2 class="text-2xl font-bold text-emerald-950 mb-3">Why Stay in Nagaon Instead of Alibaug City?</h2>
     <p class="text-gray-700 leading-relaxed">
       If you want a cleaner beach, easier water sports access, and a quieter stay, read our
       <a href="/why-smart-travelers-choose-nagaon" class="font-bold text-sky-600 hover:underline">Nagaon vs Alibaug city guide</a>
       before you book.
     </p>
-  </section>
+  </MobileCollapsibleSection>
 
-  <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-sky-50 p-6 shadow-sm">
+  <MobileCollapsibleSection title="Looking for a Beach Resort in Nagaon Alibaug?" class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-sky-50 p-6 shadow-sm">
     <h2 class="text-2xl font-bold text-sky-950 mb-3">Looking for a Beach Resort in Nagaon Alibaug?</h2>
     <p class="text-gray-700 leading-relaxed">
       If you want a stay close to the shoreline with AC rooms, family cottages, and a swimming pool, read our
       <a href="/beach-resort-in-nagaon-alibaug" class="font-bold text-sky-600 hover:underline">complete beach resort in Nagaon Alibaug guide</a>
       to see why Dolphin House is a strong fit for families, couples, and groups.
     </p>
-  </section>
+  </MobileCollapsibleSection>
 
-  <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
+  <MobileCollapsibleSection title="Want a Resort with Swimming Pool in Alibaug?" class="my-10 max-w-5xl mx-auto rounded-2xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
     <h2 class="text-2xl font-bold text-cyan-950 mb-3">Want a Resort with Swimming Pool in Alibaug?</h2>
     <p class="text-gray-700 leading-relaxed">
       If pool access matters as much as beach access, read our
       <a href="/resort-with-swimming-pool-alibaug" class="font-bold text-sky-600 hover:underline">resort with swimming pool in Alibaug guide</a>
       to see why Dolphin House is a strong choice for families and weekend travelers.
     </p>
-  </section>
+  </MobileCollapsibleSection>
 
-  <section class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
+  <MobileCollapsibleSection title="Coming with Family, Friends, or a Team?" class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
     <h2 class="text-2xl font-bold text-gray-900 mb-3">Coming with Family, Friends, or a Team?</h2>
     <p class="text-gray-700 leading-relaxed">
       <a href="/group-corporate-bookings" class="font-bold text-sky-600 hover:underline">Planning a group trip? Check our Group Packages.</a>
       We offer dedicated stay options for family reunions, friends' weekends, and corporate offsites near Nagaon Beach.
     </p>
-  </section>
+  </MobileCollapsibleSection>
 
   <!-- 🏠 Rooms -->
-  <section class="section bg-sky-50">
+  <MobileCollapsibleSection title="Stay at Dolphin House" class="section bg-sky-50">
     <div class="container text-center">
       <h2 class="heading">Stay at Dolphin House</h2>
       <p class="subtext">
@@ -257,10 +276,10 @@ const faqSchema = {
 
       <a href="/rooms" class="btn-primary mt-10 inline-block">View All Rooms & Tariffs</a>
     </div>
-  </section>
+  </MobileCollapsibleSection>
 
   <!-- 💎 Facilities -->
-  <section class="section dark-section">
+  <MobileCollapsibleSection title="Facilities You’ll Love" class="section dark-section">
     <div class="container text-center">
       <h2 class="heading text-white">Facilities You’ll Love</h2>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
@@ -272,10 +291,10 @@ const faqSchema = {
         ))}
       </div>
     </div>
-  </section>
+  </MobileCollapsibleSection>
 
   <!-- 📍 Location -->
-  <section class="section">
+  <MobileCollapsibleSection title="How to Reach Dolphin House" class="section">
     <div class="container max-w-4xl mx-auto">
       <h2 class="heading">How to Reach Dolphin House</h2>
       <ul class="reach-list mt-6">
@@ -285,10 +304,10 @@ const faqSchema = {
         <li>⛴️ <strong>By Ferry:</strong> Catamarans from Gateway of India to Mandwa Jetty</li>
       </ul>
     </div>
-  </section>
+  </MobileCollapsibleSection>
 
   <!-- 📞 CTA -->
-  <section class="section cta-section text-center">
+  <MobileCollapsibleSection title="Ready to Book Your Stay?" class="section cta-section text-center">
     <h2 class="heading text-white">Ready to Book Your Stay?</h2>
     <p class="text-lg mb-6 text-white/90">
       Contact us for direct bookings, best rates, and instant confirmation.
@@ -299,7 +318,7 @@ const faqSchema = {
     <a href="https://wa.me/+917208993889" class="btn-light">
       💬 WhatsApp Us Now
     </a>
-  </section>
+  </MobileCollapsibleSection>
 <!-- 🧠 JSON-LD Structured Data for Google Rich Results -->
 <script type="application/ld+json">
 {
@@ -315,6 +334,11 @@ const faqSchema = {
   "url": "https://dolphinhouse-alibaug.com/",
   "hasMenu": "https://dolphinhouse-alibaug.com/menu",
   "priceRange": "₹₹₹",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.1",
+    "reviewCount": "573"
+  },
   "starRating": {
     "@type": "Rating",
     "ratingValue": "4.1",
@@ -388,7 +412,7 @@ const faqSchema = {
 }
 </script>
 
-  <section class="section">
+  <MobileCollapsibleSection title="Frequently Asked Questions" class="section">
     <div class="container max-w-4xl mx-auto">
       <div class="text-center">
         <h2 class="heading">Frequently Asked Questions</h2>
@@ -413,6 +437,8 @@ const faqSchema = {
         Need more details? Visit our <a href="/faq" class="font-semibold text-sky-600 hover:underline">full FAQ page</a>.
       </p>
     </div>
-  </section>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleEnhancer />
 
 </Layout>

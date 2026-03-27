@@ -1,0 +1,64 @@
+<style>
+  .mobile-collapsible {
+    width: 100%;
+  }
+
+  .mobile-collapsible__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    cursor: pointer;
+    list-style: none;
+    border-radius: 1rem;
+    border: 1px solid rgb(226 232 240);
+    background: rgba(255, 255, 255, 0.92);
+    padding: 1rem 1.1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: rgb(17 24 39);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .mobile-collapsible__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-collapsible__icon {
+    flex-shrink: 0;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: rgb(2 132 199);
+    transition: transform 180ms ease;
+  }
+
+  .mobile-collapsible[open] .mobile-collapsible__icon {
+    transform: rotate(45deg);
+  }
+
+  @media (max-width: 767px) {
+    .mobile-collapsible > div {
+      padding-top: 1rem;
+    }
+  }
+</style>
+
+<script is:inline>
+  const mobileAccordionQuery = window.matchMedia("(min-width: 768px)");
+
+  const syncMobileCollapsibleSections = (event) => {
+    const isDesktop = event?.matches ?? mobileAccordionQuery.matches;
+
+    document.querySelectorAll("[data-mobile-collapsible]").forEach((section) => {
+      if (isDesktop) {
+        section.setAttribute("open", "");
+        return;
+      }
+
+      section.removeAttribute("open");
+    });
+  };
+
+  syncMobileCollapsibleSections();
+  mobileAccordionQuery.addEventListener("change", syncMobileCollapsibleSections);
+</script>

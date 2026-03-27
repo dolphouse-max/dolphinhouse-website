@@ -1,0 +1,282 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MobileCollapsibleSection from "../components/MobileCollapsibleSection.astro";
+import MobileCollapsibleEnhancer from "../components/MobileCollapsibleEnhancer.astro";
+
+const resortTypes = [
+  {
+    title: "Beach Resorts",
+    description: "These stays work best when you want quick beach access, sunrise walks, and less time spent in traffic or finding parking near the shore."
+  },
+  {
+    title: "Budget Resorts",
+    description: "A practical fit for short weekend plans where clean rooms, basic comfort, and a good location matter more than luxury extras."
+  },
+  {
+    title: "Luxury Resorts",
+    description: "These are ideal for travelers who want larger properties, premium experiences, and a more private atmosphere for a slower trip."
+  },
+  {
+    title: "Resorts with Pool",
+    description: "Pool resorts help families and groups enjoy extra leisure time even when the beach is crowded, windy, or less suitable for long stays."
+  }
+];
+
+const checklist = [
+  "Distance from the beach and whether you can comfortably walk there",
+  "Swimming pool access for kids, groups, and non-beach hours",
+  "Family room options instead of only couple-sized stays",
+  "Food availability inside the property or nearby"
+];
+
+const nagaonReasons = [
+  "Nagaon usually feels cleaner and less chaotic than the busier Alibaug city side for beach-focused travelers.",
+  "It is one of the main water sports hubs in the region, so activity access is easier and faster.",
+  "The broad, flatter shoreline makes it a comfortable choice for families with children and older parents."
+];
+
+const alibaugThings = [
+  "Spend time across popular beaches based on crowd preference, water activity plans, and family comfort.",
+  "Try parasailing, jet ski rides, and banana boat sessions at active beach stretches.",
+  "Visit Revdanda Fort and nearby coastal spots to turn a simple stay into a fuller weekend plan.",
+  "Explore local seafood, Konkani-style meals, and casual family dining around Nagaon and Alibaug."
+];
+
+const travelTips = [
+  "The best months for a beach trip are usually after monsoon through winter, when the weather is more comfortable.",
+  "Weekend traffic from Mumbai and Pune can get heavy, so early departures help you save time and energy.",
+  "If your priority is beach access, choose a stay that keeps you near the shore instead of relying on repeated local transport."
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Which is the best resort in Alibaug for families?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Families usually look for a resort in Alibaug that is close to the beach, offers family rooms, has food available on-site, and includes pool access for children and non-beach hours."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are there resorts in Alibaug near beach areas?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Nagaon is one of the most practical beach areas for travelers looking for resorts in Alibaug near beach access, especially for weekend trips from Mumbai and Pune."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why do travelers choose Nagaon for an Alibaug stay?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Travelers often choose Nagaon because the beach area is cleaner, safer for families, and better connected to water sports and walking-distance stay options."
+      }
+    }
+  ]
+};
+---
+
+<Layout
+  title="Best Resort in Alibaug for Families & Beach Stay (2026 Guide)"
+  description="Looking for the best resort in Alibaug? Explore beach resorts, family stays, pool resorts, and why Nagaon is a smart area for a beach trip from Mumbai or Pune."
+  image="/uploader/dolphinhouse-front-4.webp"
+  canonical="https://dolphinhouse-alibaug.com/resort-in-alibaug"
+  ogType="article"
+  faqSchema={faqSchema}
+>
+  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-sky-950 via-cyan-800 to-emerald-600 px-6 py-16 text-white shadow-2xl">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_35%)]"></div>
+    <div class="relative grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+      <div>
+        <p class="text-sm uppercase tracking-[0.28em] text-white/75">Alibaug Stay Guide</p>
+        <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
+          Best Resort in Alibaug for Families &amp; Beach Stay (2026 Guide)
+        </h1>
+        <p class="mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
+          Looking for the best resort in Alibaug for a relaxing beach getaway? Whether you are traveling from Mumbai or Pune, Alibaug offers a strong mix of beach time, water sports, and family-friendly stays when you choose the right area.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="/booking" class="btn-light">Check Rooms &amp; Book Now</a>
+          <a href="/rooms" class="rounded-full border border-white/60 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-sky-900">
+            View Rooms
+          </a>
+        </div>
+      </div>
+
+      <figure class="overflow-hidden rounded-[1.75rem] border border-white/20 bg-white/10 backdrop-blur-sm">
+        <img
+          src="/uploader/hotel-front-1.webp"
+          alt="Resort in Alibaug near beach for families and weekend stays"
+          class="h-full w-full object-cover"
+          width="960"
+          height="640"
+          loading="eager"
+          decoding="async"
+        />
+      </figure>
+    </div>
+  </section>
+
+  <MobileCollapsibleSection title="Types of Resorts in Alibaug" class="section">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">Types of Resorts in Alibaug</h2>
+      <p class="max-w-4xl text-lg leading-relaxed text-gray-700">
+        Travelers searching for a <strong>resort in alibaug</strong> often use the same term for very different expectations. It helps to separate options by trip style before comparing properties.
+      </p>
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
+        {resortTypes.map((item) => (
+          <article class="rounded-3xl border border-sky-100 bg-white p-7 shadow-sm">
+            <h3 class="text-2xl font-bold text-gray-900">{item.title}</h3>
+            <p class="mt-4 leading-relaxed text-gray-700">{item.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="What to Look for in a Resort" class="section rounded-3xl border border-sky-100 bg-white shadow-sm">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">What to Look for in a Resort</h2>
+      <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
+        <p>
+          A good shortlist should go beyond photos. The best resort in Alibaug for your trip depends on how easily you can reach the beach, how well the stay handles families, and whether your day still works well when beach conditions are crowded or rainy.
+        </p>
+      </div>
+      <div class="mt-8 grid gap-4 md:grid-cols-2">
+        {checklist.map((item) => (
+          <div class="rounded-2xl border border-cyan-100 bg-cyan-50 p-5">
+            <p class="text-lg font-medium text-cyan-950">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Why Choose Nagaon Beach Area" class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Why Choose Nagaon Beach Area</h2>
+      <div class="grid gap-5">
+        {nagaonReasons.map((reason) => (
+          <div class="rounded-3xl border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
+            <p class="text-lg leading-relaxed text-emerald-950">{reason}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mt-8 text-base leading-relaxed text-gray-700 md:text-lg">
+        That is why many travelers looking for <strong>resorts in alibaug near beach</strong> end up focusing on Nagaon instead of staying deeper inside town.
+      </p>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Best Resort in Alibaug Near Beach – Dolphin House" class="section rounded-3xl border border-amber-100 bg-amber-50">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">Best Resort in Alibaug Near Beach – Dolphin House</h2>
+      <div class="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
+        <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
+          <p>
+            If you want a practical family-friendly answer to the search for the <strong>best resort in alibaug</strong>, Dolphin House is a strong fit in the Nagaon area.
+          </p>
+          <p>
+            The property is just a 2-minute walk from the beach, offers an indoor swimming pool, supports family room stays, and makes direct booking simple for short weekend travel.
+          </p>
+          <p>
+            Instead of overselling the stay, the real advantage is balance: beach proximity, useful amenities, and a straightforward setup for families, couples, and groups who want convenience.
+          </p>
+          <div class="flex flex-wrap gap-4 pt-2">
+            <a href="/rooms" class="btn-primary">Check Rooms &amp; Book Now</a>
+            <a href="/" class="rounded-full border border-gray-300 px-6 py-3 font-semibold text-gray-800 transition hover:border-sky-600 hover:text-sky-700">
+              Visit Homepage
+            </a>
+          </div>
+        </div>
+
+        <figure class="overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-amber-100">
+          <img
+            src="/uploader/dolphinhouse-front-4.webp"
+            alt="Dolphin House near Nagaon Beach in Alibaug"
+            class="h-full w-full object-cover"
+            width="876"
+            height="584"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Things to Do in Alibaug" class="section">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">Things to Do in Alibaug</h2>
+      <div class="mt-8 grid gap-5 md:grid-cols-2">
+        {alibaugThings.map((item) => (
+          <div class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <p class="text-lg leading-relaxed text-gray-800">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Travel Tips" class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Travel Tips</h2>
+      <div class="space-y-4">
+        {travelTips.map((tip) => (
+          <div class="rounded-2xl border border-sky-100 bg-sky-50 p-5">
+            <p class="text-base leading-relaxed text-sky-950 md:text-lg">{tip}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Explore Related Guides" class="section">
+    <div class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-12 text-white">
+      <h2 class="text-3xl font-bold">Explore Related Guides Before You Book</h2>
+      <p class="mt-4 max-w-3xl text-white/80">
+        Compare broader Alibaug options, beach-focused stays, and Nagaon-specific guides before choosing dates and room type.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Homepage</a>
+        <a href="/rooms" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Room Options</a>
+        <a href="/beach-resort-alibaug" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Beach Resort Alibaug</a>
+        <a href="/nagaon-beach-resort" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Nagaon Beach Resort</a>
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleEnhancer />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Best Resort in Alibaug for Families & Beach Stay (2026 Guide)",
+      "description": "A practical guide to choosing a resort in Alibaug, including beach stays, family resorts, pool resorts, and why Nagaon is a smart base.",
+      "mainEntityOfPage": "https://dolphinhouse-alibaug.com/resort-in-alibaug",
+      "author": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
+        }
+      },
+      "image": [
+        "https://dolphinhouse-alibaug.com/uploader/hotel-front-1.webp",
+        "https://dolphinhouse-alibaug.com/uploader/dolphinhouse-front-4.webp"
+      ],
+      "datePublished": "2026-03-27",
+      "dateModified": "2026-03-27"
+    }
+  </script>
+</Layout>

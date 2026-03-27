@@ -1,0 +1,231 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MobileCollapsibleSection from "../components/MobileCollapsibleSection.astro";
+import MobileCollapsibleEnhancer from "../components/MobileCollapsibleEnhancer.astro";
+
+const nagaonReasons = [
+  "Clean sand and a more comfortable family beach feel than many first-time visitors expect.",
+  "A shoreline that feels safer and easier for children, older parents, and slow beach walks.",
+  "Strong access to water sports without needing to spend half the trip moving between locations."
+];
+
+const resortTypes = [
+  "Budget resorts for quick weekend trips where location matters most",
+  "Cottages and family stays for travelers who need larger or more flexible room layouts",
+  "Pool resorts for guests who want both beach time and an easier in-property leisure option"
+];
+
+const nagaonActivities = [
+  "Water sports like jet ski rides, parasailing, and banana rides during active beach hours",
+  "Long evening walks and sunset time when the shoreline feels calmer and more open",
+  "Simple beach downtime for families who prefer a less rushed coastal routine"
+];
+
+const travelInfo = [
+  "Nagaon is a practical weekend route for travelers coming from Mumbai who want beach access without planning a long-distance coastal holiday.",
+  "It also works well for Pune travelers, especially when departure timing is planned to avoid the heaviest weekend traffic.",
+  "Most visitors reach via road and local beach-area routes, so staying close to the shore saves repeated transit effort after arrival."
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Which is the best resort near Nagaon Beach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Travelers usually prefer a resort near Nagaon Beach that keeps the shore walkable, supports family stays, and offers amenities like pool access and food on-site."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why do families choose Nagaon Beach stays?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Families often choose Nagaon because the beach is cleaner, safer, and better suited to walking-distance stays with water sports nearby."
+      }
+    }
+  ]
+};
+---
+
+<Layout
+  title="Best Resorts Near Nagaon Beach Alibaug (Walk to Beach Stays)"
+  description="Looking for a Nagaon Beach resort? Explore why Nagaon is ideal for families, what resort types are available, and why walk-to-beach stays rank high for Alibaug trips."
+  image="/uploader/nagaon-beach.webp"
+  canonical="https://dolphinhouse-alibaug.com/nagaon-beach-resort"
+  ogType="article"
+  faqSchema={faqSchema}
+>
+  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-teal-700 to-sky-500 px-6 py-16 text-white shadow-2xl">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_35%)]"></div>
+    <div class="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <div>
+        <p class="text-sm uppercase tracking-[0.28em] text-white/75">Nagaon Beach Guide</p>
+        <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
+          Best Resorts Near Nagaon Beach Alibaug (Walk to Beach Stays)
+        </h1>
+        <p class="mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
+          A good <strong>nagaon beach resort</strong> is less about flashy labels and more about clean surroundings, safe beach access, and a property that keeps the shore within easy walking distance.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="/booking" class="btn-light">Book Now</a>
+          <a href="/rooms" class="rounded-full border border-white/60 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-emerald-900">
+            View Rooms
+          </a>
+        </div>
+      </div>
+
+      <figure class="overflow-hidden rounded-[1.75rem] border border-white/20 bg-white/10 backdrop-blur-sm">
+        <img
+          src="/uploader/nagaon-beach.webp"
+          alt="Resort near Nagaon Beach Alibaug with walking distance beach access"
+          class="h-full w-full object-cover"
+          width="1600"
+          height="1067"
+          loading="eager"
+          decoding="async"
+        />
+      </figure>
+    </div>
+  </section>
+
+  <MobileCollapsibleSection title="Why Stay Near Nagaon Beach" class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Why Stay Near Nagaon Beach</h2>
+      <div class="space-y-4">
+        {nagaonReasons.map((reason) => (
+          <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+            <p class="text-base leading-relaxed text-emerald-950 md:text-lg">{reason}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mt-8 text-base leading-relaxed text-gray-700 md:text-lg">
+        That is the reason a <strong>resort near nagaon beach</strong> often ranks higher for convenience than a stay that looks appealing online but leaves you dependent on transport every time you want the shore.
+      </p>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Types of Resorts Near Nagaon" class="section rounded-3xl border border-sky-100 bg-white shadow-sm">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Types of Resorts Near Nagaon</h2>
+      <div class="grid gap-5 md:grid-cols-3">
+        {resortTypes.map((item) => (
+          <div class="rounded-3xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
+            <p class="text-lg leading-relaxed text-cyan-950">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Dolphin House Beach Resort" class="section rounded-3xl border border-amber-100 bg-amber-50">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">Dolphin House Beach Resort</h2>
+      <div class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
+          <p>
+            Among walk-to-beach stay options, Dolphin House stands out because it keeps the practical parts of the trip simple.
+          </p>
+          <p>
+            The beach is roughly 2 minutes away on foot, the property includes an indoor pool, and the room setup works for families who need more than a compact couple stay.
+          </p>
+          <p>
+            It is a natural fit for travelers who care about actual usability more than overdesigned resort claims.
+          </p>
+          <div class="flex flex-wrap gap-4 pt-2">
+            <a href="/rooms" class="btn-primary">Book Now</a>
+            <a href="/" class="rounded-full border border-gray-300 px-6 py-3 font-semibold text-gray-800 transition hover:border-sky-600 hover:text-sky-700">
+              Visit Homepage
+            </a>
+          </div>
+        </div>
+
+        <figure class="overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-amber-100">
+          <img
+            src="/uploader/hotel-front-1.webp"
+            alt="Dolphin House beach resort near Nagaon Beach with family rooms"
+            class="h-full w-full object-cover"
+            width="960"
+            height="640"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Things to Do at Nagaon Beach" class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Things to Do at Nagaon Beach</h2>
+      <div class="space-y-4">
+        {nagaonActivities.map((activity) => (
+          <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <p class="text-base leading-relaxed text-gray-800 md:text-lg">{activity}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Travel Info" class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Travel Info</h2>
+      <div class="space-y-4">
+        {travelInfo.map((item) => (
+          <div class="rounded-2xl border border-sky-100 bg-sky-50 p-5">
+            <p class="text-base leading-relaxed text-sky-950 md:text-lg">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Explore Related Guides" class="section">
+    <div class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-12 text-white">
+      <h2 class="text-3xl font-bold">Keep Comparing Before You Book</h2>
+      <p class="mt-4 max-w-3xl text-white/80">
+        Use the broader Alibaug and beach-intent pages below if you want to compare location-focused and beach-focused search intent before deciding.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Homepage</a>
+        <a href="/rooms" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Room Options</a>
+        <a href="/resort-in-alibaug" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Resort in Alibaug</a>
+        <a href="/beach-resort-alibaug" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Beach Resort Alibaug</a>
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleEnhancer />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Best Resorts Near Nagaon Beach Alibaug (Walk to Beach Stays)",
+      "description": "A guide to choosing a Nagaon Beach resort, including why Nagaon works well for families, what resort types are common, and how walking-distance stays improve the trip.",
+      "mainEntityOfPage": "https://dolphinhouse-alibaug.com/nagaon-beach-resort",
+      "author": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
+        }
+      },
+      "image": [
+        "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp",
+        "https://dolphinhouse-alibaug.com/uploader/hotel-front-1.webp"
+      ],
+      "datePublished": "2026-03-27",
+      "dateModified": "2026-03-27"
+    }
+  </script>
+</Layout>

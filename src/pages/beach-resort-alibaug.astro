@@ -1,0 +1,251 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MobileCollapsibleSection from "../components/MobileCollapsibleSection.astro";
+import MobileCollapsibleEnhancer from "../components/MobileCollapsibleEnhancer.astro";
+
+const beachResortSignals = [
+  {
+    title: "Walking Distance vs Beachfront",
+    description: "A true beachfront label sounds attractive, but in Alibaug many travelers benefit more from a stay that keeps the shore comfortably walkable without pushing them into noisy, crowded stretches."
+  },
+  {
+    title: "Crowd Level",
+    description: "The best beach resort choice depends on whether you want a busy water-sports zone, a calmer family atmosphere, or quick access to both."
+  },
+  {
+    title: "Safety & Ease",
+    description: "Families usually value broad sand, easier access, and a beach area that feels manageable for children and older guests."
+  }
+];
+
+const beachOptions = [
+  {
+    title: "Nagaon Beach",
+    description: "The strongest all-round option for families and mixed groups because it combines beach access, activity options, and walkable resort stays."
+  },
+  {
+    title: "Akshi Beach",
+    description: "A quieter stretch for travelers who care more about peaceful coastal time than a highly active water-sports atmosphere."
+  },
+  {
+    title: "Kashid Beach",
+    description: "A scenic choice for longer day plans and a different beach mood, though it may not be as practical for short, quick weekend movement."
+  }
+];
+
+const beachActivities = [
+  "Parasailing for travelers who want a fast, high-energy beach session",
+  "Jet ski rides for short bursts of activity without planning a full excursion",
+  "Banana rides that work especially well for family or group fun"
+];
+
+const travelerFits = [
+  "Families who want walkable beach access plus an easier stay routine for children and older guests",
+  "Couples looking for a comfortable shore-side trip without overcomplicating travel logistics",
+  "Groups who want a beach base with activity access, simple dining, and room flexibility"
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the best beach resort in Alibaug near beach access?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Many travelers prefer the Nagaon area because it offers beach access, water sports, and family-friendly stay options without the same level of town-side congestion."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is walking distance better than a beachfront label in Alibaug?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Often yes. A walkable beach resort in Alibaug can be more practical than a crowded beachfront stay because it balances beach convenience with a calmer property environment."
+      }
+    }
+  ]
+};
+---
+
+<Layout
+  title="Best Beach Resort in Alibaug Near Beach (Top Picks 2026)"
+  description="Searching for a beach resort Alibaug travelers actually enjoy? Compare beach areas, walking-distance stays, and why Nagaon works well for families, couples, and groups."
+  image="/uploader/nagaon-beach.webp"
+  canonical="https://dolphinhouse-alibaug.com/beach-resort-alibaug"
+  ogType="article"
+  faqSchema={faqSchema}
+>
+  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-sky-800 to-cyan-500 px-6 py-16 text-white shadow-2xl">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_36%)]"></div>
+    <div class="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+      <div>
+        <p class="text-sm uppercase tracking-[0.28em] text-white/75">Beach Stay Guide</p>
+        <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
+          Best Beach Resort in Alibaug Near Beach (Top Picks 2026)
+        </h1>
+        <p class="mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
+          Travelers searching for a <strong>beach resort alibaug</strong> usually want more than a room near the coast. They want a beach experience that feels easy, walkable, and practical from check-in to sunset.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="/booking" class="btn-light">Book Direct</a>
+          <a href="https://wa.me/+917208993889" class="rounded-full border border-white/60 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-sky-900">
+            WhatsApp Us
+          </a>
+        </div>
+      </div>
+
+      <figure class="overflow-hidden rounded-[1.75rem] border border-white/20 bg-white/10 backdrop-blur-sm">
+        <img
+          src="/uploader/nagaon-beach.webp"
+          alt="Beach resort in Alibaug near beach experience at Nagaon"
+          class="h-full w-full object-cover"
+          width="1600"
+          height="1067"
+          loading="eager"
+          decoding="async"
+        />
+      </figure>
+    </div>
+  </section>
+
+  <MobileCollapsibleSection title="What Makes a Good Beach Resort" class="section">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">What Makes a Good Beach Resort</h2>
+      <p class="max-w-4xl text-lg leading-relaxed text-gray-700">
+        The strongest <strong>beach resort in alibaug near beach</strong> is not just the one closest to sand on a map. It is the one that makes the full stay feel easier.
+      </p>
+      <div class="mt-10 grid gap-6 md:grid-cols-3">
+        {beachResortSignals.map((item) => (
+          <article class="rounded-3xl border border-sky-100 bg-white p-7 shadow-sm">
+            <h3 class="text-2xl font-bold text-gray-900">{item.title}</h3>
+            <p class="mt-4 leading-relaxed text-gray-700">{item.description}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Best Beaches for Resorts in Alibaug" class="section rounded-3xl border border-sky-100 bg-white shadow-sm">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">Best Beaches for Resorts in Alibaug</h2>
+      <div class="mt-8 grid gap-5 md:grid-cols-3">
+        {beachOptions.map((beach) => (
+          <div class="rounded-3xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
+            <h3 class="text-2xl font-bold text-cyan-950">{beach.title}</h3>
+            <p class="mt-4 leading-relaxed text-gray-700">{beach.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Dolphin House – Beach Resort Just 2 Minutes from Shore" class="section rounded-3xl border border-amber-100 bg-amber-50">
+    <div class="container max-w-6xl">
+      <h2 class="heading text-left">Dolphin House – Beach Resort Just 2 Minutes from Shore</h2>
+      <div class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <figure class="overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-amber-100">
+          <img
+            src="/uploader/dolphinhouse-front-4.webp"
+            alt="Dolphin House beach resort in Nagaon near shore"
+            class="h-full w-full object-cover"
+            width="876"
+            height="584"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+
+        <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
+          <p>
+            In the Nagaon belt, Dolphin House is a practical answer for travelers who want the beach nearby without giving up comfort inside the property.
+          </p>
+          <p>
+            The stay is around 2 minutes from the shoreline, includes an indoor pool, and works well for family plans where room flexibility and a straightforward routine matter.
+          </p>
+          <p>
+            That combination makes it a useful recommendation for travelers comparing beach access, child-friendly stays, and direct booking convenience in one place.
+          </p>
+          <div class="flex flex-wrap gap-4 pt-2">
+            <a href="/rooms" class="btn-primary">View Rooms</a>
+            <a href="/booking" class="rounded-full border border-gray-300 px-6 py-3 font-semibold text-gray-800 transition hover:border-sky-600 hover:text-sky-700">
+              Book Direct
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Beach Activities" class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Beach Activities</h2>
+      <div class="space-y-4">
+        {beachActivities.map((activity) => (
+          <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
+            <p class="text-base leading-relaxed text-emerald-950 md:text-lg">{activity}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Who Should Stay Here" class="section">
+    <div class="container max-w-5xl">
+      <h2 class="heading text-left">Who Should Stay Here</h2>
+      <div class="grid gap-5 md:grid-cols-3">
+        {travelerFits.map((item) => (
+          <div class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <p class="text-lg leading-relaxed text-gray-800">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleSection title="Explore Related Guides" class="section">
+    <div class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-12 text-white">
+      <h2 class="text-3xl font-bold">Compare Alibaug Stay Options</h2>
+      <p class="mt-4 max-w-3xl text-white/80">
+        If you are still comparing area intent versus beach intent, use the related guides below before making your booking decision.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="/" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Homepage</a>
+        <a href="/rooms" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Room Options</a>
+        <a href="/resort-in-alibaug" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Resort in Alibaug</a>
+        <a href="/nagaon-beach-resort" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Nagaon Beach Resort</a>
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
+  <MobileCollapsibleEnhancer />
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": "Best Beach Resort in Alibaug Near Beach (Top Picks 2026)",
+      "description": "A guide to choosing a beach resort in Alibaug near beach access, including Nagaon, Akshi, Kashid, and who each type of stay suits best.",
+      "mainEntityOfPage": "https://dolphinhouse-alibaug.com/beach-resort-alibaug",
+      "author": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Dolphin House Beach Resort",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
+        }
+      },
+      "image": [
+        "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp",
+        "https://dolphinhouse-alibaug.com/uploader/dolphinhouse-front-4.webp"
+      ],
+      "datePublished": "2026-03-27",
+      "dateModified": "2026-03-27"
+    }
+  </script>
+</Layout>
