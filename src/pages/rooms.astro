@@ -4,7 +4,7 @@ import Layout from "../layouts/Layout.astro";
 const roomCategories = [
   {
     image: "/uploader/room-1.webp",
-    alt: "Standard room in Nagaon Alibaug near beach at Dolphin House resort",
+    alt: "Standard ac cottage room in Nagaon Alibaug near beach at Dolphin House resort",
     title: "Standard Room in Nagaon Alibaug Near Beach",
     type: "Non-AC / AC Available",
     description: "Ideal for couples or solo travelers looking for affordable rooms in Nagaon Alibaug near the beach. This room offers a comfortable stay with essential amenities just 2 minutes from Nagaon Beach.",
@@ -19,7 +19,7 @@ const roomCategories = [
   },
   {
     image: "/uploader/room-2.webp",
-    alt: "Deluxe room near Nagaon Beach at Dolphin House resort in Alibaug",
+    alt: "Deluxe couple room near Nagaon Beach at Dolphin House resort in Alibaug",
     title: "Deluxe Room Near Nagaon Beach Alibaug",
     type: "Non-AC / AC Available",
     description: "A deluxe room near Nagaon Beach designed for couples or small families who want extra comfort, better space, and a relaxing stay near the beach in Alibaug.",
@@ -34,7 +34,7 @@ const roomCategories = [
   },
   {
     image: "/uploader/room-5.webp",
-    alt: "Family room in Alibaug near beach at Dolphin House for 4 guests",
+    alt: "Family cottage room in Alibaug near beach at Dolphin House for 4 guests",
     title: "Family Room in Alibaug Near Beach for 4 Guests",
     type: "Non-AC / AC Available",
     description: "A practical family room in Alibaug for guests who want more space, easy beach access, and a comfortable stay near Nagaon Beach with children or a small group.",
@@ -65,7 +65,9 @@ const roomCategories = [
 ];
 ---
 
-<Layout title="Room Booking in Alibaug Near Beach | AC, Family Rooms & Price | Dolphin House" description="Compare AC, non-AC, family, and deluxe family rooms at Dolphin House near Nagaon Beach, Alibaug. View occupancy, amenities, and direct booking options." image="/uploader/room-9.webp" ogType="hotel">
+<Layout title="Rooms & Rates in Nagaon Alibaug | Dolphin House Resort" 
+description="Compare AC & Family room rates at Dolphin House, Nagaon (Alibaug). Just 2 mins from Nagaon Beach with indoor pool. Best direct booking prices for 2026." 
+image="/uploader/room-9.webp" ogType="hotel">
 
   <section class="relative mb-16">
     <img
@@ -223,6 +225,31 @@ const roomCategories = [
     </div>
   </section>
 
+  <section class="mb-14 max-w-4xl mx-auto overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
+  <table class="w-full text-left border-collapse">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="p-4 font-bold text-gray-800">Feature</th>
+        <th class="p-4 font-bold text-gray-800">Dolphin House (Nagaon)</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <tr>
+        <td class="p-4 text-gray-600">Location</td>
+        <td class="p-4 text-gray-900 font-medium">Nagaon, Alibaug, Maharashtra (Not Goa)</td>
+      </tr>
+      <tr>
+        <td class="p-4 text-gray-600">Travel Time</td>
+        <td class="p-4 text-gray-900 font-medium">3 Hours from Mumbai / Pune</td>
+      </tr>
+      <tr>
+        <td class="p-4 text-gray-600">Beach Access</td>
+        <td class="p-4 text-gray-900 font-medium">150 Meters from Nagaon Beach</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
   <section class="mt-20 py-12 bg-white rounded-3xl border border-gray-100 shadow-sm">
     <div class="max-w-4xl mx-auto px-6">
       <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Guest Experiences</h2>
@@ -363,4 +390,33 @@ const roomCategories = [
     }
   </script>
 
+  <script type="application/ld+json">
+  {
+  "@context": "https://schema.org",
+  "@type": "Hotel",
+  "name": "Dolphin House Beach Resort",
+  "description": "Best room rates in Nagaon Alibaug. AC and Family rooms starting from ₹2900.",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Nagaon Beach Road",
+    "addressLocality": "Alibaug",
+    "addressRegion": "Maharashtra",
+    "postalCode": "402204",
+    "addressCountry": "IN"
+  },
+  "priceRange": "INR 2900 - 4500",
+  "containsPlace": [
+    {
+      "@type": "HotelRoom",
+      "name": "Standard AC Room",
+      "occupancy": { "@type": "QuantitativeValue", "value": 2 }
+    },
+    {
+      "@type": "HotelRoom",
+      "name": "Family Deluxe Room",
+      "occupancy": { "@type": "QuantitativeValue", "value": 4 }
+    }
+  ]
+}
+</script>
 </Layout>
