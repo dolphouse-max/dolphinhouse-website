@@ -1,6 +1,37 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the price of rooms at Dolphin House Beach Resort Alibaug?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Room prices at Dolphin House Beach Resort in Nagaon, Alibaug start from Rs. 2900 and vary based on room type, occupancy, and AC option."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How far are the rooms from Nagaon Beach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "All rooms are located around a 2-minute walk from Nagaon Beach."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is this Dolphin House in Goa?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. This website is for Dolphin House Beach Resort in Nagaon, Alibaug, Maharashtra."
+      }
+    }
+  ]
+};
+
 const roomCategories = [
   {
     image: "/uploader/room-1.webp",
@@ -65,9 +96,9 @@ const roomCategories = [
 ];
 ---
 
-<Layout title="Rooms & Rates in Nagaon Alibaug | Dolphin House Resort" 
-description="Compare AC & Family room rates at Dolphin House, Nagaon (Alibaug). Just 2 mins from Nagaon Beach with indoor pool. Best direct booking prices for 2026." 
-image="/uploader/room-9.webp" ogType="hotel">
+<Layout title="Dolphin House Beach Resort Rooms & Prices | Official Site | Nagaon Alibaug" 
+description="Official rooms and prices page for Dolphin House Beach Resort in Nagaon, Alibaug. Compare AC, deluxe, and family room rates, reviews, and direct booking options near Nagaon Beach." 
+image="/uploader/room-9.webp" ogType="hotel" faqSchema={faqSchema}>
 
   <section class="relative mb-16">
     <img
@@ -79,7 +110,7 @@ image="/uploader/room-9.webp" ogType="hotel">
       width="1267" height="1067" decoding="async" fetchpriority="high" />
     <div class="absolute inset-0 bg-black/50 flex items-center justify-center rounded-3xl">
       <h1 class="text-4xl md:text-6xl font-extrabold text-white text-center tracking-tight px-4">
-        Rooms in Nagaon Alibaug Near Beach | AC, Family & Deluxe Rooms
+        Dolphin House Beach Resort Rooms & Prices in Nagaon Alibaug
       </h1>
     </div>
   </section>
@@ -96,6 +127,17 @@ image="/uploader/room-9.webp" ogType="hotel">
     <p class="text-base text-gray-600 text-center mt-4">
     📍 Looking for Dolphin House? We are located in Nagaon, Alibaug (Maharashtra) — the perfect weekend getaway from Mumbai and Pune. We are not affiliated with properties in Goa or the Philippines.
     </p>
+    <div class="mt-6 flex flex-wrap justify-center gap-3">
+      <a href="/booking" class="rounded-full border border-sky-200 bg-sky-50 px-5 py-3 font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-100">
+        Check Direct Booking
+      </a>
+      <a href="https://www.google.com/search?q=Dolphin+House+Beach+Resort+Reviews" target="_blank" rel="noopener noreferrer" class="rounded-full border border-amber-200 bg-amber-50 px-5 py-3 font-semibold text-amber-900 transition hover:border-amber-400 hover:bg-amber-100">
+        Read Reviews
+      </a>
+      <a href="/gallery" class="rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 font-semibold text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
+        View Room Photos
+      </a>
+    </div>
     <p class="text-base text-gray-600 leading-relaxed mt-4">
       If you are comparing a <a href="/beach-resort-in-nagaon-alibaug" class="font-semibold text-sky-600 hover:underline">beach resort in Nagaon Alibaug</a> with room-only options, Dolphin House gives you both location convenience and a full resort experience close to the shoreline.
     </p>
@@ -137,6 +179,16 @@ image="/uploader/room-9.webp" ogType="hotel">
 
     <p class="text-gray-600 mt-3">
       Compare room prices, occupancy, and facilities to choose the best stay for your trip.
+    </p>
+  </section>
+
+  <section class="mb-14 max-w-5xl mx-auto rounded-3xl border border-cyan-100 bg-cyan-50 p-8 text-center">
+    <h2 class="text-3xl font-bold text-cyan-950 mb-4">Looking for Dolphin House Beach Resort prices or reviews?</h2>
+    <p class="text-lg text-gray-700 leading-relaxed">
+      Guests often search for <strong>Dolphin House Beach Resort prices</strong>, <strong>Dolphin House Beach Resort reviews</strong>, and the <strong>official website</strong> before booking. This page is the official room and tariff page for Dolphin House Beach Resort in Nagaon, Alibaug.
+    </p>
+    <p class="mt-4 text-base text-gray-700 leading-relaxed">
+      Current room tariffs on this page start from <strong>Rs. 2900</strong>, and you can compare room size, guest capacity, and AC options before contacting us for direct booking.
     </p>
   </section>
 
@@ -338,7 +390,7 @@ image="/uploader/room-9.webp" ogType="hotel">
           <span>What is the price of rooms in Nagaon Alibaug?</span>
           <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
         </summary>
-        <p class="mt-3 text-gray-600 leading-relaxed">Room prices at Dolphin House start from ₹2900 and vary based on room type and AC option.</p>
+        <p class="mt-3 text-gray-600 leading-relaxed">Room prices at Dolphin House Beach Resort in Nagaon, Alibaug start from Rs. 2900 and vary based on room type and AC option.</p>
       </details>
       <details class="group rounded-2xl border border-gray-200 bg-gray-50 p-5">
         <summary class="cursor-pointer list-none text-lg font-semibold text-gray-900 flex items-center justify-between gap-4">
@@ -364,10 +416,18 @@ image="/uploader/room-9.webp" ogType="hotel">
       "mainEntity": [
         {
           "@type": "Question",
-          "name": "What is the room price in Alibaug near Nagaon Beach??",
+          "name": "What is the price of rooms at Dolphin House Beach Resort Alibaug?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Room prices at Dolphin House start from ₹2900 and vary based on room type and AC option."
+            "text": "Room prices at Dolphin House Beach Resort in Nagaon, Alibaug start from Rs. 2900 and vary based on room type and AC option."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is this Dolphin House in Goa?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. This website is for Dolphin House Beach Resort in Nagaon, Alibaug, Maharashtra."
           }
         },
         {
@@ -395,7 +455,7 @@ image="/uploader/room-9.webp" ogType="hotel">
   "@context": "https://schema.org",
   "@type": "Hotel",
   "name": "Dolphin House Beach Resort",
-  "description": "Best room rates in Nagaon Alibaug. AC and Family rooms starting from ₹2900.",
+  "description": "Official rooms and prices page for Dolphin House Beach Resort in Nagaon Alibaug. AC, deluxe, and family rooms starting from Rs. 2900.",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Nagaon Beach Road",
