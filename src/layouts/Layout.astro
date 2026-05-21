@@ -21,9 +21,10 @@ const ogImage = image.startsWith("http") ? image : new URL(image, siteUrl).toStr
 
 const organizationSchema = {
   "@context": "https://schema.org",
-  "@type": ["Hotel", "LodgingBusiness", "LocalBusiness"],
+  "@type": ["Hotel", "Resort", "LodgingBusiness"],
   "name": "Dolphin House Beach Resort",
-  "description": "Beach resort in Nagaon, Alibaug, just 2 minutes from the beach with AC rooms, family stays, indoor pool, and restaurant.",
+  "alternateName": ["Dolphin House", "DolphinHouse", "Dolphin Resort Alibaug", "Dolphin Beach Resort Nagaon"],
+  "description": "Family-friendly beach resort in Nagaon, Alibaug (Maharashtra), just 2 minutes walk from Nagaon Beach. Offers AC rooms from ₹2,000, indoor swimming pool with waterfall, in-house restaurant, free Wi-Fi, and free parking. Not in Goa.",
   "url": siteUrl,
   "image": [
     `${siteUrl}/uploader/dolphinhouse-front-4.webp`,
@@ -32,13 +33,15 @@ const organizationSchema = {
   ],
   "telephone": "+91-8554871073",
   "email": "contact@dolphinhouse-alibaug.com",
-  "priceRange": "INR 2500-6000", // Updated to include Super Deluxe pricing
+  "priceRange": "₹2,000 - ₹6,000",
   "checkinTime": "12:00",
   "checkoutTime": "10:00",
+  "hasMenu": `${siteUrl}/menu`,
+  "numberOfRooms": 15,
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Nagaon Beach Road",
-    "addressLocality": "Nagaon",
+    "streetAddress": "1317, Nagaon Bandar Road, Nagaon",
+    "addressLocality": "Alibag",
     "addressRegion": "Maharashtra",
     "postalCode": "402204",
     "addressCountry": "IN"
@@ -50,19 +53,42 @@ const organizationSchema = {
   },
   "starRating": {
     "@type": "Rating",
-    "ratingValue": "4", // Updated based on your strong Google performance
+    "ratingValue": "4.1",
     "bestRating": "5"
   },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.1",
+    "bestRating": "5",
+    "ratingCount": "500",
+    "reviewCount": "500"
+  },
+  "offers": {
+    "@type": "AggregateOffer",
+    "lowPrice": "2000",
+    "highPrice": "6000",
+    "priceCurrency": "INR",
+    "offerCount": "5"
+  },
   "amenityFeature": [
-    { "@type": "LocationFeatureSpecification", "name": "Free Wi-Fi", "value": true },
-    { "@type": "LocationFeatureSpecification", "name": "Indoor Pool", "value": true },
-    { "@type": "LocationFeatureSpecification", "name": "Restaurant", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Free High Speed Wi-Fi", "value": true },
     { "@type": "LocationFeatureSpecification", "name": "Air Conditioning", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Indoor Swimming Pool with Waterfall", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "In-House Multicuisine Restaurant", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Free Car Parking", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Generator Backup", "value": true },
+    { "@type": "LocationFeatureSpecification", "name": "Satellite TV", "value": true },
     { "@type": "LocationFeatureSpecification", "name": "Family Rooms", "value": true },
-    { "@type": "LocationFeatureSpecification", "name": "Car Parking", "value": true },
-    { "@type": "LocationFeatureSpecification", "name": "2 Min Walk to Beach", "value": true }
+    { "@type": "LocationFeatureSpecification", "name": "Attached Bathrooms with Geysers", "value": true }
   ],
+  "areaServed": [
+    { "@type": "Place", "name": "Alibaug" },
+    { "@type": "Place", "name": "Nagaon Beach" },
+    { "@type": "Place", "name": "Nagaon" }
+  ],
+  "hasMap": "https://www.google.com/maps/search/?api=1&query=18.5830,72.9028",
   "sameAs": [
+    "https://www.google.com/maps/search/?api=1&query=18.5830,72.9028",
     "https://www.facebook.com/DolphiHouseAlibaug/",
     "https://www.instagram.com/dolphin_house_alibaug/"
   ]
@@ -112,6 +138,14 @@ const organizationSchema = {
     <meta name="twitter:site" content="@dolphinhousealibaug" />
 
     <meta name="theme-color" content="#0284c7" />
+
+    <!-- GEO / AEO signals -->
+    <meta name="author" content="Dolphin House Beach Resort" />
+    <meta name="geo.region" content="IN-MH" />
+    <meta name="geo.placename" content="Nagaon, Alibaug" />
+    <meta name="geo.position" content="18.5830;72.9028" />
+    <meta name="ICBM" content="18.5830, 72.9028" />
+    <meta name="subject" content="Beach Resort in Nagaon Alibaug with Swimming Pool" />
     
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)}></script>
     
