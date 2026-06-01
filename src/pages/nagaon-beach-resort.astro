@@ -21,6 +21,18 @@ const nagaonActivities = [
   "Simple beach downtime for families who prefer a less rushed coastal routine"
 ];
 
+const quickFacts = [
+  "About a 2-minute walk from Nagaon Beach for easier beach access during the day.",
+  "Indoor swimming pool, family-friendly room layouts, and on-site dining in one stay.",
+  "Useful for weekend travelers from Mumbai and Pune who want a practical Alibaug beach base."
+];
+
+const idealFor = [
+  "Families who want beach time plus a pool without moving between multiple properties.",
+  "Couples looking for a straightforward Nagaon stay near the shore with direct booking.",
+  "Groups planning a short Alibaug trip and wanting rooms, food, and parking in one place."
+];
+
 const travelInfo = [
   "Nagaon is a practical weekend route for travelers coming from Mumbai who want beach access without planning a long-distance coastal holiday.",
   "It also works well for Pune travelers, especially when departure timing is planned to avoid the heaviest weekend traffic.",
@@ -54,14 +66,94 @@ const faqSchema = {
         "@type": "Answer",
         "text": "Yes. Travelers looking for a Nagaon Beach resort with swimming pool often compare Dolphin House because it combines beach proximity, family rooms, and indoor pool access."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "How close is Dolphin House to Nagaon Beach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Dolphin House is about a 2-minute walk from Nagaon Beach, which makes it practical for guests who want easy beach access without depending on repeated transport."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Who should book a stay near Nagaon Beach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A stay near Nagaon Beach works best for families, couples, and weekend groups who want quick shore access, comfortable rooms, and amenities like a swimming pool and food on-site."
+      }
+    }
+  ]
+};
+
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Nagaon Beach Resort Alibaug",
+  "url": "https://dolphinhouse-alibaug.com/nagaon-beach-resort",
+  "description": "Location guide for booking a Nagaon Beach resort in Alibaug with hotel-style rooms, indoor pool access, and a short walk to the beach.",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Dolphin House Beach Resort",
+    "url": "https://dolphinhouse-alibaug.com"
+  },
+  "about": [
+    { "@type": "Thing", "name": "Nagaon Beach" },
+    { "@type": "Thing", "name": "Alibaug" },
+    { "@type": "Thing", "name": "Beach resort with swimming pool" }
+  ],
+  "primaryImageOfPage": {
+    "@type": "ImageObject",
+    "url": "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp"
+  },
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [".aeo-answer", ".quick-facts"]
+  },
+  "mainEntity": {
+    "@type": "Hotel",
+    "name": "Dolphin House Beach Resort",
+    "url": "https://dolphinhouse-alibaug.com/nagaon-beach-resort",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "1317, Nagaon Bandar Road, Nagaon",
+      "addressLocality": "Alibag",
+      "addressRegion": "Maharashtra",
+      "postalCode": "402204",
+      "addressCountry": "IN"
+    },
+    "amenityFeature": [
+      { "@type": "LocationFeatureSpecification", "name": "Indoor swimming pool", "value": true },
+      { "@type": "LocationFeatureSpecification", "name": "Family rooms", "value": true },
+      { "@type": "LocationFeatureSpecification", "name": "Restaurant", "value": true },
+      { "@type": "LocationFeatureSpecification", "name": "Free parking", "value": true }
+    ]
+  }
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://dolphinhouse-alibaug.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Nagaon Beach Resort",
+      "item": "https://dolphinhouse-alibaug.com/nagaon-beach-resort"
     }
   ]
 };
 ---
 
 <Layout
-  title="Nagaon Beach Resort Alibaug | Stay Near Nagaon Beach with Pool"
-  description="Looking for a Nagaon Beach resort in Alibaug? Compare stay options, rooms, hotels near Nagaon Beach, and family-friendly resort access with swimming pool near the shore."
+  title="Nagaon Beach Resort with Pool | 2-Min Walk to Beach in Alibaug"
+  description="Looking for hotels near Nagaon Beach Alibaug? Dolphin House offers family rooms, an indoor pool, direct booking, and a short walk to Nagaon Beach."
   image="/uploader/nagaon-beach.webp"
   canonical="https://dolphinhouse-alibaug.com/nagaon-beach-resort"
   ogType="article"
@@ -73,10 +165,10 @@ const faqSchema = {
       <div>
         <p class="text-sm uppercase tracking-[0.28em] text-white/75">Nagaon Beach Stay Guide</p>
         <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
-          Nagaon Beach Resort Alibaug: Stay Near Nagaon Beach
+          Nagaon Beach Resort With Pool Near Nagaon Beach, Alibaug
         </h1>
-        <p class="mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
-          If you are searching for a <strong>nagaon beach resort</strong>, <strong>stay near nagaon beach</strong>, or <strong>hotels near nagaon beach alibaug</strong>, the best fit is usually a property that keeps the shore walkable and adds practical comfort like family rooms and pool access.
+        <p class="aeo-answer mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
+          If you are searching for a <strong>nagaon beach resort</strong>, <strong>hotels near nagaon beach alibaug</strong>, or a <strong>nagaon beach resort with swimming pool</strong>, Dolphin House is a strong match because it is about a 2-minute walk to the beach and combines family rooms, indoor pool access, and direct booking.
         </p>
         <div class="mt-8 flex flex-wrap gap-4">
           <a href="/booking" class="btn-light">Book Now</a>
@@ -100,8 +192,24 @@ const faqSchema = {
     </div>
   </section>
 
+  <MobileCollapsibleSection title="Quick Answer" class="section">
+    <div id="quick-answer" class="container max-w-5xl">
+      <h2 class="heading text-left">Quick Answer: Which Stay Fits Nagaon Beach Searches Best?</h2>
+      <p class="text-base leading-relaxed text-gray-700 md:text-lg">
+        For people comparing <strong>resorts near nagaon beach</strong>, <strong>hotels in nagaon beach</strong>, and <strong>stay near nagaon beach</strong>, the best option is usually the one that keeps the beach walkable and bundles the basics in one place. Dolphin House fits that intent with beach proximity, an indoor pool, family-ready rooms, and direct booking support.
+      </p>
+      <div class="quick-facts mt-8 grid gap-4 md:grid-cols-3">
+        {quickFacts.map((fact) => (
+          <div class="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
+            <p class="text-base leading-relaxed text-emerald-950">{fact}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </MobileCollapsibleSection>
+
   <MobileCollapsibleSection title="Why Stay Near Nagaon Beach" class="section">
-    <div class="container max-w-5xl">
+    <div id="why-stay-near-nagaon-beach" class="container max-w-5xl">
       <h2 class="heading text-left">Why Stay Near Nagaon Beach</h2>
       <div class="space-y-4">
         {nagaonReasons.map((reason) => (
@@ -120,7 +228,7 @@ const faqSchema = {
   </MobileCollapsibleSection>
 
   <MobileCollapsibleSection title="Types of Resorts, Hotels, and Stay Options Near Nagaon" class="section rounded-3xl border border-sky-100 bg-white shadow-sm">
-    <div class="container max-w-5xl">
+    <div id="types-of-stays-near-nagaon" class="container max-w-5xl">
       <h2 class="heading text-left">Types of Resorts, Hotels, and Stay Options Near Nagaon</h2>
       <div class="grid gap-5 md:grid-cols-3">
         {resortTypes.map((item) => (
@@ -136,7 +244,7 @@ const faqSchema = {
   </MobileCollapsibleSection>
 
   <MobileCollapsibleSection title="Dolphin House Beach Resort" class="section rounded-3xl border border-amber-100 bg-amber-50">
-    <div class="container max-w-6xl">
+    <div id="dolphin-house-beach-resort" class="container max-w-6xl">
       <h2 class="heading text-left">Dolphin House Beach Resort</h2>
       <div class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
@@ -175,8 +283,24 @@ const faqSchema = {
     </div>
   </MobileCollapsibleSection>
 
+  <MobileCollapsibleSection title="Who This Stay Is Best For" class="section rounded-3xl border border-lime-100 bg-lime-50 shadow-sm">
+    <div id="who-this-stay-is-best-for" class="container max-w-5xl">
+      <h2 class="heading text-left">Who This Stay Is Best For</h2>
+      <div class="grid gap-5 md:grid-cols-3">
+        {idealFor.map((item) => (
+          <div class="rounded-3xl border border-lime-200 bg-white p-6 shadow-sm">
+            <p class="text-base leading-relaxed text-gray-800 md:text-lg">{item}</p>
+          </div>
+        ))}
+      </div>
+      <p class="mt-8 text-base leading-relaxed text-gray-700 md:text-lg">
+        This makes the page a good fit for queries like <strong>nagaon beach resort for family</strong>, <strong>nagaon beach room booking</strong>, and <strong>alibaug stay near nagaon beach</strong>, where convenience matters as much as price or photos.
+      </p>
+    </div>
+  </MobileCollapsibleSection>
+
   <MobileCollapsibleSection title="Rooms and Hotel-Style Stay Near Nagaon Beach" class="section rounded-3xl border border-rose-100 bg-rose-50 shadow-sm">
-    <div class="container max-w-5xl">
+    <div id="rooms-and-hotel-style-stay-near-nagaon-beach" class="container max-w-5xl">
       <h2 class="heading text-left">Rooms and Hotel-Style Stay Near Nagaon Beach</h2>
       <div class="space-y-4 text-base leading-relaxed text-gray-700 md:text-lg">
         <p>
@@ -184,6 +308,9 @@ const faqSchema = {
         </p>
         <p>
           Dolphin House works for that intent because it combines room options, family suitability, direct booking, and resort amenities instead of offering only a basic room-only setup.
+        </p>
+        <p>
+          If your query is closer to <strong>hotels at nagaon beach</strong>, <strong>hotel near nagaon beach</strong>, or <strong>rooms near nagaon beach</strong>, this page is meant to answer that overlap clearly: you get hotel-style practicality with resort-style amenities in a beach-focused location.
         </p>
         <div class="flex flex-wrap gap-4 pt-2">
           <a href="/rooms" class="btn-primary">Compare Rooms</a>
@@ -194,7 +321,7 @@ const faqSchema = {
   </MobileCollapsibleSection>
 
   <MobileCollapsibleSection title="Things to Do at Nagaon Beach" class="section">
-    <div class="container max-w-5xl">
+    <div id="things-to-do-at-nagaon-beach" class="container max-w-5xl">
       <h2 class="heading text-left">Things to Do at Nagaon Beach</h2>
       <div class="space-y-4">
         {nagaonActivities.map((activity) => (
@@ -207,7 +334,7 @@ const faqSchema = {
   </MobileCollapsibleSection>
 
   <MobileCollapsibleSection title="Travel Info" class="section">
-    <div class="container max-w-5xl">
+    <div id="travel-info" class="container max-w-5xl">
       <h2 class="heading text-left">Travel Info</h2>
       <div class="space-y-4">
         {travelInfo.map((item) => (
@@ -220,7 +347,7 @@ const faqSchema = {
   </MobileCollapsibleSection>
 
   <MobileCollapsibleSection title="Compare Photos, Rooms, and Booking" class="section rounded-3xl border border-slate-200 bg-white shadow-sm">
-    <div class="container max-w-5xl">
+    <div id="compare-photos-rooms-and-booking" class="container max-w-5xl">
       <h2 class="heading text-left">Compare Photos, Rooms, and Booking</h2>
       <p class="text-base leading-relaxed text-gray-700 md:text-lg">
         Once you know you want to stay near Nagaon Beach, the next step is usually checking the actual room setup, photo gallery, and direct booking flow before finalizing dates.
@@ -234,7 +361,7 @@ const faqSchema = {
   </MobileCollapsibleSection>
 
   <MobileCollapsibleSection title="Explore Related Guides" class="section">
-    <div class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-12 text-white">
+    <div id="explore-related-guides" class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-12 text-white">
       <h2 class="text-3xl font-bold">Keep Comparing Before You Book</h2>
       <p class="mt-4 max-w-3xl text-white/80">
         Use the broader Alibaug and beach-intent pages below if you want to compare location-focused and beach-focused search intent before deciding.
@@ -250,12 +377,13 @@ const faqSchema = {
 
   <MobileCollapsibleEnhancer />
 
-  <script type="application/ld+json">
-    {
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
       "@context": "https://schema.org",
       "@type": "Article",
-      "headline": "Nagaon Beach Resort Alibaug: Stay Near Nagaon Beach",
-      "description": "A practical guide to choosing a Nagaon Beach resort in Alibaug, including stay options, hotels near Nagaon Beach, family rooms, and swimming pool access.",
+      "headline": "Nagaon Beach Resort With Pool Near Nagaon Beach, Alibaug",
+      "description": "A practical guide to choosing a Nagaon Beach resort in Alibaug, including hotel-style rooms, beach access, family stays, and swimming pool access.",
       "mainEntityOfPage": "https://dolphinhouse-alibaug.com/nagaon-beach-resort",
       "author": {
         "@type": "Organization",
@@ -269,12 +397,19 @@ const faqSchema = {
           "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
         }
       },
+      "about": [
+        "Nagaon Beach resort",
+        "Hotels near Nagaon Beach Alibaug",
+        "Nagaon Beach resort with swimming pool"
+      ],
       "image": [
         "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp",
         "https://dolphinhouse-alibaug.com/uploader/hotel-front-1.webp"
       ],
       "datePublished": "2026-05-06",
-      "dateModified": "2026-05-06"
-    }
-  </script>
+      "dateModified": "2026-06-01"
+    })}
+  />
+  <script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 </Layout>
