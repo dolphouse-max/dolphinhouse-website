@@ -2,6 +2,8 @@
 import Layout from "../layouts/Layout.astro";
 
 const tourUrl = "https://tourmkr.com/F1cOqIp6Mh/47916707p&0h&90t";
+const youtubeUrl = "https://youtube.com/shorts/fpWNnV36lz4?feature=share";
+const youtubeEmbedUrl = "https://www.youtube.com/embed/fpWNnV36lz4";
 ---
 
 <Layout
@@ -43,6 +45,37 @@ const tourUrl = "https://tourmkr.com/F1cOqIp6Mh/47916707p&0h&90t";
       >
         Open 360° Virtual Tour
       </a>
+    </div>
+  </section>
+
+  <section class="mx-auto mt-12 max-w-6xl">
+    <div class="mb-5 text-center">
+      <h2 class="text-3xl font-bold text-gray-900">Dolphin House Video Tour</h2>
+      <p class="mx-auto mt-3 max-w-3xl text-lg leading-relaxed text-gray-600">
+        Watch a quick resort video before exploring rooms and planning your stay.
+      </p>
+    </div>
+    <div class="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-xl">
+      <div class="relative w-full bg-gray-950" style="aspect-ratio: 16 / 9; min-height: 320px;">
+        <iframe
+          src={youtubeEmbedUrl}
+          title="Dolphin House Beach Resort video tour"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          class="absolute inset-0 h-full w-full border-0"
+        ></iframe>
+      </div>
+      <div class="border-t border-gray-100 p-5 text-center md:p-6">
+        <a
+          href={youtubeUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-block rounded-full border border-sky-200 bg-white px-5 py-3 font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-600"
+        >
+          Open Video on YouTube
+        </a>
+      </div>
     </div>
   </section>
 
