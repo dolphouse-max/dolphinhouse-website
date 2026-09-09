@@ -1,0 +1,273 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+export const prerender = true;
+
+export const roomPages = {
+  "deluxe-room-near-nagaon-beach": {
+    title: "Deluxe Room Near Nagaon Beach Alibaug",
+    heading: "Deluxe Rooms Near Nagaon Beach",
+    description: "Explore Deluxe Room options at Dolphin House Beach Resort, including rooms 1, 2, 3, 4, 6, 7, and 8. These rooms are suitable for couples and small families looking for a comfortable stay close to Nagaon Beach.",
+    heroImage: "/uploader/rooms/room2/room2-1.webp",
+    groups: [
+      {
+        name: "Room 1",
+        images: [
+          "/uploader/rooms/room1/room1-1.webp",
+          "/uploader/rooms/room1/room1-2.webp",
+          "/uploader/rooms/room1/room1-3.webp",
+          "/uploader/rooms/room1/room1-bath1.webp",
+          "/uploader/rooms/room1/room1-bath2.webp"
+        ]
+      },
+      {
+        name: "Room 2",
+        images: [
+          "/uploader/rooms/room2/room2-1.webp",
+          "/uploader/rooms/room2/room2-2.webp",
+          "/uploader/rooms/room2/room2-3.webp",
+          "/uploader/rooms/room2/room2-bath1.webp",
+          "/uploader/rooms/room2/room2-bath2.webp"
+        ]
+      },
+      {
+        name: "Room 3",
+        images: [
+          "/uploader/rooms/room3/room3-1.webp",
+          "/uploader/rooms/room3/room3-2.webp",
+          "/uploader/rooms/room3/room3-3.webp",
+          "/uploader/rooms/room3/room3-4.webp",
+          "/uploader/rooms/room3/room3-bath1.webp",
+          "/uploader/rooms/room3/room3-bath2.webp"
+        ]
+      },
+      {
+        name: "Room 4",
+        images: [
+          "/uploader/rooms/room4/room4-1.webp",
+          "/uploader/rooms/room4/room4-2.webp",
+          "/uploader/rooms/room4/room4-3.webp",
+          "/uploader/rooms/room4/room4-4.webp",
+          "/uploader/rooms/room4/room4-bath1.webp",
+          "/uploader/rooms/room4/room4-bath2.webp",
+          "/uploader/rooms/room4/room4-bath3.webp"
+        ]
+      },
+      {
+        name: "Room 6",
+        images: [
+          "/uploader/rooms/room6/room6-1.webp",
+          "/uploader/rooms/room6/room6-2.webp",
+          "/uploader/rooms/room6/room6-bath1.webp",
+          "/uploader/rooms/room6/room6-bath2.webp"
+        ]
+      },
+      {
+        name: "Room 7",
+        images: [
+          "/uploader/rooms/room7/_DSF5425-HDR.webp",
+          "/uploader/rooms/room7/_DSF5428-HDR.webp",
+          "/uploader/rooms/room7/_DSF5431-HDR.webp",
+          "/uploader/rooms/room7/_DSF5433.webp",
+          "/uploader/rooms/room7/_DSF5436.webp",
+          "/uploader/rooms/room7/_DSF5439.webp",
+          "/uploader/rooms/room7/_DSF5443-HDR.webp"
+        ]
+      },
+      {
+        name: "Room 8",
+        images: [
+          "/uploader/rooms/room8/_DSF5446-HDR.webp",
+          "/uploader/rooms/room8/_DSF5449-HDR.webp",
+          "/uploader/rooms/room8/_DSF5451.webp",
+          "/uploader/rooms/room8/_DSF5454.webp",
+          "/uploader/rooms/room8/_DSF5457.webp",
+          "/uploader/rooms/room8/_DSF5460.webp",
+          "/uploader/rooms/room8/_DSF5463.webp",
+          "/uploader/rooms/room8/_DSF5466.webp",
+          "/uploader/rooms/room8/_DSF5469.webp",
+          "/uploader/rooms/room8/_DSF5476-HDR.webp"
+        ]
+      }
+    ]
+  },
+  "family-room-alibaug": {
+    title: "Family Room in Alibaug Near Beach for 4 Guests",
+    heading: "Family Room in Alibaug Near Beach",
+    description: "View the Family Room photos for room 5 at Dolphin House Beach Resort. This room is designed for families who want more space and easy access to Nagaon Beach.",
+    heroImage: "/uploader/rooms/room5/room5-inner-1.webp",
+    groups: [
+      {
+        name: "Room 5",
+        images: [
+          "/uploader/rooms/room5/room5-inner-1.webp",
+          "/uploader/rooms/room5/room5-inner-2.webp",
+          "/uploader/rooms/room5/room-inner-3.webp",
+          "/uploader/rooms/room5/room5-outer-1.webp",
+          "/uploader/rooms/room5/room5-outer-2.webp",
+          "/uploader/rooms/room5/room5-bath1.webp",
+          "/uploader/rooms/room5/room5-bath2.webp"
+        ]
+      }
+    ]
+  },
+  "deluxe-family-room-alibaug": {
+    title: "Deluxe Family Room in Alibaug Near Nagaon Beach for 4 Guests",
+    heading: "Deluxe Family Room Near Nagaon Beach",
+    description: "View the Deluxe Family Room photos for room 9 at Dolphin House Beach Resort, including interior, outer view, and bathroom photos.",
+    heroImage: "/uploader/rooms/room9/room9-inner1.webp",
+    groups: [
+      {
+        name: "Room 9",
+        images: [
+          "/uploader/rooms/room9/room9-inner1.webp",
+          "/uploader/rooms/room9/room9-inner2.webp",
+          "/uploader/rooms/room9/room9-outer1.webp",
+          "/uploader/rooms/room9/room9-outer2.webp",
+          "/uploader/rooms/room9/room9-outer3.webp",
+          "/uploader/rooms/room9/room9-outer4.webp",
+          "/uploader/rooms/room9/room9-bath1.webp",
+          "/uploader/rooms/room9/room9-bath2.webp",
+          "/uploader/rooms/room9/room9-bath3.webp"
+        ]
+      }
+    ]
+  }
+};
+
+export function getStaticPaths() {
+  return Object.keys(roomPages).map((slug) => ({
+    params: { slug },
+    props: { roomPage: roomPages[slug] }
+  }));
+}
+
+const { roomPage } = Astro.props;
+---
+
+<Layout
+  title={`${roomPage.title} | Dolphin House Beach Resort`}
+  description={roomPage.description}
+  image={roomPage.heroImage}
+  ogType="hotel"
+>
+  <section class="mb-10">
+    <a href="/rooms" class="inline-flex items-center rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-50">
+      Back to Rooms
+    </a>
+  </section>
+
+  <section class="mb-12 overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-gray-100">
+    <div class="relative">
+      <img
+        src={roomPage.heroImage}
+        alt={roomPage.heading}
+        class="h-80 w-full object-cover md:h-[460px]"
+        width="1600"
+        height="1067"
+        decoding="async"
+        fetchpriority="high"
+      />
+      <div class="absolute inset-0 flex items-end bg-gradient-to-t from-black/70 via-black/20 to-transparent">
+        <div class="max-w-4xl p-6 md:p-10">
+          <h1 class="text-3xl font-extrabold tracking-tight text-white md:text-5xl">{roomPage.heading}</h1>
+          <p class="mt-4 max-w-3xl text-base leading-relaxed text-white/90 md:text-lg">{roomPage.description}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="space-y-12">
+    {roomPage.groups.map((group, groupIndex) => (
+      <article class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg" data-slider>
+        <div class="border-b border-gray-100 px-5 py-4 md:px-6">
+          <h2 class="text-2xl font-bold text-gray-900">{group.name}</h2>
+        </div>
+
+        <div class="relative bg-gray-950">
+          {group.images.map((image, imageIndex) => (
+            <img
+              src={image}
+              alt={`${group.name} photo ${imageIndex + 1}`}
+              class:list={[
+                "slider-image h-72 w-full object-contain md:h-[560px]",
+                imageIndex === 0 ? "block" : "hidden"
+              ]}
+              width="1600"
+              height="1067"
+              loading={groupIndex === 0 && imageIndex === 0 ? "eager" : "lazy"}
+              decoding="async"
+              data-slide={imageIndex}
+            />
+          ))}
+
+          <button type="button" class="slider-prev absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-2xl font-bold text-gray-900 shadow-md transition hover:bg-white" aria-label={`Previous ${group.name} photo`}>
+            ‹
+          </button>
+          <button type="button" class="slider-next absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-2xl font-bold text-gray-900 shadow-md transition hover:bg-white" aria-label={`Next ${group.name} photo`}>
+            ›
+          </button>
+
+          <div class="absolute bottom-3 right-3 rounded-full bg-black/65 px-3 py-1 text-sm font-semibold text-white">
+            <span data-current>1</span> / {group.images.length}
+          </div>
+        </div>
+
+        <div class="flex gap-3 overflow-x-auto p-4 md:p-5">
+          {group.images.map((image, imageIndex) => (
+            <button
+              type="button"
+              class:list={[
+                "slider-thumb h-20 w-28 shrink-0 overflow-hidden rounded-lg border-2 transition md:h-24 md:w-36",
+                imageIndex === 0 ? "border-sky-600" : "border-transparent"
+              ]}
+              data-thumb={imageIndex}
+              aria-label={`Show ${group.name} photo ${imageIndex + 1}`}
+            >
+              <img src={image} alt="" class="h-full w-full object-cover" loading="lazy" decoding="async" />
+            </button>
+          ))}
+        </div>
+      </article>
+    ))}
+  </section>
+
+  <section class="mt-12 flex flex-wrap justify-center gap-3">
+    <a href="/rooms" class="rounded-full border border-sky-200 bg-white px-5 py-3 font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-50">
+      View All Room Categories
+    </a>
+    <a href="/booking" class="rounded-full bg-sky-600 px-5 py-3 font-semibold text-white shadow-md transition hover:bg-sky-700">
+      Check Availability
+    </a>
+  </section>
+
+  <script>
+    document.querySelectorAll("[data-slider]").forEach((slider) => {
+      const slides = Array.from(slider.querySelectorAll("[data-slide]"));
+      const thumbs = Array.from(slider.querySelectorAll("[data-thumb]"));
+      const current = slider.querySelector("[data-current]");
+      const prev = slider.querySelector(".slider-prev");
+      const next = slider.querySelector(".slider-next");
+      let activeIndex = 0;
+
+      const showSlide = (nextIndex) => {
+        activeIndex = (nextIndex + slides.length) % slides.length;
+        slides.forEach((slide, index) => {
+          slide.classList.toggle("hidden", index !== activeIndex);
+          slide.classList.toggle("block", index === activeIndex);
+        });
+        thumbs.forEach((thumb, index) => {
+          thumb.classList.toggle("border-sky-600", index === activeIndex);
+          thumb.classList.toggle("border-transparent", index !== activeIndex);
+        });
+        if (current) current.textContent = String(activeIndex + 1);
+      };
+
+      prev?.addEventListener("click", () => showSlide(activeIndex - 1));
+      next?.addEventListener("click", () => showSlide(activeIndex + 1));
+      thumbs.forEach((thumb, index) => {
+        thumb.addEventListener("click", () => showSlide(index));
+      });
+    });
+  </script>
+</Layout>
