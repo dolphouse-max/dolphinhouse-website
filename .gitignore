@@ -1,7 +1,9 @@
 # build output
 dist/
+
 # generated types
 .astro/
+.astro-cache/
 
 # dependencies
 node_modules/
@@ -11,18 +13,46 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
+*.log
 
 # environment variables
 .env
 .env.production
+.env.local
+.env.development.local
+.env.test.local
+.dev.vars
 
-# macOS-specific files
+# macOS / Windows
 .DS_Store
+Thumbs.db
 
-# jetbrains setting folder
+# jetbrains / vscode
 .idea/
+.vscode/
+*.iml
 
 # wrangler temp/state (avoid accidental commits)
+.wrangler/
 .wrangler/tmp/
 .wrangler/state/
+
+# Astro cache
+.cache/
+
+# --- Large generated assets - This fixes your 86MB push ---
+output/
+public/uploader/videos/*.mp4
+public/uploader/videos/*.mov
+public/uploader/videos/*.avi
+public/uploader/gallery/*.mp4
+public/*.pdf
+public/DolphinHouse*.pdf
+
+# Local video/image creation scripts
+create-colourful-police-intro.ps1
+create-police-*.ps1
+create-police-*.mjs
+create-police-voiceover.mjs
+create-police-local-narration.ps1
+create-*.mjs
