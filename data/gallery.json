@@ -1,38 +1,27 @@
 {
   "sections": [
     {
-      "title": "Resort",
+      "title": "Reception",
       "images": [
         {
-          "src": "/gallery/hotel-front.webp",
-          "alt": "Dolphin House beach resort front view in Nagaon Alibaug near Nagaon Beach"
+          "src": "/uploader/gallery/reception.webp",
+          "alt": "Reception area at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Reception area"
         }
       ]
     },
     {
-      "title": "Pool",
+      "title": "Dining",
       "images": [
         {
-          "src": "/gallery/swimmimg-pool.webp",
-          "alt": "Indoor swimming pool at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Restaurant",
-      "images": [
+          "src": "/uploader/gallery/dining.webp",
+          "alt": "Dining area at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Dining area"
+        },
         {
-          "src": "/gallery/restaurant11.webp",
-          "alt": "Restaurant seating area at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Restaurant",
-      "images": [
-        {
-          "src": "/gallery/restaurant22.webp",
-          "alt": "Family dining area at Dolphin House beach resort Nagaon Alibaug"
+          "src": "/uploader/gallery/dining2.webp",
+          "alt": "Additional dining space at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Dining space"
         }
       ]
     },
@@ -40,134 +29,79 @@
       "title": "Kitchen",
       "images": [
         {
-          "src": "/gallery/kitchen.webp",
-          "alt": "Resort kitchen at Dolphin House beach resort Nagaon Alibaug"
+          "src": "/uploader/gallery/kitchen.webp",
+          "alt": "Kitchen at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Kitchen area"
         }
       ]
     },
     {
-      "title": "Standard Room 1",
+      "title": "Swimming Pool",
       "images": [
         {
-          "src": "/gallery/room1.webp",
-          "alt": "Standard room interior at Dolphin House beach resort Nagaon Alibaug"
+          "src": "/uploader/gallery/swimming-pool.webp",
+          "alt": "Swimming pool at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Swimming pool"
+        },
+        {
+          "src": "/uploader/gallery/swimming-pool2.webp",
+          "alt": "Another view of the swimming pool at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Swimming pool view"
         }
       ]
     },
     {
-      "title": "Standard Room 2",
+      "title": "Staircase",
       "images": [
         {
-          "src": "/gallery/room2.webp",
-          "alt": "Standard AC room at Dolphin House beach resort Nagaon Alibaug"
+          "src": "/uploader/gallery/staircase.webp",
+          "alt": "Staircase area at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Property staircase"
         }
       ]
     },
     {
-      "title": "Standard Room 3",
+      "title": "Guest Rooms",
       "images": [
         {
-          "src": "/gallery/room3.webp",
-          "alt": "Affordable room at Dolphin House beach resort near Nagaon Beach Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Standard Room 4",
-      "images": [
+          "src": "/uploader/gallery/room1.webp",
+          "alt": "Guest room photo 1 at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Guest room photo 1"
+        },
         {
-          "src": "/gallery/room4.webp",
-          "alt": "Guest room interior at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Family Room for 4 persons",
-      "images": [
+          "src": "/uploader/gallery/room2.webp",
+          "alt": "Guest room photo 2 at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Guest room photo 2"
+        },
         {
-          "src": "/gallery/room5-1.webp",
-          "alt": "Family room for 4 guests at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Family Room for 4 persons",
-      "images": [
+          "src": "/uploader/gallery/room3.webp",
+          "alt": "Guest room photo 3 at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Guest room photo 3"
+        },
         {
-          "src": "/gallery/room5-2.webp",
-          "alt": "Spacious family room interior at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Family Room for 4 persons",
-      "images": [
+          "src": "/uploader/gallery/room4.webp",
+          "alt": "Guest room photo 4 at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Guest room photo 4"
+        },
         {
-          "src": "/gallery/room5-3.webp",
-          "alt": "Family stay room at Dolphin House beach resort near Nagaon Beach Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Bathroom",
-      "images": [
+          "src": "/uploader/gallery/room5.webp",
+          "alt": "Guest room photo 5 at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Guest room photo 5"
+        },
         {
-          "src": "/gallery/bathroom.webp",
-          "alt": "Attached bathroom in guest room at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Deluxe Family Room for 4 persons",
-      "images": [
+          "src": "/uploader/gallery/room6.webp",
+          "alt": "Guest room photo 6 at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Guest room photo 6"
+        },
         {
-          "src": "/gallery/Room9-1.webp",
-          "alt": "Deluxe family room with pool view at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Deluxe Family Room for 4 persons",
-      "images": [
+          "src": "/uploader/gallery/room7.webp",
+          "alt": "Guest room photo 7 at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Guest room photo 7"
+        },
         {
-          "src": "/gallery/room9-2.webp",
-          "alt": "Deluxe family suite interior at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Deluxe Family Room for 4 persons",
-      "images": [
-        {
-          "src": "/gallery/room9-3.webp",
-          "alt": "Deluxe family room balcony and poolside stay at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Deluxe Family Room Bathroom",
-      "images": [
-        {
-          "src": "/gallery/room9-bath1.webp",
-          "alt": "Deluxe family room bathroom at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Deluxe Family Room Bathroom",
-      "images": [
-        {
-          "src": "/gallery/room9-bath2.webp",
-          "alt": "Modern bathroom in deluxe family room at Dolphin House beach resort Nagaon Alibaug"
-        }
-      ]
-    },
-    {
-      "title": "Deluxe Family Room Bathroom",
-      "images": [
-        {
-          "src": "/gallery/room9-bath3.webp",
-          "alt": "Attached bathroom in deluxe suite at Dolphin House beach resort Nagaon Alibaug"
+          "src": "/uploader/gallery/room8.webp",
+          "alt": "Guest room photo 8 at Dolphin House Beach Resort in Nagaon Alibaug",
+          "caption": "Guest room photo 8"
         }
       ]
     }

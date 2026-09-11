@@ -9,7 +9,6 @@ export async function GET({ locals }) {
     if (!db) {
       // Local fallback: return cached inventory or sensible defaults when DB is not bound
       const defaults = [
-        { room: 'standard', label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500, occupancy: 2, extraPerson: 500 },
         { room: 'deluxe', label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500, occupancy: 2, extraPerson: 500 },
         { room: 'family', label: 'Family Room', qty: 1, rateNonAC: 3500, rateAC: 4000, occupancy: 4, extraPerson: 700 },
         { room: 'deluxeFamily', label: 'Deluxe Family Room', qty: 1, rateNonAC: 4500, rateAC: 5000, occupancy: 4, extraPerson: 700 }
@@ -28,7 +27,6 @@ export async function GET({ locals }) {
       const payload = Array.isArray(LOCAL_INVENTORY_CACHE) && LOCAL_INVENTORY_CACHE.length > 0
         ? LOCAL_INVENTORY_CACHE
         : [
-            { room: 'standard', label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500, occupancy: 2, extraPerson: 500 },
             { room: 'deluxe', label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500, occupancy: 2, extraPerson: 500 },
             { room: 'family', label: 'Family Room', qty: 1, rateNonAC: 3500, rateAC: 4000, occupancy: 4, extraPerson: 700 },
             { room: 'deluxeFamily', label: 'Deluxe Family Room', qty: 1, rateNonAC: 4500, rateAC: 5000, occupancy: 4, extraPerson: 700 }
@@ -68,7 +66,6 @@ export async function GET({ locals }) {
     const payload = Array.isArray(LOCAL_INVENTORY_CACHE) && LOCAL_INVENTORY_CACHE.length > 0
       ? LOCAL_INVENTORY_CACHE
       : [
-          { room: 'standard', label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500, occupancy: 2, extraPerson: 500 },
           { room: 'deluxe', label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500, occupancy: 2, extraPerson: 500 },
           { room: 'family', label: 'Family Room', qty: 1, rateNonAC: 3500, rateAC: 4000, occupancy: 4, extraPerson: 700 },
           { room: 'deluxeFamily', label: 'Deluxe Family Room', qty: 1, rateNonAC: 4500, rateAC: 5000, occupancy: 4, extraPerson: 700 }

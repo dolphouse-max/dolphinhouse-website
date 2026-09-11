@@ -25,7 +25,6 @@ export async function onRequest(context) {
       // Dev fallback when DB is missing
       if (!env.DB) {
         const defaults = [
-          { room: 'standard', label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500 },
           { room: 'deluxe', label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500 },
           { room: 'family', label: 'Family Room', qty: 1, rateNonAC: 3500, rateAC: 4000 },
           { room: 'deluxeFamily', label: 'Deluxe Family Room', qty: 1, rateNonAC: 4500, rateAC: 5000 }

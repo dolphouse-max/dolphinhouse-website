@@ -382,7 +382,6 @@ if (!authenticated) {
         } else {
           console.warn('inventory API failed – using defaults');
           invPayload = {
-            standard: { label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500 },
             deluxe: { label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500 },
             family: { label: 'Family Room', qty: 1, rateNonAC: 3500, rateAC: 4000 },
             deluxeFamily: { label: 'Deluxe Family Room', qty: 1, rateNonAC: 4500, rateAC: 5000 }
@@ -408,7 +407,6 @@ if (!authenticated) {
         alert('Failed to load data from APIs; showing sample data.');
         // As a last resort, ensure basic defaults are present
         inventory = inventory && Object.keys(inventory).length ? inventory : {
-          standard: { label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2500 },
           deluxe: { label: 'Deluxe Room', qty: 3, rateNonAC: 3000, rateAC: 3500 }
         };
         bookings = Array.isArray(bookings) ? bookings : [];

@@ -41,13 +41,13 @@ if (!authenticated) {
           <div>
             <label for="roomId" class="block text-sm font-medium text-gray-700">Room ID</label>
             <input type="text" id="roomId" name="roomId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-            <p class="text-xs text-gray-500 mt-1">Unique identifier for the room (e.g., deluxe1, standard2)</p>
+            <p class="text-xs text-gray-500 mt-1">Unique identifier for the room (e.g., deluxe, family)</p>
           </div>
           
           <div>
             <label for="roomLabel" class="block text-sm font-medium text-gray-700">Room Label</label>
             <input type="text" id="roomLabel" name="roomLabel" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-            <p class="text-xs text-gray-500 mt-1">Display name for the room (e.g., Deluxe Room, Standard Room)</p>
+            <p class="text-xs text-gray-500 mt-1">Display name for the room (e.g., Deluxe Room, Family Room)</p>
           </div>
           
           <div>
@@ -239,7 +239,6 @@ if (!authenticated) {
     // Config & defaults
     // -----------------------
     const DEFAULT_INVENTORY = {
-      "standard": { label: "Standard Room", qty: 5, rateNonAC: 2000, rateAC: 2300, occupancy: 2, extraPerson: 700 },
       "deluxe": { label: "Deluxe Room", qty: 2, rateNonAC: 2300, rateAC: 2600, occupancy: 3, extraPerson: 700 },
       "family": { label: "Family Room", qty: 1, rateNonAC: 3000, rateAC: 3500, occupancy: 4, extraPerson: 700 },
       "deluxeFamily": { label: "Deluxe Family Room", qty: 1, rateNonAC: 3300, rateAC: 3800, occupancy: 4, extraPerson: 700 }

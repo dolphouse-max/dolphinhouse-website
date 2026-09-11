@@ -105,7 +105,6 @@ export async function GET({ locals, request }) {
     let seeded = 0;
     if ((countRes?.c ?? 0) === 0) {
       const defaults = {
-        standard: { label: 'Standard Room', qty: 5, rateNonAC: 2000, rateAC: 2300, occupancy: 2, extraPerson: 700 },
         deluxe: { label: 'Deluxe Room', qty: 2, rateNonAC: 2300, rateAC: 2600, occupancy: 3, extraPerson: 700 },
         family: { label: 'Family Room', qty: 1, rateNonAC: 3000, rateAC: 3500, occupancy: 4, extraPerson: 700 },
         deluxeFamily: { label: 'Deluxe Family Room', qty: 1, rateNonAC: 3300, rateAC: 3800, occupancy: 4, extraPerson: 700 }

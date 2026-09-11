@@ -67,19 +67,9 @@ const faqs = [
       "Room prices at Dolphin House Beach Resort start from ₹2,000 per night for Non-AC rooms, ₹2,300 for AC rooms, ₹2,600 for Deluxe rooms, and ₹3,000–3,500 for Family rooms. Direct booking through the website offers the best rates."
   },
   {
-    question: "What do guests say in Dolphin House Beach Resort reviews?",
-    answer:
-      "Dolphin House Beach Resort is rated 4.1 out of 5 on Google with 500+ guest reviews. Guests frequently praise the clean rooms, proximity to Nagaon Beach, indoor swimming pool, and the home-style food at the in-house restaurant. The resort also received the Justdial Users' Choice Award in 2026."
-  },
-  {
     question: "Is Dolphin House Beach Resort near Nagaon Beach suitable for families?",
     answer:
       "Yes, Dolphin House is one of the best family-friendly beach resorts near Nagaon Beach, Alibaug. It offers family rooms (sleeping 4–5 guests), a safe indoor swimming pool, in-house dining, and the flat, shallow Nagaon Beach is ideal for children to play and swim."
-  },
-  {
-    question: "How do I spell Dolphin House — is it Dolphine House or Dolfin House?",
-    answer:
-      "The correct name is Dolphin House Beach Resort (also written as DolphinHouse). Common misspellings include Dolphine House, Dolfin House, and Dolphins House. All refer to the same resort located in Nagaon, Alibaug, Maharashtra."
   }
 ];
 const faqSchema = {
@@ -94,15 +84,14 @@ const faqSchema = {
     }
   }))
 };
-// Unified Local Hotel Schema for GEO engines
-const hotelSchema = {
+const localBusinessSchema = {
   "@context": "https://schema.org",
-  "@type": "Hotel",
+  "@type": ["LocalBusiness", "LodgingBusiness"],
   "name": "Dolphin House Beach Resort",
   "image": "https://dolphinhouse-alibaug.com/uploader/dolphinhouse-front-4.webp",
   "url": "https://dolphinhouse-alibaug.com/",
-  "telephone": "+918554871073",
-  "priceRange": "INR 2000 - INR 6000",
+  "telephone": "+91-8554871073",
+  "priceRange": "₹2000-6000",
   "hasMap": "https://share.google/OqitKAWWiu7ShNzn1",
   "address": {
     "@type": "PostalAddress",
@@ -112,17 +101,39 @@ const hotelSchema = {
     "postalCode": "402204",
     "addressCountry": "IN"
   },
-  "starRating": {
-    "@type": "Rating",
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 18.5830,
+    "longitude": 72.9028
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.1",
+    "bestRating": "5",
+    "ratingCount": "500"
+  }
+};
+
+const lodgingBusinessSchema = {
+  "@context": "https://schema.org",
+  "@type": "LodgingBusiness",
+  "name": "Dolphin House Beach Resort",
+  "url": "https://dolphinhouse-alibaug.com/",
+  "telephone": "+91-8554871073",
+  "priceRange": "₹2000-6000",
+  "address": localBusinessSchema.address,
+  "geo": localBusinessSchema.geo,
+  "aggregateRating": {
+    "@type": "AggregateRating",
     "ratingValue": "4.1"
   }
 };
 ---
 
-<Layout title="Dolphin House Beach Resort Nagaon Alibaug | Best Beach Resort with Pool" description="Dolphin House Beach Resort, Nagaon, Alibaug: Top-rated resort near Nagaon Beach with indoor pool, AC rooms from ₹2,000. Family-friendly, 2 min to beach. Book Direct." image="/uploader/dolphinhouse-front-4.webp" ogType="hotel" faqSchema={faqSchema}>
+<Layout title="Dolphin House Beach Resort, Nagaon - Alibaug | Official Site" description="Dolphin House Beach Resort in Nagaon, Alibaug offers comfortable rooms, indoor pool access, family stays, and direct booking close to Nagaon Beach." image="/uploader/dolphinhouse-front-4.webp" ogType="hotel" faqSchema={faqSchema}>
 
-    <!-- Inject Structured Data directly into head or body for GEO engines -->
-      <script type="application/ld+json" set:html={JSON.stringify(hotelSchema)} />
+      <script type="application/ld+json" set:html={JSON.stringify(localBusinessSchema)} />
+      <script type="application/ld+json" set:html={JSON.stringify(lodgingBusinessSchema)} />
 
   <!-- 🏖 Hero Section -->
   <section class="hero relative mb-20 overflow-hidden">
@@ -134,9 +145,9 @@ const hotelSchema = {
       decoding="async" fetchpriority="high" class="hero-img" width="876" height="584" />
     <div class="hero-overlay">
      <h1 class="hero-title text-4xl md:text-5xl font-extrabold uppercase tracking-tight leading-tight">
-           Dolphin House Beach Resort, Nagaon Alibaug <span class="block text-sky-300">Rooms · Prices · Photos · Reviews</span>
+           Dolphin House Beach Resort, Nagaon - Alibaug
      </h1>
-       <p class="hero-sub">Family-friendly beach resort with indoor pool · 2 min walk to Nagaon Beach · AC rooms from ₹2,000 · Book direct for best rates</p>
+       <p class="hero-sub">A family-friendly stay in Nagaon, Alibaug, a 2-minute walk from the beach, with an indoor pool and AC rooms from ₹2,000. Book direct for clear rates and quick confirmation.</p>
         <!-- 📍 Strategic Google Business Profile Integration -->
       <div class="inline-block bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20 text-left transition hover:bg-white/20">
           <a href="https://share.google/OqitKAWWiu7ShNzn1" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-white decoration-0">
@@ -182,15 +193,9 @@ const hotelSchema = {
       class="text-sm text-sky-600 underline mt-2 inline-block">
       Read & Write Reviews on Google Maps →
     </a>
-    <h2 class="mt-4">Dolphin House Beach Resort in Nagaon Alibaug with Swimming Pool
-    </h2>
+    <h2 class="mt-4">Welcome to Dolphin House</h2>
     <p>
-      Dolphin House is a beach resort in Nagaon, Alibaug, Maharashtra, India, and not a Goa property.
-      If you are searching for a resort in Alibaug with swimming pool, family rooms, and beach access,
-      this is a perfect choice for weekend trips from Mumbai and Pune.
-    </p>
-    <p class="mt-4 text-gray-700">
-      Travelers comparing a <strong>resort in alibaug</strong>, a <strong>beach resort alibaug</strong>, a <strong>nagaon beach resort</strong>, or a <strong>resort with swimming pool alibaug</strong> will find Dolphin House combines beach proximity, family-friendly rooms, and indoor pool comfort in one stay.
+      Dolphin House is a relaxed stay in Nagaon, Alibaug, made for families, couples, and small groups who want simple access to the coast without losing everyday comfort. The resort is about a 2-minute walk from Nagaon Beach and has an indoor swimming pool, AC and non-AC rooms, parking, Wi-Fi, and an in-house restaurant. It works well for weekend plans from Mumbai or Pune, longer school-holiday breaks, and direct bookings where you want clear room options before confirming.
     </p>
     <div class="mt-8 grid gap-6 text-center sm:grid-cols-3 sm:items-stretch">
       <div class="flex flex-col items-center justify-center rounded-2xl bg-white px-6 py-4 shadow-sm ring-1 ring-gray-100">
@@ -210,43 +215,22 @@ const hotelSchema = {
     </div>
   </MobileCollapsibleSection>
 
-  <MobileCollapsibleSection title="Photos, Prices, and Reviews" class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
-    <h2 class="text-2xl font-bold text-gray-900 mb-3">Looking for Dolphin House beach resort photos, prices, or reviews?</h2>
-    <p class="text-gray-700 leading-relaxed">
-      Many guests search for <strong>Dolphin House Beach Resort photos</strong>, <strong>Dolphin House Beach Resort prices</strong>, and <strong>Dolphin House Beach Resort reviews</strong> before booking. Use the links below to compare room options, check the photo gallery, and read guest feedback before contacting us for direct booking.
-    </p>
-    <div class="mt-6 flex flex-wrap gap-3">
-      <a href="/gallery" class="rounded-full border border-cyan-200 bg-cyan-50 px-5 py-3 font-semibold text-cyan-800 transition hover:border-cyan-400 hover:bg-cyan-100">
-        View Resort Photos
-      </a>
-      <a href="/rooms" class="rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 font-semibold text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">
-        Check Rooms & Prices
-      </a>
-      <a href="https://www.google.com/search?q=Dolphin+House+Beach+Resort+Reviews" target="_blank" rel="noopener noreferrer" class="rounded-full border border-amber-200 bg-amber-50 px-5 py-3 font-semibold text-amber-900 transition hover:border-amber-400 hover:bg-amber-100">
-        Read Guest Reviews
-      </a>
-    </div>
-  </MobileCollapsibleSection>
-
   <!-- 🌴 About -->
-  <MobileCollapsibleSection title="Dolphin House: Your Luxury Resort in Alibaug Near Nagaon Beach" class="section">
+  <MobileCollapsibleSection title="A Comfortable Stay Near Nagaon Beach" class="section">
     <div class="container text-center">
-      <h2 class="heading">Dolphin House: Your Luxury Resort in Alibaug Near Nagaon Beach</h2>
+      <h2 class="heading">A Comfortable Stay Near Nagaon Beach</h2>
       <p class="subtext">
-        Nestled just 2 minutes from the sea, Dolphin House is your gateway to peace, comfort, and
-        tropical bliss. Enjoy luxury cottages, delicious dining, and the most serene beach in Alibaug.
+        Set close to the sea, Dolphin House keeps the trip easy: settle into your room, walk out for sunset, come back for food, and spend slow hours by the pool.
       </p>
       <p class="text-gray-600 mt-4 text-base max-w-3xl mx-auto">
-        Guests looking for the best resort near Nagaon Beach, Alibaug choose Dolphin House for family-friendly rooms, direct booking, and a peaceful stay close to the shore.
+        Guests choose Dolphin House for clean rooms, direct booking, and a peaceful base close to the shore.
       </p>
-      <a href="/rooms">AC rooms in Nagaon Alibaug</a>
+      <a href="/rooms">View room options</a>
       <p class="text-gray-600 mt-3 text-base max-w-3xl mx-auto">
-        If you want a resort with swimming pool in Nagaon, Dolphin House offers indoor pool access, in-house dining, and easy beach access in one place.
+        The setup is intentionally practical: room choices for different group sizes, food on the property, and enough common space to relax between beach visits.
       </p>
       <img 
-        src="/uploader/nagaon-beach-332x221.webp" 
-        srcset="/uploader/nagaon-beach-332x221.webp 332w, /uploader/nagaon-beach-800x533.webp 800w"
-        sizes="(min-width: 1024px) 800px, 332px"
+        src="/uploader/gallery/nagaon-beach.webp" 
         alt="Nagaon Beach shoreline near Dolphin House Resort Alibaug" loading="lazy" class="rounded-xl shadow-xl mt-6 mx-auto w-full max-w-5xl" width="800" height="533" />
       <p class="text-gray-500 mt-4 text-base max-w-3xl mx-auto">
         Nagaon Beach is a hidden gem famous for clean sands and exciting water sports like parasailing, jet-skiing, and banana rides.
@@ -332,21 +316,11 @@ const hotelSchema = {
     </p>
   </MobileCollapsibleSection>
 
-  <MobileCollapsibleSection title="Not Goa, This Is Dolphin House Alibaug" class="my-10 max-w-5xl mx-auto rounded-2xl border border-rose-100 bg-rose-50 p-6 shadow-sm">
-    <h2 class="text-2xl font-bold text-rose-950 mb-3">Searching for Dolphin House? We are in Nagaon, Alibaug.</h2>
-    <p class="text-gray-700 leading-relaxed">
-      Some travelers search for <strong>Dolphin House Goa</strong> or other similarly named properties. This website is for <strong>Dolphin House Beach Resort in Nagaon, Alibaug, Maharashtra</strong>, just a short walk from Nagaon Beach and suited for families, couples, and group stays.
-    </p>
-    <p class="text-gray-600 mt-3 text-sm leading-relaxed">
-      Whether you searched for <strong>Dolphin House</strong>, <strong>Dolphine House</strong>, <strong>Dolfin House</strong>, <strong>Dolphins House</strong>, <strong>DolphinHouse</strong>, or <strong>Dolphin House Resort</strong> — you have found the right place. We are not in Goa, Cebu, or Moalboal. Dolphin House Beach Resort is located at 1317, Nagaon Bandar Road, Nagaon, Alibag, Maharashtra 402204, India.
-    </p>
-  </MobileCollapsibleSection>
-
   <MobileCollapsibleSection title="Looking for a Beach Resort in Nagaon Alibaug?" class="my-10 max-w-5xl mx-auto rounded-2xl border border-sky-100 bg-sky-50 p-6 shadow-sm">
     <h2 class="text-2xl font-bold text-sky-950 mb-3">Looking for a Beach Resort in Nagaon Alibaug?</h2>
     <p class="text-gray-700 leading-relaxed">
       If you want a stay close to the shoreline with AC rooms, family cottages, and a swimming pool, read our
-      <a href="/beach-resort-in-nagaon-alibaug" class="font-bold text-sky-600 hover:underline">complete beach resort in Nagaon Alibaug guide</a>
+      <a href="/nagaon-beach-resort" class="font-bold text-sky-600 hover:underline">Nagaon stay guide</a>
       to see why Dolphin House is a strong fit for families, couples, and groups.
     </p>
   </MobileCollapsibleSection>
