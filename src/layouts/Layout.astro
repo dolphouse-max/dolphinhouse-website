@@ -21,7 +21,7 @@ const ogImage = image.startsWith("http") ? image : new URL(image, siteUrl).toStr
 
 const organizationSchema = {
   "@context": "https://schema.org",
-  "@type": ["Hotel", "Resort", "LodgingBusiness"],
+  "@type": "Hotel",
   "name": "Dolphin House Beach Resort",
   "alternateName": ["Dolphin House", "DolphinHouse", "Dolphin Resort Alibaug", "Dolphin Beach Resort Nagaon"],
   "description": "Family-friendly beach resort in Nagaon, Alibaug (Maharashtra), just 2 minutes walk from Nagaon Beach. Offers AC rooms from ₹2,000, indoor swimming pool with waterfall, in-house restaurant, free Wi-Fi, and free parking. Not in Goa.",
@@ -33,7 +33,7 @@ const organizationSchema = {
   ],
   "telephone": "+91-8554871073",
   "email": "contact@dolphinhouse-alibaug.com",
-  "priceRange": "₹2,000 - ₹6,000",
+  "priceRange": "₹2000 - ₹6000",
   "checkinTime": "12:00",
   "checkoutTime": "10:00",
   "hasMenu": `${siteUrl}/menu`,
@@ -86,9 +86,9 @@ const organizationSchema = {
     { "@type": "Place", "name": "Nagaon Beach" },
     { "@type": "Place", "name": "Nagaon" }
   ],
-  "hasMap": "https://www.google.com/maps/search/?api=1&query=18.5830,72.9028",
+  "hasMap": "https://www.google.com/maps/place/Dolphin+House+Beach+Resort/@18.5830,72.9028,17z",
   "sameAs": [
-    "https://www.google.com/maps/search/?api=1&query=18.5830,72.9028",
+    "https://www.google.com/maps/place/Dolphin+House+Beach+Resort/@18.5830,72.9028,17z",
     "https://www.facebook.com/DolphiHouseAlibaug/",
     "https://www.instagram.com/dolphin_house_alibaug/"
   ]
@@ -164,3 +164,5 @@ const organizationSchema = {
     <ChatWidget />
   </body>
 </html>
+
+
