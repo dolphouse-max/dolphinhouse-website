@@ -113,27 +113,9 @@ const localBusinessSchema = {
     "ratingCount": "500"
   }
 };
-
-const lodgingBusinessSchema = {
-  "@context": "https://schema.org",
-  "@type": "LodgingBusiness",
-  "name": "Dolphin House Beach Resort",
-  "url": "https://dolphinhouse-alibaug.com/",
-  "telephone": "+91-8554871073",
-  "priceRange": "₹2000-6000",
-  "address": localBusinessSchema.address,
-  "geo": localBusinessSchema.geo,
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.1"
-  }
-};
 ---
 
 <Layout title="Dolphin House Beach Resort, Nagaon - Alibaug | Official Site" description="Dolphin House Beach Resort in Nagaon, Alibaug offers comfortable rooms, indoor pool access, family stays, and direct booking close to Nagaon Beach." image="/uploader/dolphinhouse-front-4.webp" ogType="hotel" faqSchema={faqSchema}>
-
-      <script type="application/ld+json" set:html={JSON.stringify(localBusinessSchema)} />
-      <script type="application/ld+json" set:html={JSON.stringify(lodgingBusinessSchema)} />
 
   <!-- 🏖 Hero Section -->
   <section class="hero relative mb-20 overflow-hidden">
