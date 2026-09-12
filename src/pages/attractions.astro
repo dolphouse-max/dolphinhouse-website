@@ -1,16 +1,33 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem","position": 1,"name": "Home","item": "https://dolphinhouse-alibaug.com/"},
+    {"@type": "ListItem","position": 2,"name": "Places to Visit in Alibaug","item": "https://dolphinhouse-alibaug.com/attractions"}
+  ]
+};
+
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
     {
       "@type": "Question",
+      "name": "What are the best places to visit in Alibaug near Nagaon Beach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The 15 best places to visit in Alibaug near Nagaon Beach are Nagaon Beach (2 min walk, 200m), Akshi Beach (3.7 km), Alibaug Beach (8 km), Kolaba Fort (9 km), Revdanda Fort & Beach (12 km), Mandwa Beach (15 km), Kashid Beach (28 km) and Murud-Janjira Fort (45 km). Nagaon is the best base for family trips because of its flat, safe shoreline and water sports."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "What are the best things to do in Alibaug?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "The top things to do include booking thrilling parasailing and banana boat rides at Nagaon Beach, exploring the sea-surrounded Kolaba Fort, taking a scenic day trip to the white sands of Kashid Beach, and experiencing local Konkani cuisine."
+        "text": "The top things to do in Alibaug include booking thrilling parasailing and banana boat rides at Nagaon Beach, exploring the sea-surrounded Kolaba Fort, taking a scenic day trip to the white sands of Kashid Beach, and experiencing local Konkani cuisine."
       }
     },
     {
@@ -18,7 +35,7 @@ const faqSchema = {
       "name": "Which beaches are near Nagaon?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Akshi Beach (3.7 km away) and Revdanda Beach (9 km away) are the closest beaches to Nagaon. The main Alibaug Beach is about 8.8 km north of Nagaon."
+        "text": "Akshi Beach (3.7 km away) and Revdanda Beach (9 km away) are the closest beaches to Nagaon. The main Alibaug Beach is about 8.8 km north of Nagaon. All are top places to visit near Nagaon Beach."
       }
     },
     {
@@ -147,44 +164,44 @@ const attractions = [
   }
 ];
 ---
-<Layout title="Things to Do & Places to Visit Near Nagaon Beach, Alibaug (2026 Guide)" 
- description="Planning your trip to Alibaug? While staying at Dolphin House Beach Resort, you are perfectly positioned just a 2-minute walk from Nagaon Beach—the ultimate water sports and family hub of the region."
+<Layout title="15 Best Places to Visit in Alibaug Near Nagaon Beach [2026 Guide]" 
+ description="Discover 15 best places to visit in Alibaug within 2 min to 45 km from Nagaon Beach - Nagaon (2 min walk), Kolaba Fort (9 km), Kashid (28 km), Murud-Janjira (45 km). Family & couples guide."
   image="/uploader/nagaon-beach.webp"
   canonical="https://dolphinhouse-alibaug.com/attractions"
   ogType="article"
-  faqSchema={faqSchema}>
+  faqSchema={[faqSchema, breadcrumbSchema]}>
 
-  <section class="relative mb-12 overflow-hidden">
+  <section class="relative mb-8 overflow-hidden">
     <div class="relative h-[400px] bg-gradient-to-r from-sky-600 to-teal-500 rounded-3xl">
       <div class="absolute inset-0 bg-black/30 rounded-3xl"></div>
       <div class="relative max-w-6xl mx-auto px-6 h-full flex flex-col justify-center items-center text-center text-white">
-        <h1 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">
-          🏖️ Top Things to Do in Nagaon Beach (Steps from Our Resort)
+        <h1 class="text-4xl md:text-5xl font-extrabold mb-4 drop-shadow-lg">
+          15 Best Places to Visit in Alibaug Near Nagaon Beach
         </h1>
-        <p class="text-xl md:text-2xl text-white/90 max-w-2xl">
-         To help you plan your itinerary, we’ve mapped out the absolute best places to visit in Alibaug, categorized by distance, activities, and who you are traveling with.
+        <p class="text-lg md:text-xl text-white/90 max-w-3xl">
+         Searching for <strong>places to visit in Alibaug</strong> and <strong>places to visit near Nagaon Beach</strong>? Stay at Dolphin House (2 min walk to Nagaon Beach) and cover all top attractions in 1-2 days.
         </p>
       </div>
     </div>
   </section>
 
-    <div class="max-w-4xl mx-auto p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl mb-10">
+  <div class="max-w-4xl mx-auto p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl mb-10">
     <p class="text-gray-800 font-medium">
-     Nagaon Beach is famous for its flat, safe shoreline, sparkling sands, and its reputation as the "Little Goa of Maharashtra." 
-    <ul>
-      <li><strong>Nagaon Beach Water Activities:</strong> This is the water sports capital of Alibaug. You can book thrilling jet-skiing, parasailing, speedboats, banana rides, and bumper boat simulations right on the shore. </li>
-      <li><strong>Morning Dolphin Safari:</strong> Head down to the shore between 7:00 AM and 9:00 AM. Local boat operators pick up groups directly from Nagaon Beach for dolphin watching in the calm waters of the Arabian Sea.</li>
-      <li><strong>The Evening Sunset Walk:</strong> Because of Nagaon's unique flat geography, it offers incredibly safe, expansive coastal walks right as the sun drops below the horizon.</li>
+     Nagaon Beach is famous for its flat, safe shoreline and as the "Little Goa of Maharashtra." This page covers all <strong>places to visit near Nagaon Beach Alibaug</strong> within 2 to 45 km.
+    </p>
+    <ul class="mt-3 list-disc pl-5 text-gray-700">
+      <li><strong>Nagaon Beach Water Activities:</strong> Jet-skiing, parasailing, speedboats, banana rides, bumper boats.</li>
+      <li><strong>Morning Dolphin Safari:</strong> 7:00-9:00 AM boats from Nagaon Beach.</li>
+      <li><strong>Evening Sunset Walk:</strong> Flat geography = safe, expansive walks.</li>
     </ul>
-     </p>
   </div>
 
   <!-- AEO / LLMO Structured Distance & Time Table -->
   <section class="max-w-5xl mx-auto px-6 mb-12">
     <div class="overflow-x-auto rounded-2xl border border-sky-100 shadow-sm bg-white p-6">
-      <h2 class="text-2xl font-bold text-gray-900 mb-4">📍 Nearby Attractions: Distance from Nagaon Beach</h2>
+      <h2 id="places-near-nagaon" class="text-2xl font-bold text-gray-900 mb-4">📍 Nearby Attractions: Distance from Nagaon Beach</h2>
       <p class="text-gray-600 mb-6">
-        Many travelers waste time calculating routes. If you are exploring Alibaug in 1 day or planning a 2-day family trip, use our quick distance guide to map your journey from Dolphin House Beach Resort:  
+        Many travelers waste time calculating routes. If you are exploring <strong>places to visit in Alibaug for 1 day</strong> or 2 days family trip, use this quick distance guide from Dolphin House Beach Resort:  
       </p>
       <table class="w-full text-left border-collapse">
         <thead>
@@ -206,61 +223,48 @@ const attractions = [
             <td class="p-4 font-semibold text-sky-950">Akshi Beach</td>
             <td class="p-4">3.7 km</td>
             <td class="p-4">8 min drive</td>
-            <td class="p-4">Bird watching, white sands, quiet relaxation</td>
+            <td class="p-4">Bird watching, white sands, quiet relaxation - places to visit near Alibaug Beach</td>
           </tr>
           <tr class="hover:bg-slate-50 transition">
             <td class="p-4 font-semibold text-sky-950">Alibaug Beach</td>
             <td class="p-4">8 km</td>
             <td class="p-4">15 mins drive</td>
-            <td class="p-4">Sunset walks, horse carriages, local Konkani street food stalls</td>
+            <td class="p-4">Sunset walks, horse carriages, street food - Alibaug tourist places</td>
           </tr>
           <tr class="hover:bg-slate-50 transition">
             <td class="p-4 font-semibold text-sky-950">Kolaba Fort</td>
             <td class="p-4">9 km</td>
             <td class="p-4">20 mins drive</td>
-            <td class="p-4">Historic sea fort accessible on foot/horse cart during low tide</td>
+            <td class="p-4">Historic sea fort - best place to visit in Alibaug for 1 day</td>
           </tr>
           <tr class="hover:bg-slate-50 transition">
             <td class="p-4 font-semibold text-sky-950">Revdanda Fort & Beach</td>
             <td class="p-4">12 km</td>
             <td class="p-4">22 mins drive</td>
-            <td class="p-4">Black sand beach, Portuguese ruins, beach camping & stargazing</td>
+            <td class="p-4">Black sand beach, Portuguese ruins, beach camping</td>
           </tr>
           <tr class="hover:bg-slate-50 transition">
             <td class="p-4 font-semibold text-sky-950">Mandwa Beach</td>
             <td class="p-4">15 km</td>
             <td class="p-4">25 mins drive</td>
-            <td class="p-4">Ferry gate to Mumbai (Mandwa jetty), water sports hub, food plazas</td>
+            <td class="p-4">Ferry gate to Mumbai (Mandwa jetty), water sports hub</td>
           </tr>
           <tr class="hover:bg-slate-50 transition">
             <td class="p-4 font-semibold text-sky-950">Kashid Beach</td>
             <td class="p-4">28 km</td>
             <td class="p-4">45 mins drive</td>
-            <td class="p-4">White sand beach, casuarina trees, surfing, scenic day picnics</td>
+            <td class="p-4">White sand beach, casuarina trees - places to visit near Alibaug</td>
           </tr>
           <tr class="hover:bg-slate-50 transition">
             <td class="p-4 font-semibold text-sky-950">Murud-Janjira Fort</td>
             <td class="p-4">45 km</td>
             <td class="p-4">90 mins drive</td>
-            <td class="p-4">Unconquered 15th-century island fort, sailboat rides, ancient cannons</td>
+            <td class="p-4">Unconquered island fort, sailboat rides - tourist places near Nagaon Alibaug</td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
-    <section class="max-w-3xl mx-auto mt-6">
-      <h2 class="text-2xl font-bold">
-        Top Places to Visit in Alibaug and Near Nagaon Beach
-      </h2>
-
-      <p class="text-gray-600 mt-3">
-        Looking for the best places to visit in Alibaug? From Nagaon Beach and Kashid Beach to Kolaba Fort and Murud-Janjira, this area gives you a strong mix of beaches, sightseeing, and outdoor activities.
-      </p>
-
-      <p class="text-gray-600 mt-3">
-        This guide covers top attractions, family-friendly outings, and the best things to do in Alibaug for couples, families, and weekend travelers.
-      </p>
-    </section>
 
   <section class="max-w-5xl mx-auto px-6 pb-12">
     <p class="text-lg text-gray-700 leading-relaxed">
@@ -271,48 +275,9 @@ const attractions = [
       or relax at a <a href="/resort-with-swimming-pool-alibaug" class="font-semibold text-sky-600 hover:underline">resort with swimming pool in Alibaug</a>
       after your day trips.
     </p>
-    <p class="text-base text-gray-600 leading-relaxed mt-3">
-      If you are still deciding where to stay, compare our guides for a
-      <a href="/resort-in-alibaug" class="font-semibold text-sky-600 hover:underline">resort in Alibaug</a>,
-      <a href="/beach-resort-alibaug" class="font-semibold text-sky-600 hover:underline">beach resort Alibaug</a>, and
-      <a href="/nagaon-beach-resort" class="font-semibold text-sky-600 hover:underline">Nagaon Beach resort</a>
-      before finalizing your trip base.
-    </p>
-    <p class="text-sm text-gray-500 text-center">
-    All attractions listed are located in Alibaug, Maharashtra, India (near Mumbai). 
-    </p>
-    <p class="text-base text-gray-600 leading-relaxed mt-3">
-      Most of these attractions are located within 2 to 45 km from Nagaon Beach, making Dolphin House an ideal base if you want to cover <strong>places to visit near Nagaon Beach Alibaug</strong> without long travel times.
-    </p>
   </section>
 
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-    <div class="rounded-3xl border border-amber-100 bg-amber-50 p-8">
-      <h2 class="text-3xl font-bold text-amber-950 mb-4">Quick List: Best Things to Do in Alibaug</h2>
-      <div class="grid gap-4 md:grid-cols-2">
-        <div class="rounded-2xl bg-white p-5 shadow-sm">
-          <h3 class="text-xl font-semibold text-gray-900">For families</h3>
-          <p class="mt-2 text-gray-700 leading-relaxed">Enjoy water sports at Nagaon Beach, sunset time at Alibaug Beach, and shorter scenic drives to Revdanda or Kashid.</p>
-        </div>
-        <div class="rounded-2xl bg-white p-5 shadow-sm">
-          <h3 class="text-xl font-semibold text-gray-900">For couples</h3>
-          <p class="mt-2 text-gray-700 leading-relaxed">Choose sunset walks, quieter beach time, photography spots, and day trips to Kashid Beach or Mandwa.</p>
-        </div>
-        <div class="rounded-2xl bg-white p-5 shadow-sm">
-          <h3 class="text-xl font-semibold text-gray-900">For adventure</h3>
-          <p class="mt-2 text-gray-700 leading-relaxed">Pick parasailing, jet ski rides, banana boat rides, and boat-based fort or dolphin-tour plans.</p>
-        </div>
-        <div class="rounded-2xl bg-white p-5 shadow-sm">
-          <h3 class="text-xl font-semibold text-gray-900">For sightseeing</h3>
-          <p class="mt-2 text-gray-700 leading-relaxed">Visit Kolaba Fort, Murud-Janjira Fort, Revdanda Beach, and the broader Alibaug coastal belt.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <h2 class="text-2xl font-bold text-center mt-10">
-    Top Beaches and Historical Places in Alibaug
-  </h2>
+  <h2 id="nagaon-activities" class="text-2xl font-bold text-center mt-10">Top Beaches and Historical Places in Alibaug - Nagaon Beach Activities</h2>
   <section class="max-w-7xl mx-auto px-6 pb-20">
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
       {attractions.map((place) => (
@@ -328,256 +293,83 @@ const attractions = [
               {place.distance}
             </div>
           </div>
-
           <div class="p-6 bg-white">
-            <h2 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-sky-600 transition">
+            <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-sky-600 transition">
               {place.name}
-            </h2>
+            </h3>
             <p class="text-gray-600 leading-relaxed mb-4">
               {place.description}
             </p>
-
             <div class="flex flex-wrap gap-2">
               {place.activities.map((activity) => (
-                <span class="activity-tag">
-                  {activity}
-                </span>
+                <span class="activity-tag">{activity}</span>
               ))}
             </div>
           </div>
-
-          <div class="absolute inset-0 border-2 border-transparent group-hover:border-sky-400 rounded-2xl transition-colors duration-300 pointer-events-none"></div>
         </div>
       ))}
     </div>
   </section>
 
   <section class="max-w-4xl mx-auto mt-12 bg-white border border-gray-100 p-8 rounded-2xl shadow-sm">
-    <h2 class="text-3xl font-bold text-center text-gray-900 mb-6">
-      Top Things to Do in Alibaug
-    </h2>
-
+    <h2 class="text-3xl font-bold text-center text-gray-900 mb-6">Top Things to Do in Alibaug</h2>
     <ul class="text-gray-700 space-y-3 text-lg">
-      <li class="flex items-start gap-2">
-        <span class="text-sky-600 font-bold">✔</span>
-        <span>Enjoy thrilling water sports at <strong>Nagaon Beach</strong> (parasailing, banana ride, bumper ride, jet ski).</span>
-      </li>
-      <li class="flex items-start gap-2">
-        <span class="text-sky-600 font-bold">✔</span>
-        <span>Watch a scenic sunset and take horse carriage rides on the shores of <strong>Alibaug Beach</strong>.</span>
-      </li>
-      <li class="flex items-start gap-2">
-        <span class="text-sky-600 font-bold">✔</span>
-        <span>Walk or take a horse cart to explore the 17th-century historic <strong>Kolaba Fort</strong> during low tide.</span>
-      </li>
-      <li class="flex items-start gap-2">
-        <span class="text-sky-600 font-bold">✔</span>
-        <span>Take an adventurous boat ride to explore the unconquered island fortress of <strong>Murud-Janjira Fort</strong>.</span>
-      </li>
-      <li class="flex items-start gap-2">
-        <span class="text-sky-600 font-bold">✔</span>
-        <span>Relax and unwind along the clean, white sands of <strong>Kashid Beach</strong>, lined with Casuarina trees.</span>
-      </li>
+      <li class="flex items-start gap-2"><span class="text-sky-600 font-bold">✔</span><span>Enjoy thrilling <strong>Nagaon Beach activities</strong> - parasailing, banana ride, jet ski.</span></li>
+      <li class="flex items-start gap-2"><span class="text-sky-600 font-bold">✔</span><span>Watch sunset at <strong>Alibaug Beach</strong> - best places to visit in Alibaug for couples.</span></li>
+      <li class="flex items-start gap-2"><span class="text-sky-600 font-bold">✔</span><span>Walk to <strong>Kolaba Fort</strong> during low tide - top thing to do in Alibaug for 1 day.</span></li>
+      <li class="flex items-start gap-2"><span class="text-sky-600 font-bold">✔</span><span>Boat ride to <strong>Murud-Janjira Fort</strong> - must visit place near Nagaon Beach.</span></li>
+      <li class="flex items-start gap-2"><span class="text-sky-600 font-bold">✔</span><span>Relax at <strong>Kashid Beach</strong> - white sands for family trips.</span></li>
     </ul>
   </section>
 
-  <!-- Couples & Family Optimized Content (AEO / GEO / LLMO) -->
   <section class="max-w-5xl mx-auto px-6 py-12 grid md:grid-cols-2 gap-8">
     <div class="rounded-3xl border border-sky-100 bg-sky-50/50 p-8 shadow-sm">
-      <h3 class="text-2xl font-bold text-sky-950 mb-4">Places to Visit in Alibaug with Family</h3>
+      <h3 id="things-to-do-family" class="text-2xl font-bold text-sky-950 mb-4">Places to Visit in Alibaug with Family - Things to Do with Kids</h3>
       <p class="text-gray-700 leading-relaxed mb-4">
-        If you are planning an Alibaug trip with family, staying near Nagaon Beach is highly recommended. It is widely considered the <strong>best beach in Konkan for family</strong> vacations because of its flat sandy slope and safe, shallow swim zones for kids.
+        If you are searching <strong>places to visit in Alibaug with family</strong> or <strong>things to do in Alibaug with kids</strong> (your position 1.9 query), Nagaon is safest. Flat slope, shallow swim zones.
       </p>
       <ul class="space-y-2 text-gray-600">
-        <li>👨‍👩‍👧‍👦 <strong>Safe Swimming:</strong> Nagaon Beach's gentle shoreline is perfect for children.</li>
-        <li>🛶 <strong>Water Rides:</strong> Banana boat rides and bumper rides designed for family groups.</li>
-        <li>🏰 <strong>Kolaba Fort:</strong> A fun family walk across the sea-bed at low tide.</li>
+        <li>👨👩👧👦 <strong>Safe Swimming:</strong> Nagaon Beach - best beach in Konkan for family.</li>
+        <li>🛶 <strong>Water Rides:</strong> Banana boat, bumper rides for family groups.</li>
+        <li>🏰 <strong>Kolaba Fort:</strong> Fun family walk across sea-bed at low tide.</li>
       </ul>
     </div>
-
     <div class="rounded-3xl border border-teal-100 bg-teal-50/50 p-8 shadow-sm">
       <h3 class="text-2xl font-bold text-teal-950 mb-4">Places to Visit in Alibaug for Couples</h3>
       <p class="text-gray-700 leading-relaxed mb-4">
-        Alibaug offers beautiful, romantic escapes for couples looking for a weekend getaway from Mumbai or Pune.
+        For <strong>places to visit in Alibaug for couples</strong>, choose Akshi Beach for privacy, Revdanda for sunset, Kashid for white sands.
       </p>
       <ul class="space-y-2 text-gray-600">
-        <li>🌅 <strong>Sunset Walks:</strong> Stroll hand-in-hand along the quiet stretches of Alibaug Beach or Revdanda Beach.</li>
-        <li>🏖️ <strong>Kashid Beach:</strong> The white sands and scenic Casuarina trees make it a highly romantic day-trip destination.</li>
-        <li>⛵ <strong>Sailboat Ride:</strong> Take a scenic boat trip to Murud-Janjira Fort for panoramic sea views.</li>
+        <li>🌅 <strong>Sunset Walks:</strong> Alibaug Beach, Revdanda Beach.</li>
+        <li>🏖 <strong>Kashid Beach:</strong> Romantic day-trip.</li>
+        <li>⛵ <strong>Sailboat Ride:</strong> Murud-Janjira Fort for sea views.</li>
       </ul>
     </div>
   </section>
 
-  <!-- Spelling Catch Card -->
   <section class="max-w-5xl mx-auto px-6 mb-12">
     <div class="rounded-2xl border border-slate-100 bg-slate-50 p-6 text-center">
       <p class="text-gray-600 text-sm">
-        💡 <strong>Spelling Tip:</strong> Whether you spell it <strong>Alibaug</strong>, <strong>Alibag</strong>, <strong>Alibaugh</strong>, or <strong>Alibagh</strong>, all references apply to this beautiful coastal region in Raigad, Maharashtra.
+        💡 Spelling: Whether you search <strong>Alibaug</strong>, <strong>Alibag</strong>, <strong>Alibaugh</strong>, or <strong>Alibagh</strong> (Alibag places to visit, Alibagh tourist), all refer to same coastal town in Raigad, Maharashtra.
       </p>
-    </div>
-  </section>
-
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-    <div class="rounded-3xl border border-rose-100 bg-rose-50 p-8">
-      <h2 class="text-3xl font-bold text-rose-950 mb-4">Places to Visit Near Nagaon Beach</h2>
-      <p class="text-lg text-gray-700 leading-relaxed">
-        If your base is Nagaon, the easiest nearby options are Nagaon Beach itself, Alibaug Beach, Kolaba Fort, Revdanda Beach, and Mandwa Beach. For longer half-day or full-day outings, Kashid Beach and Murud-Janjira Fort are also popular choices.
-      </p>
-      <p class="mt-4 text-lg text-gray-700 leading-relaxed">
-        This makes the area useful for travelers specifically searching for <strong>places to visit near Nagaon Beach</strong>, <strong>things to do near Nagaon Beach</strong>, or <strong>tourist places near Nagaon Alibaug</strong>.
-      </p>
-    </div>
-  </section>
-
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-   <div class="my-8 rounded-2xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
-      <h3 class="text-xl font-bold text-cyan-900 mb-2">🐬 Planning a Dolphin Tour?</h3>
-      <p class="text-gray-700 mb-4">
-        Sightings are best in the early morning near Nagaon and Murud. We recommend a specialized boat tour for the best experience.
-      </p>
-      <a href="/alibaug-family-group-guide-2026" class="inline-block bg-sky-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-sky-700 transition shadow-md">
-        Read our Full 2026 Group Guide →
-      </a>
-    </div>
-  </section>
-
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-    <div class="rounded-3xl border border-sky-100 bg-sky-50 p-8">
-      <h2 class="text-3xl font-bold text-sky-900 mb-4">Best Places to Visit in Alibaug</h2>
-      <p class="text-lg text-gray-700 leading-relaxed">
-        Alibaug is known for its mix of beaches, forts, and scenic coastal views. Popular places include Nagaon Beach for water sports, Alibaug Beach for sunsets, Kashid Beach for peaceful outings, and Murud-Janjira Fort for history lovers.
-      </p>
-      <p class="text-lg text-gray-700 leading-relaxed mt-4">
-        Staying near Nagaon Beach allows you to cover most attractions within a short drive.
-      </p>
-    </div>
-  </section>
-
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-    <div class="rounded-3xl border border-emerald-100 bg-emerald-50 p-8">
-      <h2 class="text-3xl font-bold text-emerald-950 mb-4">Why Stay Near Nagaon Beach?</h2>
-      <p class="text-lg text-gray-700 leading-relaxed">
-        Nagaon is one of the most preferred areas in Alibaug because of its clean beach, easy access to water sports, and central location. Compared to crowded Alibaug town, it offers a quieter and more comfortable stay experience.
-      </p>
-      <p class="mt-4 text-lg text-gray-700 leading-relaxed">
-        For a deeper comparison, read our <a href="/why-smart-travelers-choose-nagaon" class="font-semibold text-sky-700 hover:underline">why-smart-travelers-choose-nagaon</a> guide before you book.
-      </p>
-    </div>
-  </section>
-
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-    <div class="rounded-3xl border border-sky-100 bg-sky-50 p-8">
-      <h2 class="text-3xl font-bold text-sky-900">Visiting with Family or Friends?</h2>
-      <p class="mt-4 text-lg text-gray-700 leading-relaxed">
-        Before you finalize your itinerary, read our
-        <a href="/alibaug-family-group-guide-2026" class="font-semibold text-sky-700 hover:underline">Master Guide to Alibaug for Families &amp; Groups</a>
-        to compare Nagaon Beach with Alibaug Beach, discover the best group activities, and choose the right base for your stay.
-      </p>
-    </div>
-  </section>
-
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-    <div class="rounded-3xl border border-cyan-100 bg-cyan-50 p-8">
-      <h2 class="text-3xl font-bold text-cyan-950">Planning a Dolphin Tour?</h2>
-      <p class="mt-4 text-lg text-gray-700 leading-relaxed">
-        If dolphin spotting is on your list, use our
-        <a href="/dolphin-watching-alibaug-guide" class="font-semibold text-sky-700 hover:underline">local dolphin watching guide</a>
-        before you book. It explains where sightings actually happen, the best early-morning timing, and why deeper sea rides work better than shoreline expectations.
-      </p>
-    </div>
-  </section>
-
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-    <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-      <h2 class="text-3xl font-bold text-gray-900 mb-4">Plan Your Stay Around These Attractions</h2>
-      <p class="text-lg text-gray-700 leading-relaxed">
-        If this guide helped you shortlist beaches and sightseeing spots, use the pages below to compare room types, view resort photos, and book your stay near Nagaon Beach.
-      </p>
-      <div class="mt-6 flex flex-wrap gap-3">
-        <a href="/rooms" class="rounded-full border border-sky-200 bg-sky-50 px-5 py-3 font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-100">Rooms & Prices</a>
-        <a href="/gallery" class="rounded-full border border-cyan-200 bg-cyan-50 px-5 py-3 font-semibold text-cyan-800 transition hover:border-cyan-400 hover:bg-cyan-100">Photo Gallery</a>
-        <a href="/booking" class="rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 font-semibold text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">Book Direct</a>
-      </div>
     </div>
   </section>
 
   <section class="max-w-4xl mx-auto px-6 pb-16">
-    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Frequently Asked Questions</h2>
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Frequently Asked Questions - Places to Visit in Alibaug</h2>
     <div class="space-y-4">
-      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <summary class="cursor-pointer list-none text-lg font-semibold text-gray-900 flex items-center justify-between gap-4">
-          <span>What are the best things to do in Alibaug?</span>
-          <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <p class="mt-3 text-gray-600 leading-relaxed">Popular activities include visiting Nagaon Beach, exploring Kolaba Fort, enjoying water sports, and taking a day trip to Kashid Beach.</p>
-      </details>
-      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <summary class="cursor-pointer list-none text-lg font-semibold text-gray-900 flex items-center justify-between gap-4">
-          <span>Which beaches are near Nagaon?</span>
-          <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <p class="mt-3 text-gray-600 leading-relaxed">Nagaon Beach, Alibaug Beach, and Revdanda Beach are all located nearby.</p>
-      </details>
-      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <summary class="cursor-pointer list-none text-lg font-semibold text-gray-900 flex items-center justify-between gap-4">
-          <span>How far is Murud-Janjira Fort from Nagaon?</span>
-          <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <p class="mt-3 text-gray-600 leading-relaxed">It is approximately 45 km (about 1.5 hours drive by road) and can be reached by road followed by a local sailboat ride from Murud jetty.</p>
-      </details>
-      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <summary class="cursor-pointer list-none text-lg font-semibold text-gray-900 flex items-center justify-between gap-4">
-          <span>Where is the best place for Dolphin watching in Alibaug?</span>
-          <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <p class="mt-3 text-gray-600 leading-relaxed">
-          Dolphin spotting is most successful in the deep waters near <strong>Nagaon Beach</strong> and <strong>Murud</strong> during the early morning hours. For a complete itinerary, check our 
-          <a href="/alibaug-family-group-guide-2026" class="text-sky-600 font-bold hover:underline">Alibaug Family Guide</a>.
-        </p>
-      </details>
-      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <summary class="cursor-pointer list-none text-lg font-semibold text-gray-900 flex items-center justify-between gap-4">
-          <span>What are the best places to visit in Alibaug for couples?</span>
-          <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <p class="mt-3 text-gray-600 leading-relaxed">
-          Couples can enjoy romantic sunset strolls along Alibaug Beach, quiet and scenic picnics at the white sands of Kashid Beach, exploring Revdanda Fort, or ferry rides at Mandwa Beach.
-        </p>
-      </details>
-      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <summary class="cursor-pointer list-none text-lg font-semibold text-gray-900 flex items-center justify-between gap-4">
-          <span>Which is the best beach in Konkan for family trips?</span>
-          <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <p class="mt-3 text-gray-600 leading-relaxed">
-          Nagaon Beach is widely regarded as one of the best family beaches in Konkan. Its flat incline and gentle waves make it exceptionally safe for children, and it offers the widest variety of organized water sports.
-        </p>
-      </details>
-      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <summary class="cursor-pointer list-none text-lg font-semibold text-gray-900 flex items-center justify-between gap-4">
-          <span>Is it spelled Alibaug, Alibag, Alibaugh, or Alibagh?</span>
-          <span class="text-sky-600 transition-transform group-open:rotate-45">+</span>
-        </summary>
-        <p class="mt-3 text-gray-600 leading-relaxed">
-          Alibag and Alibaug are both official spellings. Common spelling variations include Alibaugh and Alibagh. All denote the same beautiful coastal getaway town in Maharashtra.
-        </p>
-      </details>
+      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><summary class="cursor-pointer list-none text-lg font-semibold flex justify-between">What are the best places to visit in Alibaug near Nagaon Beach?<span class="text-sky-600">+</span></summary><p class="mt-3 text-gray-600">Nagaon (2 min), Akshi (3.7 km), Alibaug Beach (8 km), Kolaba Fort (9 km), Kashid (28 km), Murud-Janjira (45 km) are best places to visit in Alibaug near Nagaon Beach.</p></details>
+      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><summary class="cursor-pointer list-none text-lg font-semibold flex justify-between">What are things to do in Nagaon Beach?<span class="text-sky-600">+</span></summary><p class="mt-3 text-gray-600">Top Nagaon Beach activities are parasailing, jet-ski, banana ride, bumper ride, swimming, dolphin safari 7-9 AM, and sunset walks.</p></details>
+      <details class="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><summary class="cursor-pointer list-none text-lg font-semibold flex justify-between">Places to visit in Alibaug for 1 day?<span class="text-sky-600">+</span></summary><p class="mt-3 text-gray-600">For 1 day: Nagaon Beach morning, Kolaba Fort low tide, Alibaug Beach sunset. All within 9 km from Nagaon.</p></details>
     </div>
   </section>
 
   <section class="bg-gradient-to-r from-sky-700 to-teal-600 text-white py-16 mx-6 rounded-3xl shadow-2xl mb-20">
     <div class="max-w-4xl mx-auto text-center px-6">
-      <h2 class="text-4xl font-bold mb-4">Stay at Dolphin House Beach Resort in Nagaon Alibaug and explore all major attractions within short distance.</h2>
-      <p class="text-xl mb-8 text-white/90">
-        Use Nagaon as your base for beaches, forts, water sports, and easy day trips across Alibaug.
-      </p>
-      <div class="flex flex-wrap justify-center gap-4">
-        <a href="/rooms" class="btn-light">
-          View Rooms
-        </a>
-        <a href="/booking" class="border-2 border-white text-white px-8 py-4 rounded-full text-xl font-bold hover:bg-white hover:text-sky-700 transition transform hover:scale-105">
-          Book Now
-        </a>
+      <h2 class="text-4xl font-bold mb-4">Stay at Dolphin House and Explore All Places to Visit Near Nagaon Beach</h2>
+      <div class="flex flex-wrap justify-center gap-4 mt-6">
+        <a href="/rooms" class="bg-white text-sky-700 px-8 py-4 rounded-full font-bold">View Rooms</a>
+        <a href="/booking" class="border-2 border-white px-8 py-4 rounded-full font-bold">Book Now</a>
       </div>
     </div>
   </section>
@@ -586,97 +378,19 @@ const attractions = [
     {
       "@context": "https://schema.org",
       "@type": "Article",
-      "headline": "15 Best Places to Visit in Alibaug Near Nagaon Beach (Attractions Guide)",
-      "description": "A practical guide to the best things to do in Alibaug and the top places to visit near Nagaon Beach, including beaches, forts, water sports, and family-friendly outings.",
+      "headline": "15 Best Places to Visit in Alibaug Near Nagaon Beach (2026 Guide)",
+      "description": "Discover 15 best places to visit in Alibaug within 2 min to 45 km from Nagaon Beach - Nagaon Beach, Kolaba Fort, Kashid Beach, Murud-Janjira. Family guide.",
       "mainEntityOfPage": "https://dolphinhouse-alibaug.com/attractions",
-      "author": {
-        "@type": "Organization",
-        "name": "Dolphin House Beach Resort"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Dolphin House Beach Resort",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
-        }
-      },
-      "image": [
-        "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp",
-        "https://dolphinhouse-alibaug.com/uploader/alibaug-beach.webp",
-        "https://dolphinhouse-alibaug.com/uploader/kolaba-fort.webp"
-      ],
+      "author": {"@type": "Organization","name": "Dolphin House Beach Resort"},
+      "publisher": {"@type": "Organization","name": "Dolphin House Beach Resort","logo": {"@type": "ImageObject","url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"}},
       "datePublished": "2026-05-06",
-      "dateModified": "2026-05-21"
+      "dateModified": "2026-09-12"
     }
   </script>
-  <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Nagaon Beach",
-      "description": "Best beach in Alibaug for water sports and family trips, just a 2-minute walk from Dolphin House."
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Alibaug Beach",
-      "description": "Popular sunset beach with horse carriages and street food stalls."
-    },
-    {
-      "@type": "ListItem",
-      "position": 3,
-      "name": "Kashid Beach",
-      "description": "Beautiful white-sand beach with casuarina trees, perfect for couple day trips."
-    },
-    {
-      "@type": "ListItem",
-      "position": 4,
-      "name": "Kolaba Fort",
-      "description": "Historic 17th-century sea fort accessible during low tide."
-    },
-    {
-      "@type": "ListItem",
-      "position": 5,
-      "name": "Murud-Janjira Fort",
-      "description": "Iconic unconquered sea fortress located 45 km from Nagaon."
-    },
-    {
-      "@type": "ListItem",
-      "position": 6,
-      "name": "Mandwa Beach",
-      "description": "Water sports hub and ferry jetty link to Mumbai."
-    },
-    {
-      "@type": "ListItem",
-      "position": 7,
-      "name": "Revdanda Beach",
-      "description": "Secluded black sand beach with Portuguese fort ruins."
-    }
-  ]
-}
-</script>
-
 </Layout>
 
 <style>
-  .attraction-card {
-    @apply relative bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300;
-  }
-
-  .attraction-card:hover {
-    @apply shadow-2xl transform -translate-y-2;
-  }
-
-  .activity-tag {
-    @apply bg-sky-50 text-sky-700 px-3 py-1 rounded-full text-sm font-medium border border-sky-200 transition-colors;
-  }
-
-  .activity-tag:hover {
-    @apply bg-sky-100 border-sky-300;
-  }
+  .attraction-card { @apply relative bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300; }
+  .attraction-card:hover { @apply shadow-2xl transform -translate-y-2; }
+  .activity-tag { @apply bg-sky-50 text-sky-700 px-3 py-1 rounded-full text-sm font-medium border border-sky-200; }
 </style>

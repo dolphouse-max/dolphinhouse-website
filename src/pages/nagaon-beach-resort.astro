@@ -3,68 +3,24 @@ import Layout from "../layouts/Layout.astro";
 import MobileCollapsibleSection from "../components/MobileCollapsibleSection.astro";
 import MobileCollapsibleEnhancer from "../components/MobileCollapsibleEnhancer.astro";
 
-const nagaonReasons = [
-  "Clean sand and a more comfortable family beach feel than many first-time visitors expect.",
-  "A shoreline that feels safer and easier for children, older parents, and slow beach walks.",
-  "Strong access to water sports without needing to spend half the trip moving between locations."
-];
-
-const resortTypes = [
-  "Budget resorts for quick weekend trips where location matters most",
-  "Cottages and family stays for travelers who need larger or more flexible room layouts",
-  "Pool resorts for guests who want both beach time and an easier in-property leisure option"
-];
-
-const nagaonActivities = [
-  "Water sports like jet ski rides, parasailing, and banana rides during active beach hours",
-  "Long evening walks and sunset time when the shoreline feels calmer and more open",
-  "Simple beach downtime for families who prefer a less rushed coastal routine"
-];
-
-const quickFacts = [
-  "About a 2-minute walk from Nagaon Beach for easier beach access during the day.",
-  "Indoor swimming pool, family-friendly room layouts, and on-site dining in one stay.",
-  "Useful for weekend travelers from Mumbai and Pune who want a practical Alibaug beach base."
-];
-
-const idealFor = [
-  "Families who want beach time plus a pool without moving between multiple properties.",
-  "Couples looking for a straightforward Nagaon stay near the shore with direct booking.",
-  "Groups planning a short Alibaug trip and wanting rooms, food, and parking in one place."
-];
-
-const travelInfo = [
-  "Nagaon is a practical weekend route for travelers coming from Mumbai who want beach access without planning a long-distance coastal holiday.",
-  "It also works well for Pune travelers, especially when departure timing is planned to avoid the heaviest weekend traffic.",
-  "Most visitors reach via road and local beach-area routes, so staying close to the shore saves repeated transit effort after arrival."
-];
-
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Which is a good resort near Nagaon Beach Alibaug?",
+      "name": "Which are the best hotels in Nagaon Beach?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Travelers usually prefer a resort near Nagaon Beach that keeps the shore walkable, offers family-friendly rooms, and includes practical amenities like pool access and food on-site."
+        "text": "Best hotels in Nagaon Beach are within 2-min walk to beach with swimming pool, family rooms and restaurant. Dolphin House Beach Resort is rated 4.1/5 with 500+ reviews, indoor pool with waterfall, AC rooms from ₹2,000 and family rooms from ₹3,000."
       }
     },
     {
       "@type": "Question",
-      "name": "Are there hotels and stay options near Nagaon Beach?",
+      "name": "Is there a Nagaon Beach resort with swimming pool? What is the price?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Nagaon has resorts, hotels, cottages, and family stay options, but many travelers prefer properties close enough to walk to the beach instead of depending on transport."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is there a Nagaon Beach resort with swimming pool?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. Travelers looking for a Nagaon Beach resort with swimming pool often compare Dolphin House because it combines beach proximity, family rooms, and indoor pool access."
+        "text": "Yes, Dolphin House is a Nagaon Beach resort with swimming pool (indoor pool with waterfall). Price starts from ₹2,000 for Non-AC, ₹2,300 for AC, ₹2,600 Deluxe, ₹3,000-3,500 Family rooms. Includes free Wi-Fi, parking, restaurant."
       }
     },
     {
@@ -72,344 +28,152 @@ const faqSchema = {
       "name": "How close is Dolphin House to Nagaon Beach?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Dolphin House is about a 2-minute walk from Nagaon Beach, which makes it practical for guests who want easy beach access without depending on repeated transport."
+        "text": "Dolphin House is 2-min walk (200 meters) from Nagaon Beach main entrance. Closest hotels near Nagaon Beach Alibaug with pool access."
       }
     },
     {
       "@type": "Question",
-      "name": "Who should book a stay near Nagaon Beach?",
+      "name": "Are there family resorts near Nagaon Beach with swimming pool?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "A stay near Nagaon Beach works best for families, couples, and weekend groups who want quick shore access, comfortable rooms, and amenities like a swimming pool and food on-site."
+        "text": "Yes, Dolphin House is a family resort near Nagaon Beach with indoor swimming pool, family rooms for 4-5 guests, attached bathrooms with geysers, and safe flat Nagaon Beach ideal for kids."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are stay options near Nagaon Beach Alibaug?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Stay options near Nagaon Beach include hotels, resorts, cottages with swimming pool. Dolphin House offers budget to family stays from ₹2,000 with direct booking, best rates and instant confirmation via WhatsApp."
       }
     }
   ]
-};
-
-const pageSchema = {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "Nagaon Beach Resort Alibaug",
-  "url": "https://dolphinhouse-alibaug.com/nagaon-beach-resort",
-  "description": "Nagaon Beach resort guide: Dolphin House is about 2 minutes walk from Nagaon Beach with family rooms, indoor pool and direct booking.",
-  "isPartOf": {
-    "@type": "WebSite",
-    "name": "Dolphin House Beach Resort",
-    "url": "https://dolphinhouse-alibaug.com"
-  },
-  "about": [
-    { "@type": "Thing", "name": "Nagaon Beach" },
-    { "@type": "Thing", "name": "Alibaug" },
-    { "@type": "Thing", "name": "Beach resort with swimming pool" }
-  ],
-  "primaryImageOfPage": {
-    "@type": "ImageObject",
-    "url": "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp"
-  },
-  "speakable": {
-    "@type": "SpeakableSpecification",
-    "cssSelector": [".aeo-answer", ".quick-facts"]
-  },
-  "mainEntity": {
-    "@type": "Hotel",
-    "name": "Dolphin House Beach Resort",
-    "url": "https://dolphinhouse-alibaug.com/nagaon-beach-resort",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "1317, Nagaon Bandar Road, Nagaon",
-      "addressLocality": "Alibag",
-      "addressRegion": "Maharashtra",
-      "postalCode": "402204",
-      "addressCountry": "IN"
-    },
-    "amenityFeature": [
-      { "@type": "LocationFeatureSpecification", "name": "Indoor swimming pool", "value": true },
-      { "@type": "LocationFeatureSpecification", "name": "Family rooms", "value": true },
-      { "@type": "LocationFeatureSpecification", "name": "Restaurant", "value": true },
-      { "@type": "LocationFeatureSpecification", "name": "Free parking", "value": true }
-    ]
-  }
 };
 
 const breadcrumbSchema = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Home",
-      "item": "https://dolphinhouse-alibaug.com/"
-    },
-    {
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Nagaon Beach Resort",
-      "item": "https://dolphinhouse-alibaug.com/nagaon-beach-resort"
-    }
+    {"@type": "ListItem","position": 1,"name": "Home","item": "https://dolphinhouse-alibaug.com/"},
+    {"@type": "ListItem","position": 2,"name": "Nagaon Beach Resort","item": "https://dolphinhouse-alibaug.com/nagaon-beach-resort"}
+  ]
+};
+
+const pageSchema = {
+  "@context": "https://schema.org",
+  "@type": "Hotel",
+  "name": "Dolphin House Beach Resort - Nagaon Beach Resort with Swimming Pool",
+  "url": "https://dolphinhouse-alibaug.com/nagaon-beach-resort",
+  "description": "Nagaon Beach Resort with swimming pool from ₹2,000/night. Hotels in Nagaon Beach 2 min walk to beach, family rooms, indoor pool, restaurant.",
+  "image": ["https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp","https://dolphinhouse-alibaug.com/uploader/hotel-front-1.webp"],
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "1317, Nagaon Bandar Road, Nagaon",
+    "addressLocality": "Alibag",
+    "addressRegion": "Maharashtra",
+    "postalCode": "402204",
+    "addressCountry": "IN"
+  },
+  "telephone": "+91-8554871073",
+  "priceRange": "₹2000 - ₹6000",
+  "aggregateRating": {"@type":"AggregateRating","ratingValue":4.1,"ratingCount":500},
+  "amenityFeature": [
+    {"@type":"LocationFeatureSpecification","name":"Indoor swimming pool with waterfall","value":true},
+    {"@type":"LocationFeatureSpecification","name":"Family rooms for 4-5 guests","value":true},
+    {"@type":"LocationFeatureSpecification","name":"AC rooms from ₹2300","value":true},
+    {"@type":"LocationFeatureSpecification","name":"In-house restaurant","value":true},
+    {"@type":"LocationFeatureSpecification","name":"Free parking & Wi-Fi","value":true}
   ]
 };
 ---
 
 <Layout
-title="Nagaon Beach Resort | Dolphin House - 2 Min Walk to Nagaon Beach"
-description="Dolphin House is a family-friendly resort about 2 minutes walk from Nagaon Beach, Alibaug with indoor pool, family rooms and direct booking for Mumbai & Pune weekend trips."  
-image="/uploader/nagaon-beach.webp"
+  title="Nagaon Beach Resort with Swimming Pool - Hotels in Nagaon Beach from ₹2000"
+  description="Book Nagaon Beach Resort with swimming pool from ₹2000/night. Hotels in Nagaon Beach 2-min walk, family rooms, indoor pool, restaurant, free parking. Direct booking best rates."
+  image="/uploader/nagaon-beach.webp"
   canonical="https://dolphinhouse-alibaug.com/nagaon-beach-resort"
   ogType="article"
-  faqSchema={faqSchema}
+  faqSchema={[faqSchema, breadcrumbSchema, pageSchema]}
 >
-  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-teal-700 to-sky-500 px-6 py-16 text-white shadow-2xl">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_35%)]"></div>
-    <div class="relative grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+  <!-- HERO - now includes money keywords -->
+  <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-teal-700 to-sky-500 px-6 py-14 text-white shadow-2xl">
+    <div class="relative grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
       <div>
-        <p class="text-sm uppercase tracking-[0.28em] text-white/75">Nagaon Beach Stay Guide</p>
-        <h1 class="mt-4 text-4xl font-extrabold leading-tight md:text-6xl">
-          Nagaon Beach Resort - 2 Minutes Walk from Nagaon Beach, Alibaug
+        <p class="text-sm uppercase tracking-[0.28em] text-white/75">Hotels in Nagaon Beach - Resort with Swimming Pool</p>
+        <h1 class="mt-3 text-4xl font-extrabold leading-tight md:text-5xl">
+          Nagaon Beach Resort with Swimming Pool - Hotels in Nagaon Beach from ₹2,000
         </h1>
-        <p class="aeo-answer mt-6 max-w-3xl text-lg leading-relaxed text-white/90 md:text-xl">
-          Dolphin House is about a 2-minute walk from Nagaon Beach and combines family rooms, an indoor pool, on-site dining and direct booking — a practical base for families and weekend trips from Mumbai and Pune.
+        <p class="mt-5 max-w-3xl text-lg leading-relaxed text-white/90">
+          Searching for <strong>hotels in Nagaon Beach</strong>, <strong>nagaon beach hotels</strong> or <strong>nagaon beach resort with swimming pool</strong>? Dolphin House is <strong>2-min walk (200m)</strong> from Nagaon Beach, with indoor pool, AC & family rooms, restaurant, parking. Rated 4.1/5 (500+ reviews).
         </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <span class="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">From ₹2,000/night</span>
+          <span class="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">Indoor Pool + Waterfall</span>
+          <span class="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">2 Min Walk to Beach</span>
+        </div>
         <div class="mt-8 flex flex-wrap gap-4">
-          <a href="/booking" class="btn-light">Book Now</a>
-          <a href="/rooms" class="rounded-full border border-white/60 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-emerald-900">
-            View Rooms
-          </a>
+          <a href="/booking" class="rounded-full bg-white px-7 py-3 font-bold text-emerald-900">Book Direct - Best Rates</a>
+          <a href="/rooms" class="rounded-full border border-white/60 px-7 py-3 font-semibold text-white">View Rooms & Prices</a>
         </div>
       </div>
-
-      <figure class="overflow-hidden rounded-[1.75rem] border border-white/20 bg-white/10 backdrop-blur-sm">
-        <img
-          src="/uploader/nagaon-beach.webp"
-          alt="Resort near Nagaon Beach Alibaug with walking distance beach access"
-          class="h-full w-full object-cover"
-          width="1600"
-          height="1067"
-          loading="eager"
-          decoding="async"
-        />
+      <figure class="overflow-hidden rounded-[1.75rem] border border-white/20">
+        <img src="/uploader/nagaon-beach.webp" alt="Nagaon Beach Resort with swimming pool - Hotels in Nagaon Beach 2 min walk" class="h-full w-full object-cover" width="1600" height="1067" loading="eager" />
       </figure>
     </div>
   </section>
 
-  <MobileCollapsibleSection title="Quick Answer" class="section">
-    <div id="quick-answer" class="container max-w-5xl">
-      <h2 class="heading text-left">Quick Answer: Which Stay Fits Nagaon Beach Searches Best?</h2>
-      <p class="text-base leading-relaxed text-gray-700 md:text-lg">
-        The best stay near Nagaon is usually the one that keeps the beach walkable and bundles rooms, food and pool in one place. Dolphin House fits that with a 2-minute walk to the beach, family-ready rooms and an indoor pool.
-      </p>
-      <div class="quick-facts mt-8 grid gap-4 md:grid-cols-3">
-        {quickFacts.map((fact) => (
-          <div class="rounded-3xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm">
-            <p class="text-base leading-relaxed text-emerald-950">{fact}</p>
-          </div>
-        ))}
+  <!-- PRICE TABLE - answers your top query nagaon beach resort with swimming pool price -->
+  <section class="max-w-5xl mx-auto mt-10 px-6">
+    <div class="rounded-2xl border border-sky-100 bg-white p-6 shadow-sm">
+      <h2 class="text-2xl font-bold text-gray-900">Nagaon Beach Resort with Swimming Pool - Price List</h2>
+      <p class="mt-2 text-gray-600">Compare hotels near Nagaon Beach Alibaug - best rates via direct booking.</p>
+      <table class="mt-6 w-full text-left border-collapse">
+        <thead><tr class="border-b bg-sky-50/70 text-sm font-semibold"><th class="p-3">Room Type</th><th class="p-3">Price/night</th><th class="p-3">Best For</th></tr></thead>
+        <tbody class="divide-y text-gray-700">
+          <tr><td class="p-3 font-semibold">Non-AC Room</td><td class="p-3">From ₹2,000</td><td class="p-3">Budget stay near Nagaon Beach</td></tr>
+          <tr><td class="p-3 font-semibold">AC Room</td><td class="p-3">From ₹2,300</td><td class="p-3">Couples, small family - hotels in Nagaon Beach</td></tr>
+          <tr><td class="p-3 font-semibold">Deluxe Room</td><td class="p-3">From ₹2,600</td><td class="p-3">Nagaon Beach hotels with pool access</td></tr>
+          <tr><td class="p-3 font-semibold">Family Room (4-5 guests)</td><td class="p-3">₹3,000-3,500</td><td class="p-3">Family resort near Nagaon Beach with swimming pool</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <MobileCollapsibleSection title="Hotels in Nagaon Beach - Why Dolphin House" class="section">
+    <div class="container max-w-5xl">
+      <h2 class="text-3xl font-bold">Hotels in Nagaon Beach - Why Stay at Dolphin House?</h2>
+      <p class="mt-4 text-lg text-gray-700">If you searched <strong>hotels in nagaon beach</strong>, <strong>nagaon beach hotels</strong>, <strong>hotel near nagaon beach</strong> or <strong>resorts near nagaon beach</strong>, you want walkable beach + pool + food. That's exactly Dolphin House:</p>
+      <div class="mt-6 grid gap-4 md:grid-cols-3">
+        <div class="rounded-2xl bg-emerald-50 p-5 border"><p class="font-semibold">2-min walk to Nagaon Beach</p><p class="text-sm mt-1">No auto needed for beach - best hotels near Nagaon Beach Alibaug</p></div>
+        <div class="rounded-2xl bg-sky-50 p-5 border"><p class="font-semibold">Resort with Swimming Pool</p><p class="text-sm mt-1">Indoor pool with waterfall - nagaon resort with swimming pool</p></div>
+        <div class="rounded-2xl bg-amber-50 p-5 border"><p class="font-semibold">Family Rooms + Restaurant</p><p class="text-sm mt-1">For family, couples, groups - nagaon beach stay options</p></div>
       </div>
     </div>
   </MobileCollapsibleSection>
 
-  <MobileCollapsibleSection title="Why Stay Near Nagaon Beach" class="section">
-    <div id="why-stay-near-nagaon-beach" class="container max-w-5xl">
-      <h2 class="heading text-left">Why Stay Near Nagaon Beach</h2>
-      <div class="space-y-4">
-        {nagaonReasons.map((reason) => (
-          <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
-            <p class="text-base leading-relaxed text-emerald-950 md:text-lg">{reason}</p>
-          </div>
-        ))}
-      </div>
-      <p class="mt-8 text-base leading-relaxed text-gray-700 md:text-lg">
-        Staying close to the shore means you don't need transport every time you want the beach, which matters more for families than broad location claims.
-      </p>
-      <p class="mt-4 text-base leading-relaxed text-gray-700 md:text-lg">
-        halso applies to travelers comparing <strong>nagaon beach hotels</strong>, <strong>rooms near nagaon beach</strong>, or <strong>nagaon beach stay options</strong>. Walkable beach access usually matters more than broad location claims.
-      </p>
-    </div>
-  </MobileCollapsibleSection>
-
-  <MobileCollapsibleSection title="Types of Resorts, Hotels, and Stay Options Near Nagaon" class="section rounded-3xl border border-sky-100 bg-white shadow-sm">
-    <div id="types-of-stays-near-nagaon" class="container max-w-5xl">
-      <h2 class="heading text-left">Types of Resorts, Hotels, and Stay Options Near Nagaon</h2>
-      <div class="grid gap-5 md:grid-cols-3">
-        {resortTypes.map((item) => (
-          <div class="rounded-3xl border border-cyan-100 bg-cyan-50 p-6 shadow-sm">
-            <p class="text-lg leading-relaxed text-cyan-950">{item}</p>
-          </div>
-        ))}
-      </div>
-      <p class="mt-8 text-base leading-relaxed text-gray-700 md:text-lg">
-        Whether you call it a resort, hotel or cottage, the practical choice is usually the one that keeps beach access easy and room planning simple.
-      </p>
-    </div>
-  </MobileCollapsibleSection>
-
-  <MobileCollapsibleSection title="Dolphin House Beach Resort" class="section rounded-3xl border border-amber-100 bg-amber-50">
-    <div id="dolphin-house-beach-resort" class="container max-w-6xl">
-      <h2 class="heading text-left">Dolphin House Beach Resort</h2>
-      <div class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
-        <div class="space-y-5 text-base leading-relaxed text-gray-700 md:text-lg">
-          <p>
-            Among walk-to-beach stay options, Dolphin House stands out because it keeps the practical parts of the trip simple.
-          </p>
-          <p>
-            The beach is roughly 2 minutes away on foot, the property includes an indoor pool, and the room setup works for families who need more than a compact couple stay.
-          </p>
-          <p>
-            It is a natural fit for travelers who care about actual usability more than overdesigned resort claims.
-          </p>
-          <p>
-            It's a good shortlist if you want beach access, family rooms and pool access without moving between properties.
-          </p>
-          <div class="flex flex-wrap gap-4 pt-2">
-            <a href="/rooms" class="btn-primary">Book Now</a>
-            <a href="/" class="rounded-full border border-gray-300 px-6 py-3 font-semibold text-gray-800 transition hover:border-sky-600 hover:text-sky-700">
-              Visit Homepage
-            </a>
-          </div>
-        </div>
-
-        <figure class="overflow-hidden rounded-[2rem] bg-white shadow-lg ring-1 ring-amber-100">
-          <img
-            src="/uploader/hotel-front-1.webp"
-            alt="Dolphin House beach resort near Nagaon Beach with family rooms"
-            class="h-full w-full object-cover"
-            width="960"
-            height="640"
-            loading="lazy"
-            decoding="async"
-          />
-        </figure>
+  <MobileCollapsibleSection title="Nagaon Beach Stay Options" class="section rounded-3xl border bg-white shadow-sm">
+    <div class="container max-w-5xl">
+      <h2 class="text-3xl font-bold">Nagaon Beach Stay Options - Resort, Hotels, Cottages</h2>
+      <p class="mt-3 text-gray-700">Whether you call it <strong>resort in nagaon beach</strong>, <strong>hotel in nagaon beach</strong>, <strong>nagaon beach stay</strong> or <strong>rooms nagaon alibaug</strong>, intent is same: clean stay close to shore. Dolphin House covers all:</p>
+      <div class="mt-6 grid md:grid-cols-3 gap-4">
+        <div class="p-5 bg-gray-50 rounded-xl border"><h3 class="font-bold">Budget Hotels</h3><p class="text-sm mt-2">From ₹2,000 - hotels in nagaon alibaug near beach</p></div>
+        <div class="p-5 bg-gray-50 rounded-xl border"><h3 class="font-bold">Family Resort with Pool</h3><p class="text-sm mt-2">₹3,000-3,500 - nagaon beach resort for family</p></div>
+        <div class="p-5 bg-gray-50 rounded-xl border"><h3 class="font-bold">Cottages & Rooms</h3><p class="text-sm mt-2">AC/Non-AC - nagaon beach rooms, alibaug nagaon beach rooms</p></div>
       </div>
     </div>
   </MobileCollapsibleSection>
 
-  <MobileCollapsibleSection title="Who This Stay Is Best For" class="section rounded-3xl border border-lime-100 bg-lime-50 shadow-sm">
-    <div id="who-this-stay-is-best-for" class="container max-w-5xl">
-      <h2 class="heading text-left">Who This Stay Is Best For</h2>
-      <div class="grid gap-5 md:grid-cols-3">
-        {idealFor.map((item) => (
-          <div class="rounded-3xl border border-lime-200 bg-white p-6 shadow-sm">
-            <p class="text-base leading-relaxed text-gray-800 md:text-lg">{item}</p>
-          </div>
-        ))}
-      </div>
-      <p class="mt-8 text-base leading-relaxed text-gray-700 md:text-lg">
-        This page is useful if you are deciding between Nagaon and Alibaug city and want quick beach access with family-friendly amenities.
-      </p>
-    </div>
-  </MobileCollapsibleSection>
-
-  <MobileCollapsibleSection title="Rooms and Hotel-Style Stay Near Nagaon Beach" class="section rounded-3xl border border-rose-100 bg-rose-50 shadow-sm">
-    <div id="rooms-and-hotel-style-stay-near-nagaon-beach" class="container max-w-5xl">
-      <h2 class="heading text-left">Rooms and Hotel-Style Stay Near Nagaon Beach</h2>
-      <div class="space-y-4 text-base leading-relaxed text-gray-700 md:text-lg">
-        <p>
-          Some travelers search for hotels, others for resorts — the intent is the same: a clean, convenient place close to Nagaon Beach.
-        </p>
-        <p>
-          Dolphin House works for that because it combines room options, family suitability, direct booking and resort amenities instead of just a basic room.
-        </p>
-        <p>
-          You get hotel-style practicality with resort-style amenities in a beach-focused location. For a deeper comparison of locations, see our guide on why travelers choose Nagaon.
-        </p>
-        <div class="flex flex-wrap gap-4 pt-2">
-          <a href="/rooms" class="btn-primary">Compare Rooms</a>
-          <a href="/booking" class="rounded-full border border-rose-300 px-6 py-3 font-semibold text-rose-900 transition hover:bg-rose-100">Check Availability</a>
-        </div>
-      </div>
-    </div>
-  </MobileCollapsibleSection>
-
-  <MobileCollapsibleSection title="Things to Do at Nagaon Beach" class="section">
-    <div id="things-to-do-at-nagaon-beach" class="container max-w-5xl">
-      <h2 class="heading text-left">Things to Do at Nagaon Beach</h2>
-      <div class="space-y-4">
-        {nagaonActivities.map((activity) => (
-          <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-            <p class="text-base leading-relaxed text-gray-800 md:text-lg">{activity}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </MobileCollapsibleSection>
-
-  <MobileCollapsibleSection title="Travel Info" class="section">
-    <div id="travel-info" class="container max-w-5xl">
-      <h2 class="heading text-left">Travel Info</h2>
-      <div class="space-y-4">
-        {travelInfo.map((item) => (
-          <div class="rounded-2xl border border-sky-100 bg-sky-50 p-5">
-            <p class="text-base leading-relaxed text-sky-950 md:text-lg">{item}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </MobileCollapsibleSection>
-
-  <MobileCollapsibleSection title="Compare Photos, Rooms, and Booking" class="section rounded-3xl border border-slate-200 bg-white shadow-sm">
-    <div id="compare-photos-rooms-and-booking" class="container max-w-5xl">
-      <h2 class="heading text-left">Compare Photos, Rooms, and Booking</h2>
-      <p class="text-base leading-relaxed text-gray-700 md:text-lg">
-        Once you know you want to stay near Nagaon Beach, the next step is usually checking the actual room setup, photo gallery, and direct booking flow before finalizing dates.
-      </p>
+  <MobileCollapsibleSection title="Compare" class="section">
+    <div class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-10 text-white">
+      <h2 class="text-3xl font-bold">Book Hotels in Nagaon Beach - Direct Best Rates</h2>
+      <p class="mt-3 text-white/80">Don't pay OTA commission. Book nagaon beach resort with swimming pool direct for instant WhatsApp confirmation.</p>
       <div class="mt-6 flex flex-wrap gap-3">
-        <a href="/gallery" class="rounded-full border border-cyan-200 bg-cyan-50 px-5 py-3 font-semibold text-cyan-800 transition hover:border-cyan-400 hover:bg-cyan-100">View Resort Photos</a>
-        <a href="/rooms" class="rounded-full border border-sky-200 bg-sky-50 px-5 py-3 font-semibold text-sky-700 transition hover:border-sky-400 hover:bg-sky-100">Check Rooms & Prices</a>
-        <a href="/booking" class="rounded-full border border-emerald-200 bg-emerald-50 px-5 py-3 font-semibold text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100">Book Direct</a>
-      </div>
-    </div>
-  </MobileCollapsibleSection>
-
-  <MobileCollapsibleSection title="Explore Related Guides" class="section">
-    <div id="explore-related-guides" class="container max-w-5xl rounded-[2rem] bg-gray-900 px-8 py-12 text-white">
-      <h2 class="text-3xl font-bold">Keep Comparing Before You Book</h2>
-      <p class="mt-4 max-w-3xl text-white/80">
-        Use the broader Alibaug and beach-intent pages below if you want to compare location-focused and beach-focused search intent before deciding.
-      </p>
-      <div class="mt-8 flex flex-wrap gap-4">
-        <a href="/" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Homepage</a>
-        <a href="/rooms" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Room Options</a>
-        <a href="/resort-in-alibaug" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Resort in Alibaug</a>
-        <a href="/beach-resort-alibaug" class="rounded-full border border-white/25 px-6 py-3 font-semibold text-white transition hover:bg-white hover:text-gray-900">Beach Resort Alibaug</a>
+        <a href="/rooms" class="rounded-full bg-white px-6 py-3 font-bold text-gray-900">Check Rooms & Prices</a>
+        <a href="/booking" class="rounded-full border border-white/30 px-6 py-3 font-semibold">Book Direct</a>
+        <a href="/gallery" class="rounded-full border border-white/30 px-6 py-3 font-semibold">View Photos</a>
       </div>
     </div>
   </MobileCollapsibleSection>
 
   <MobileCollapsibleEnhancer />
-
-  <script
-    type="application/ld+json"
-    set:html={JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "Article",
-      "headline": "Nagaon Beach Resort - 2 Minutes Walk from Nagaon Beach, Alibaug",
-      "description": "Practical guide to choosing a stay near Nagaon Beach, Alibaug - beach access, family rooms, things to do and why Nagaon works for weekend trips.",
-      "mainEntityOfPage": "https://dolphinhouse-alibaug.com/nagaon-beach-resort",
-      "author": {
-        "@type": "Organization",
-        "name": "Dolphin House Beach Resort"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Dolphin House Beach Resort",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://dolphinhouse-alibaug.com/uploader/logo-512.webp"
-        }
-      },
-      "about": [
-        "Nagaon Beach resort",
-        "Hotels near Nagaon Beach Alibaug",
-        "Nagaon Beach resort with swimming pool"
-      ],
-      "image": [
-        "https://dolphinhouse-alibaug.com/uploader/nagaon-beach.webp",
-        "https://dolphinhouse-alibaug.com/uploader/hotel-front-1.webp"
-      ],
-      "datePublished": "2026-05-06",
-      "dateModified": "2026-06-01"
-    })}
-  />
-  <script type="application/ld+json" set:html={JSON.stringify(pageSchema)} />
-  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 </Layout>
